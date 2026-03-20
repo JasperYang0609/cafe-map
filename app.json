@@ -34,7 +34,13 @@
         "googleMaps": {
           "apiKey": "AIzaSyCtAEBCtImo5zDXYj0ZS5FevJcP9be70l8"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -48,6 +54,19 @@
         }
       ]
     ],
-    "scheme": "cafemap"
+    "scheme": "cafemap",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "65269658-1b91-4072-9abb-1d676abb8d17"
+      }
+    },
+    "owner": "jasperyang",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/65269658-1b91-4072-9abb-1d676abb8d17"
+    }
   }
 }
