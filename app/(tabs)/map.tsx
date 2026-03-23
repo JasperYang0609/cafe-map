@@ -98,7 +98,7 @@ export default function MapScreen() {
               setSelectedCafe(cafe);
             }}
             tracksViewChanges={false}
-            pinColor="#6F4E37"
+            pinColor={selectedCafe?.place_id === cafe.place_id ? '#E53935' : '#6F4E37'}
           />
         ))}
       </MapView>
