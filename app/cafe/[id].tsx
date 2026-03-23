@@ -175,7 +175,7 @@ export default function CafeDetailScreen() {
 
           {/* Google Maps link */}
           <TouchableOpacity style={styles.detailRow} onPress={() => {
-            Linking.openURL(`https://www.google.com/maps/place/?q=place_id:${cafe.place_id}`);
+            Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${cafe.name}&query_place_id=${cafe.place_id}`);
           }}>
             <Ionicons name="open-outline" size={20} color={Colors.primary} />
             <Text style={[styles.detailText, { color: Colors.primary }]}>{t('detail.view_on_google')}</Text>
