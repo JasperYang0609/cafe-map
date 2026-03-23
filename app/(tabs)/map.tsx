@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
@@ -14,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
+import { getPhotoUrl } from '../../src/lib/places';
 import { Cafe } from '../../src/types/cafe';
 
 export default function MapScreen() {
@@ -118,6 +120,18 @@ export default function MapScreen() {
       {/* Bottom card when marker selected */}
       {selectedCafe && (
         <View style={styles.bottomCard}>
+          <View style={styles.cardRow}>
+          {/* Photo */}
+          {selectedCafe.photo_reference ? (
+            <Image
+              source={{ uri: getPhotoUrl(selectedCafe.photo_reference, 200) }}
+              style={styles.cardPhoto}
+            />
+          ) : (
+            <View style={[styles.cardPhoto, styles.cardPhotoPlaceholder]}>
+              <Ionicons name="cafe-outline" size={28} color={Colors.textSecondary} />
+            </View>
+          )}
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleRow}>
               <Text style={styles.cardName} numberOfLines={1}>{selectedCafe.name}</Text>
@@ -146,6 +160,7 @@ export default function MapScreen() {
                 </Text>
               )}
             </View>
+          </View>
           </View>
 
           <View style={styles.cardActions}>
@@ -258,8 +273,24 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  cardHeader: {
+  cardRow: {
+    flexDirection: 'row',
     marginBottom: Spacing.md,
+  },
+  cardPhoto: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.sm,
+    marginRight: Spacing.md,
+  },
+  cardPhotoPlaceholder: {
+    backgroundColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardHeader: {
+    flex: 1,
+    justifyContent: 'center',
   },
   cardTitleRow: {
     flexDirection: 'row',
