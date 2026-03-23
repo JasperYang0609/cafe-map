@@ -15,6 +15,7 @@ import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/the
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
 import CafeCard from '../../src/components/CafeCard';
+import FilterSheet, { FilterOptions, DEFAULT_FILTERS } from '../../src/components/FilterSheet';
 import { useHistory } from '../../src/context/HistoryContext';
 import { showRewardedAd, shouldShowAd } from '../../src/lib/ads';
 
@@ -37,6 +38,16 @@ export default function ExploreScreen() {
   const [resultCafe, setResultCafe] = useState<any>(null);
   const [isFirstSeed, setIsFirstSeed] = useState(true);
   const [adLoading, setAdLoading] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
+
+  // Filter cafes based on current filters
+  const filteredCafes = cafes.filter((cafe) => {
+    if (filters.minRating > 0 && cafe.rating < filters.minRating) return false;
+    if (filters.openNow && cafe.is_open === false) return false;
+    if (cafe.distance && cafe.distance > filters.maxDistance * 1000) return false;
+    return true;
+  });
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -56,8 +67,10 @@ export default function ExploreScreen() {
     setIsGrowing(true);
     setShowResult(false);
 
-    // Get random cafe
-    const cafe = getRandomCafe();
+    // Get random cafe from filtered list
+    const cafe = filteredCafes.length > 0
+      ? filteredCafes[Math.floor(Math.random() * filteredCafes.length)]
+      : getRandomCafe();
     setResultCafe(cafe);
 
     // Record to history
@@ -114,13 +127,22 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>種一顆咖啡豆</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>種一顆咖啡豆</Text>
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilter(true)}
+          >
+            <Ionicons name="options-outline" size={20} color={Colors.primary} />
+            <Text style={styles.filterText}>篩選</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.subtitle}>
           {location.loading
             ? '定位中...'
             : cafesLoading
             ? '搜尋附近咖啡廳...'
-            : `附近找到 ${cafes.length} 家咖啡廳`}
+            : `附近找到 ${filteredCafes.length} 家咖啡廳${filteredCafes.length < cafes.length ? `（共 ${cafes.length} 家）` : ''}`}
         </Text>
       </View>
 
@@ -139,17 +161,17 @@ export default function ExploreScreen() {
                 key={seed.id}
                 style={[
                   styles.seedButton,
-                  cafes.length === 0 && styles.seedButtonDisabled,
+                  filteredCafes.length === 0 && styles.seedButtonDisabled,
                 ]}
                 onPress={() => handleSeedPress(seed.id)}
                 activeOpacity={0.7}
-                disabled={cafes.length === 0}
+                disabled={filteredCafes.length === 0}
               >
                 <Text style={styles.seedEmoji}>{seed.emoji}</Text>
                 <Text style={styles.seedLabel}>{seed.label}</Text>
               </TouchableOpacity>
             ))}
-            {cafes.length === 0 && !cafesLoading && (
+            {filteredCafes.length === 0 && !cafesLoading && (
               <Text style={styles.noCafeText}>
                 附近沒有找到咖啡廳{'\n'}試試換個地方？
               </Text>
@@ -226,6 +248,13 @@ export default function ExploreScreen() {
           </View>
         )}
       </View>
+
+      <FilterSheet
+        visible={showFilter}
+        onClose={() => setShowFilter(false)}
+        onApply={(f) => setFilters(f)}
+        currentFilters={filters}
+      />
     </SafeAreaView>
   );
 }
@@ -240,10 +269,30 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl,
     paddingBottom: Spacing.md,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   title: {
     fontSize: FontSize.xxl,
     fontWeight: '700',
     color: Colors.text,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  filterText: {
+    fontSize: FontSize.sm,
+    color: Colors.primary,
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: FontSize.md,
