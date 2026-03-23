@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { useI18n } from '../context/I18nContext';
 
 export interface FilterOptions {
   maxDistance: number; // km
@@ -38,6 +39,7 @@ export default function FilterSheet({
   onApply,
   currentFilters,
 }: FilterSheetProps) {
+  const { t } = useI18n();
   const [filters, setFilters] = useState<FilterOptions>(currentFilters);
 
   const handleReset = () => {
@@ -56,9 +58,9 @@ export default function FilterSheet({
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={handleReset}>
-              <Text style={styles.resetText}>重置</Text>
+              <Text style={styles.resetText}>{t("filter.reset")}</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>篩選</Text>
+            <Text style={styles.title}>{t("filter.title")}</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color={Colors.text} />
             </TouchableOpacity>
@@ -67,7 +69,7 @@ export default function FilterSheet({
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Distance */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>距離</Text>
+              <Text style={styles.sectionTitle}>{t("filter.distance")}</Text>
               <View style={styles.optionRow}>
                 {DISTANCE_OPTIONS.map((km) => (
                   <TouchableOpacity
@@ -93,7 +95,7 @@ export default function FilterSheet({
 
             {/* Rating */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>最低評分</Text>
+              <Text style={styles.sectionTitle}>{t("filter.min_rating")}</Text>
               <View style={styles.optionRow}>
                 {RATING_OPTIONS.map((rating) => (
                   <TouchableOpacity
@@ -110,7 +112,7 @@ export default function FilterSheet({
                         filters.minRating === rating && styles.chipTextActive,
                       ]}
                     >
-                      {rating === 0 ? '不限' : `${rating}⭐ 以上`}
+                      {rating === 0 ? t('filter.no_limit') : `${rating}⭐ ${t('filter.above')}`}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -123,7 +125,7 @@ export default function FilterSheet({
                 style={styles.toggleRow}
                 onPress={() => setFilters({ ...filters, openNow: !filters.openNow })}
               >
-                <Text style={styles.sectionTitle}>只顯示營業中</Text>
+                <Text style={styles.sectionTitle}>{t("filter.open_now")}</Text>
                 <View style={[styles.toggle, filters.openNow && styles.toggleActive]}>
                   <View style={[styles.toggleDot, filters.openNow && styles.toggleDotActive]} />
                 </View>
@@ -133,7 +135,7 @@ export default function FilterSheet({
 
           {/* Apply button */}
           <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyText}>套用篩選</Text>
+            <Text style={styles.applyText}>{t("filter.apply")}</Text>
           </TouchableOpacity>
         </View>
       </View>

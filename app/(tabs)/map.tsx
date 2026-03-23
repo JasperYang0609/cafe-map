@@ -18,8 +18,10 @@ import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
 import { getPhotoUrl } from '../../src/lib/places';
 import { Cafe } from '../../src/types/cafe';
+import { useI18n } from '../../src/context/I18nContext';
 
 export default function MapScreen() {
+  const { t } = useI18n();
   const location = useLocation();
   const { cafes, loading, fetchCafes } = useCafes();
   const mapRef = useRef<MapView>(null);
@@ -76,11 +78,11 @@ export default function MapScreen() {
 
   const handleFavorite = () => {
     Alert.alert(
-      '培養你的咖啡森林 🌿',
-      '訂閱後每收藏一家咖啡廳，地圖上就會長出一棵樹，去越多店森林越茂密！',
+      t('ad.forest_title'),
+      t('ad.forest_msg'),
       [
-        { text: '之後再說', style: 'cancel' },
-        { text: '了解訂閱方案', onPress: () => { /* TODO: navigate to subscription */ } },
+        { text: t('ad.later'), style: 'cancel' },
+        { text: t('ad.learn_more'), onPress: () => { /* TODO: navigate to subscription */ } },
       ]
     );
   };
@@ -153,7 +155,7 @@ export default function MapScreen() {
       {/* Cafe count badge */}
       <View style={styles.countBadge}>
         <Text style={styles.countText}>
-          {loading ? '搜尋中...' : `☕ ${cafes.length} 家`}
+          {loading ? t('map.searching') : `☕ ${cafes.length} 家`}
         </Text>
       </View>
 
@@ -209,7 +211,7 @@ export default function MapScreen() {
               onPress={() => handleNavigate(selectedCafe)}
             >
               <Ionicons name="navigate" size={18} color={Colors.surface} />
-              <Text style={styles.navText}>導航</Text>
+              <Text style={styles.navText}>{ t('map.navigate') }</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -217,7 +219,7 @@ export default function MapScreen() {
               onPress={handleFavorite}
             >
               <Ionicons name="heart-outline" size={18} color={Colors.primary} />
-              <Text style={styles.favText}>培養咖啡森林</Text>
+              <Text style={styles.favText}>{ t('map.forest') }</Text>
             </TouchableOpacity>
           </View>
         </View>
