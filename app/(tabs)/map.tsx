@@ -121,14 +121,16 @@ export default function MapScreen() {
               e.stopPropagation();
               setSelectedCafe(cafe);
             }}
+            tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
           >
             <View style={[
-              styles.markerPin,
-              selectedCafe?.place_id === cafe.place_id && styles.markerPinSelected,
+              styles.markerDot,
+              selectedCafe?.place_id === cafe.place_id && styles.markerDotSelected,
             ]}>
-              <Text style={styles.markerEmoji}>
-                {selectedCafe?.place_id === cafe.place_id ? '📍' : '☕'}
-              </Text>
+              <View style={[
+                styles.markerInner,
+                selectedCafe?.place_id === cafe.place_id && styles.markerInnerSelected,
+              ]} />
             </View>
           </Marker>
         ))}
@@ -239,25 +241,34 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
   },
-  markerPin: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    padding: 5,
+  markerDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(111, 78, 55, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  markerDotSelected: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(229, 57, 53, 0.2)',
+  },
+  markerInner: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: Colors.primary,
     borderWidth: 2,
-    borderColor: Colors.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    borderColor: Colors.surface,
   },
-  markerPinSelected: {
-    borderColor: '#E53935',
-    backgroundColor: '#FFF5F5',
-    transform: [{ scale: 1.3 }],
-  },
-  markerEmoji: {
-    fontSize: 16,
+  markerInnerSelected: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#E53935',
+    borderWidth: 3,
   },
   recenterButton: {
     position: 'absolute',
