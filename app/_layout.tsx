@@ -22,7 +22,8 @@ export default function RootLayout() {
               options={{
                 headerShown: true,
                 headerTitle: '',
-                headerBackTitle: '',
+                headerBackTitle: ' ',
+                headerBackTitleVisible: false,
                 headerStyle: { backgroundColor: Colors.background },
                 headerTintColor: Colors.text,
               }}
