@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useAuth } from '../../src/context/AuthContext';
+import LanguagePicker from '../../src/components/LanguagePicker';
 
 type AuthMode = 'login' | 'register';
 
@@ -143,10 +144,7 @@ export default function ProfileScreen() {
         <ScrollView>
           <View style={styles.header}>
             <Text style={styles.title}>我的</Text>
-            <TouchableOpacity style={styles.langButton}>
-              <Text style={styles.langFlag}>🇹🇼</Text>
-              <Text style={styles.langText}>中文</Text>
-            </TouchableOpacity>
+            <LanguagePicker />
           </View>
 
           <View style={styles.guestCard}>
@@ -188,10 +186,7 @@ export default function ProfileScreen() {
       <ScrollView>
         <View style={styles.header}>
           <Text style={styles.title}>我的</Text>
-          <TouchableOpacity style={styles.langButton}>
-            <Text style={styles.langFlag}>🇹🇼</Text>
-            <Text style={styles.langText}>中文</Text>
-          </TouchableOpacity>
+          <LanguagePicker />
         </View>
 
         <View style={styles.guestCard}>
