@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
 import { Cafe } from '../types/cafe';
 
-const HISTORY_KEY = 'cafe_search_history';
+const HISTORY_FILE = `${FileSystem.documentDirectory}search_history.json`;
 const MAX_HISTORY = 100;
 
 export interface HistoryEntry {
@@ -16,7 +16,6 @@ export async function recordLocalView(cafe: Cafe): Promise<void> {
   try {
     const history = await getLocalHistory();
 
-    // Add new entry at the beginning
     const entry: HistoryEntry = {
       cafe,
       viewed_at: new Date().toISOString(),
@@ -29,7 +28,7 @@ export async function recordLocalView(cafe: Cafe): Promise<void> {
     // Keep max entries
     const trimmed = filtered.slice(0, MAX_HISTORY);
 
-    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+    await FileSystem.writeAsStringAsync(HISTORY_FILE, JSON.stringify(trimmed));
   } catch (error) {
     console.error('[LocalHistory] Record error:', error);
   }
@@ -40,8 +39,10 @@ export async function recordLocalView(cafe: Cafe): Promise<void> {
  */
 export async function getLocalHistory(): Promise<HistoryEntry[]> {
   try {
-    const data = await AsyncStorage.getItem(HISTORY_KEY);
-    if (!data) return [];
+    const info = await FileSystem.getInfoAsync(HISTORY_FILE);
+    if (!info.exists) return [];
+
+    const data = await FileSystem.readAsStringAsync(HISTORY_FILE);
     return JSON.parse(data) as HistoryEntry[];
   } catch {
     return [];
@@ -53,7 +54,10 @@ export async function getLocalHistory(): Promise<HistoryEntry[]> {
  */
 export async function clearLocalHistory(): Promise<void> {
   try {
-    await AsyncStorage.removeItem(HISTORY_KEY);
+    const info = await FileSystem.getInfoAsync(HISTORY_FILE);
+    if (info.exists) {
+      await FileSystem.deleteAsync(HISTORY_FILE);
+    }
   } catch (error) {
     console.error('[LocalHistory] Clear error:', error);
   }
