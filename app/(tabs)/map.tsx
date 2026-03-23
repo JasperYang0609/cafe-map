@@ -94,11 +94,10 @@ export default function MapScreen() {
               longitude: cafe.longitude,
             }}
             onPress={() => setSelectedCafe(cafe)}
-          >
-            <View style={styles.markerContainer}>
-              <Text style={styles.markerEmoji}>☕</Text>
-            </View>
-          </Marker>
+            tracksViewChanges={false}
+            pinColor="#6F4E37"
+            title={cafe.name}
+          />
         ))}
       </MapView>
 
