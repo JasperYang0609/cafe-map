@@ -121,9 +121,16 @@ export default function MapScreen() {
               e.stopPropagation();
               setSelectedCafe(cafe);
             }}
-            tracksViewChanges={false}
-            pinColor={selectedCafe?.place_id === cafe.place_id ? '#E53935' : '#6F4E37'}
-          />
+          >
+            <View style={[
+              styles.markerPin,
+              selectedCafe?.place_id === cafe.place_id && styles.markerPinSelected,
+            ]}>
+              <Text style={styles.markerEmoji}>
+                {selectedCafe?.place_id === cafe.place_id ? '📍' : '☕'}
+              </Text>
+            </View>
+          </Marker>
         ))}
       </MapView>
 
@@ -232,18 +239,25 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
   },
-  markerContainer: {
+  markerPin: {
     backgroundColor: Colors.surface,
     borderRadius: 20,
-    padding: 6,
+    padding: 5,
+    borderWidth: 2,
+    borderColor: Colors.primary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
   },
+  markerPinSelected: {
+    borderColor: '#E53935',
+    backgroundColor: '#FFF5F5',
+    transform: [{ scale: 1.3 }],
+  },
   markerEmoji: {
-    fontSize: 18,
+    fontSize: 16,
   },
   recenterButton: {
     position: 'absolute',
