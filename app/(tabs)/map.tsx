@@ -121,17 +121,26 @@ export default function MapScreen() {
               e.stopPropagation();
               setSelectedCafe(cafe);
             }}
-            tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
+            {...(Platform.OS === 'ios'
+              ? {
+                  pinColor: selectedCafe?.place_id === cafe.place_id ? '#E53935' : '#6F4E37',
+                }
+              : {
+                  tracksViewChanges: true,
+                }
+            )}
           >
-            <View style={[
-              styles.markerDot,
-              selectedCafe?.place_id === cafe.place_id && styles.markerDotSelected,
-            ]}>
+            {Platform.OS === 'android' && (
               <View style={[
-                styles.markerInner,
-                selectedCafe?.place_id === cafe.place_id && styles.markerInnerSelected,
-              ]} />
-            </View>
+                styles.markerDot,
+                selectedCafe?.place_id === cafe.place_id && styles.markerDotSelected,
+              ]}>
+                <View style={[
+                  styles.markerInner,
+                  selectedCafe?.place_id === cafe.place_id && styles.markerInnerSelected,
+                ]} />
+              </View>
+            )}
           </Marker>
         ))}
       </MapView>
