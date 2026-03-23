@@ -54,8 +54,7 @@
         {
           "locationWhenInUsePermission": "我們需要你的位置來顯示附近的咖啡廳"
         }
-      ],
-      "expo-secure-store"
+      ]
     ],
     "scheme": "cafemap",
     "extra": {
