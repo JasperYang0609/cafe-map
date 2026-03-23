@@ -59,8 +59,8 @@ export default function CafeDetailScreen() {
 
   const handleFavorite = () => {
     Alert.alert(
-      '訂閱後可收藏 ☕',
-      '訂閱後即可收藏咖啡廳，收藏的店會在地圖上長成一棵樹 🌳',
+      '培養你的咖啡森林 🌿',
+      '訂閱後每收藏一家咖啡廳，地圖上就會長出一棵樹，去越多店森林越茂密！',
       [
         { text: '之後再說', style: 'cancel' },
         { text: '了解訂閱方案', onPress: () => {} },
@@ -190,7 +190,7 @@ export default function CafeDetailScreen() {
 
         <TouchableOpacity style={styles.favButton} onPress={handleFavorite}>
           <Ionicons name="heart-outline" size={20} color={Colors.primary} />
-          <Text style={styles.favText}>訂閱後可收藏</Text>
+          <Text style={styles.favText}>培養咖啡森林</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.shareButton} onPress={handleShare}>

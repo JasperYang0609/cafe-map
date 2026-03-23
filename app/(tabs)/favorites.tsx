@@ -32,9 +32,9 @@ export default function FavoritesScreen() {
       ) : !isSubscribed ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>🔒</Text>
-          <Text style={styles.emptyTitle}>訂閱解鎖收藏功能</Text>
+          <Text style={styles.emptyTitle}>培養你的專屬咖啡森林</Text>
           <Text style={styles.emptyText}>
-            訂閱後即可收藏咖啡廳{'\n'}收藏的店會在地圖上長成一棵樹 🌳
+            每收藏一家咖啡廳{'\n'}地圖上就會長出一棵樹{'\n'}去越多店，森林越茂密 🌿
           </Text>
           <TouchableOpacity style={styles.subscribeButton}>
             <Ionicons name="star" size={18} color={Colors.surface} />
@@ -43,15 +43,15 @@ export default function FavoritesScreen() {
           <View style={styles.benefitList}>
             <View style={styles.benefitRow}>
               <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
-              <Text style={styles.benefitText}>無限收藏咖啡廳</Text>
+              <Text style={styles.benefitText}>無限收藏你愛的咖啡廳</Text>
             </View>
             <View style={styles.benefitRow}>
               <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
-              <Text style={styles.benefitText}>地圖上收藏的店長成樹</Text>
+              <Text style={styles.benefitText}>培養你的專屬咖啡森林 🌳</Text>
             </View>
             <View style={styles.benefitRow}>
               <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
-              <Text style={styles.benefitText}>無廣告體驗</Text>
+              <Text style={styles.benefitText}>享受無廣告體驗</Text>
             </View>
           </View>
         </View>

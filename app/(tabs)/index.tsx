@@ -200,8 +200,8 @@ export default function ExploreScreen() {
                   showFavoriteButton={true}
                   onFavorite={() => {
                     Alert.alert(
-                      '訂閱後可收藏 ☕',
-                      '訂閱後即可收藏咖啡廳，收藏的店會在地圖上長成一棵樹 🌳',
+                      '培養你的咖啡森林 🌿',
+                      '訂閱後每收藏一家咖啡廳，地圖上就會長出一棵樹，去越多店森林越茂密！',
                       [
                         { text: '之後再說', style: 'cancel' },
                         { text: '了解訂閱方案', onPress: () => {} },
