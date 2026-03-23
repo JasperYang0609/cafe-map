@@ -64,7 +64,7 @@ export default function ProfileScreen() {
           </Text>
           <Text style={styles.authSubtitle}>
             {authMode === 'login'
-              ? '登入後可以保存搜尋紀錄和收藏'
+              ? '登入後可以保存搜尋紀錄'
               : '註冊帳號，開始探索咖啡廳'}
           </Text>
 
@@ -139,7 +139,7 @@ export default function ProfileScreen() {
             <Ionicons name="person" size={40} color={Colors.textSecondary} />
           </View>
           <Text style={styles.guestTitle}>尚未登入</Text>
-          <Text style={styles.guestText}>登入後可以保存紀錄和收藏咖啡廳</Text>
+          <Text style={styles.guestText}>登入後可以跨裝置保存搜尋紀錄</Text>
 
           <View style={styles.authButtons}>
             <TouchableOpacity
@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
     marginBottom: Spacing.lg,
+    textAlign: 'center',
   },
   authButtons: {
     flexDirection: 'row',
