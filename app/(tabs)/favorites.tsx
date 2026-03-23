@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function FavoritesScreen() {
+  const router = useRouter();
   // TODO: Check if user is logged in and subscribed
   const isLoggedIn = false;
   const isSubscribed = false;
@@ -22,7 +24,7 @@ export default function FavoritesScreen() {
           <Text style={styles.emptyText}>
             登入帳號並訂閱後{'\n'}就能收藏喜愛的咖啡廳
           </Text>
-          <TouchableOpacity style={styles.loginButton}>
+          <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/(tabs)/profile')}>
             <Text style={styles.loginText}>登入 / 註冊</Text>
           </TouchableOpacity>
         </View>
