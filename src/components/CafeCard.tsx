@@ -28,12 +28,17 @@ export default function CafeCard({
 }: CafeCardProps) {
   const photoUrl = cafe.photo_reference ? getPhotoUrl(cafe.photo_reference) : null;
 
-  const handleNavigate = () => {
-    const scheme = Platform.select({
-      ios: `maps:0,0?q=${cafe.latitude},${cafe.longitude}`,
-      android: `geo:0,0?q=${cafe.latitude},${cafe.longitude}(${cafe.name})`,
-    });
-    if (scheme) Linking.openURL(scheme);
+  const handleNavigate = async () => {
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;
+    const canOpenGoogle = await Linking.canOpenURL('comgooglemaps://');
+
+    if (canOpenGoogle) {
+      // Open Google Maps app directly
+      Linking.openURL(`comgooglemaps://?daddr=${cafe.latitude},${cafe.longitude}&directionsmode=driving`);
+    } else {
+      // Fallback to Google Maps web (opens in browser, prompts to open app)
+      Linking.openURL(googleMapsUrl);
+    }
   };
 
   const handleCall = () => {

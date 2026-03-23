@@ -19,12 +19,15 @@ interface MapCalloutProps {
 }
 
 export default function MapCallout({ cafe, onFavorite, isFavorited = false }: MapCalloutProps) {
-  const handleNavigate = () => {
-    const url = Platform.select({
-      ios: `maps:0,0?q=${encodeURIComponent(cafe.name)}@${cafe.latitude},${cafe.longitude}`,
-      android: `geo:0,0?q=${cafe.latitude},${cafe.longitude}(${encodeURIComponent(cafe.name)})`,
-    });
-    if (url) Linking.openURL(url);
+  const handleNavigate = async () => {
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;
+    const canOpenGoogle = await Linking.canOpenURL('comgooglemaps://');
+
+    if (canOpenGoogle) {
+      Linking.openURL(`comgooglemaps://?daddr=${cafe.latitude},${cafe.longitude}&directionsmode=driving`);
+    } else {
+      Linking.openURL(googleMapsUrl);
+    }
   };
 
   return (

@@ -20,7 +20,10 @@
       },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "我們需要你的位置來顯示附近的咖啡廳",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "comgooglemaps"
+        ]
       }
     },
     "android": {
