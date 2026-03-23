@@ -110,5 +110,12 @@
     "confirm": "확인",
     "error": "오류",
     "share_coming": "공유 기능 곧 출시!"
+  },
+  "tabs": {
+    "explore": "탐색",
+    "map": "지도",
+    "history": "기록",
+    "favorites": "즐겨찾기",
+    "profile": "내"
   }
 }

@@ -110,5 +110,12 @@
     "confirm": "確認",
     "error": "エラー",
     "share_coming": "共有機能は近日公開！"
+  },
+  "tabs": {
+    "explore": "探索",
+    "map": "地図",
+    "history": "履歴",
+    "favorites": "お気に入り",
+    "profile": "マイ"
   }
 }

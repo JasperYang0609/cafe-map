@@ -110,5 +110,12 @@
     "confirm": "Confirm",
     "error": "Error",
     "share_coming": "Share feature coming soon!"
+  },
+  "tabs": {
+    "explore": "Explore",
+    "map": "Map",
+    "history": "History",
+    "favorites": "Favs",
+    "profile": "Me"
   }
 }

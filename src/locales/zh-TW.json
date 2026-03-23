@@ -110,5 +110,12 @@
     "confirm": "確認",
     "error": "錯誤",
     "share_coming": "分享功能即將推出！"
+  },
+  "tabs": {
+    "explore": "探索",
+    "map": "地圖",
+    "history": "紀錄",
+    "favorites": "收藏",
+    "profile": "我的"
   }
 }
