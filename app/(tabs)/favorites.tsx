@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSize } from '../../src/constants/theme';
+import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 
 export default function FavoritesScreen() {
-  // TODO: Fetch favorites from Supabase
-  const favorites: any[] = [];
+  // TODO: Check if user is logged in and subscribed
+  const isLoggedIn = false;
+  const isSubscribed = false;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -14,17 +15,50 @@ export default function FavoritesScreen() {
         <Text style={styles.title}>我的收藏</Text>
       </View>
 
-      {favorites.length === 0 ? (
+      {!isLoggedIn ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyEmoji}>🌱</Text>
+          <Text style={styles.emptyTitle}>登入後即可收藏</Text>
+          <Text style={styles.emptyText}>
+            登入帳號並訂閱後{'\n'}就能收藏喜愛的咖啡廳
+          </Text>
+          <TouchableOpacity style={styles.loginButton}>
+            <Text style={styles.loginText}>登入 / 註冊</Text>
+          </TouchableOpacity>
+        </View>
+      ) : !isSubscribed ? (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyEmoji}>🔒</Text>
+          <Text style={styles.emptyTitle}>訂閱解鎖收藏功能</Text>
+          <Text style={styles.emptyText}>
+            訂閱後即可收藏咖啡廳{'\n'}收藏的店會在地圖上長成一棵樹 🌳
+          </Text>
+          <TouchableOpacity style={styles.subscribeButton}>
+            <Ionicons name="star" size={18} color={Colors.surface} />
+            <Text style={styles.subscribeText}>了解訂閱方案</Text>
+          </TouchableOpacity>
+          <View style={styles.benefitList}>
+            <View style={styles.benefitRow}>
+              <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
+              <Text style={styles.benefitText}>無限收藏咖啡廳</Text>
+            </View>
+            <View style={styles.benefitRow}>
+              <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
+              <Text style={styles.benefitText}>地圖上收藏的店長成樹</Text>
+            </View>
+            <View style={styles.benefitRow}>
+              <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
+              <Text style={styles.benefitText}>無廣告體驗</Text>
+            </View>
+          </View>
+        </View>
+      ) : (
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>🌱</Text>
           <Text style={styles.emptyTitle}>還沒有收藏</Text>
           <Text style={styles.emptyText}>
             去探索頁種一顆咖啡豆{'\n'}收藏的咖啡廳會在地圖上長成一棵樹
           </Text>
-        </View>
-      ) : (
-        <View>
-          {/* TODO: Favorite list */}
         </View>
       )}
     </SafeAreaView>
@@ -67,5 +101,44 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
+    marginBottom: Spacing.lg,
+  },
+  loginButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.sm + 4,
+    borderRadius: BorderRadius.full,
+  },
+  loginText: {
+    color: Colors.surface,
+    fontSize: FontSize.md,
+    fontWeight: '600',
+  },
+  subscribeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.sm + 4,
+    borderRadius: BorderRadius.full,
+    marginBottom: Spacing.xl,
+  },
+  subscribeText: {
+    color: Colors.surface,
+    fontSize: FontSize.md,
+    fontWeight: '600',
+  },
+  benefitList: {
+    gap: Spacing.md,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  benefitText: {
+    fontSize: FontSize.md,
+    color: Colors.text,
   },
 });

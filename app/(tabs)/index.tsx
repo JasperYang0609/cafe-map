@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,17 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { useLocation } from '../../src/hooks/useLocation';
+import { useCafes } from '../../src/hooks/useCafes';
+import CafeCard from '../../src/components/CafeCard';
 
 const { width } = Dimensions.get('window');
 
-// Placeholder seed data
 const SEEDS = [
   { id: 1, emoji: '🫘', label: '深焙' },
   { id: 2, emoji: '🌿', label: '淺焙' },
@@ -21,21 +24,37 @@ const SEEDS = [
 ];
 
 export default function ExploreScreen() {
+  const location = useLocation();
+  const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
+
   const [selectedSeed, setSelectedSeed] = useState<number | null>(null);
   const [isGrowing, setIsGrowing] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [resultCafe, setResultCafe] = useState<any>(null);
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const treeScale = useRef(new Animated.Value(0)).current;
 
+  // Fetch cafes when location is ready
+  useEffect(() => {
+    if (!location.loading && !location.error) {
+      fetchCafes(location.latitude, location.longitude);
+    }
+  }, [location.loading, location.error, location.latitude, location.longitude]);
+
   const handleSeedPress = (seedId: number) => {
-    if (isGrowing) return;
+    if (isGrowing || cafesLoading) return;
 
     setSelectedSeed(seedId);
     setIsGrowing(true);
     setShowResult(false);
 
-    // Seed press animation
+    // Get random cafe
+    const cafe = getRandomCafe();
+    setResultCafe(cafe);
+
+    // Animation sequence
     Animated.sequence([
       // Seed shrinks (planted)
       Animated.timing(scaleAnim, {
@@ -66,6 +85,7 @@ export default function ExploreScreen() {
     setSelectedSeed(null);
     setIsGrowing(false);
     setShowResult(false);
+    setResultCafe(null);
     scaleAnim.setValue(1);
     fadeAnim.setValue(0);
     treeScale.setValue(0);
@@ -75,23 +95,45 @@ export default function ExploreScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>種一顆咖啡豆</Text>
-        <Text style={styles.subtitle}>選一顆種子，看看今天命運推薦哪家咖啡廳</Text>
+        <Text style={styles.subtitle}>
+          {location.loading
+            ? '定位中...'
+            : cafesLoading
+            ? '搜尋附近咖啡廳...'
+            : `附近找到 ${cafes.length} 家咖啡廳`}
+        </Text>
       </View>
 
       <View style={styles.seedArea}>
-        {!isGrowing ? (
+        {(location.loading || cafesLoading) && !isGrowing ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.loadingText}>
+              {location.loading ? '正在定位...' : '搜尋附近咖啡廳...'}
+            </Text>
+          </View>
+        ) : !isGrowing ? (
           <View style={styles.seedRow}>
             {SEEDS.map((seed) => (
               <TouchableOpacity
                 key={seed.id}
-                style={styles.seedButton}
+                style={[
+                  styles.seedButton,
+                  cafes.length === 0 && styles.seedButtonDisabled,
+                ]}
                 onPress={() => handleSeedPress(seed.id)}
                 activeOpacity={0.7}
+                disabled={cafes.length === 0}
               >
                 <Text style={styles.seedEmoji}>{seed.emoji}</Text>
                 <Text style={styles.seedLabel}>{seed.label}</Text>
               </TouchableOpacity>
             ))}
+            {cafes.length === 0 && !cafesLoading && (
+              <Text style={styles.noCafeText}>
+                附近沒有找到咖啡廳{'\n'}試試換個地方？
+              </Text>
+            )}
           </View>
         ) : (
           <View style={styles.growArea}>
@@ -109,24 +151,29 @@ export default function ExploreScreen() {
             </Animated.View>
 
             {/* Result card */}
-            {showResult && (
-              <Animated.View style={[styles.resultCard, { opacity: fadeAnim }]}>
-                <Text style={styles.resultTitle}>☕ 推薦咖啡廳</Text>
-                <Text style={styles.resultPlaceholder}>
-                  連接 Google Places API 後{'\n'}這裡會顯示真實的咖啡廳資訊
-                </Text>
-                <View style={styles.resultActions}>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <Ionicons name="navigate-outline" size={20} color={Colors.surface} />
-                    <Text style={styles.actionText}>導航</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.actionButton}>
-                    <Ionicons name="heart-outline" size={20} color={Colors.surface} />
-                    <Text style={styles.actionText}>收藏</Text>
-                  </TouchableOpacity>
-                </View>
+            {showResult && resultCafe && (
+              <Animated.View style={[styles.resultContainer, { opacity: fadeAnim }]}>
+                <CafeCard
+                  cafe={resultCafe}
+                  showFavoriteButton={true}
+                  onFavorite={() => {
+                    // TODO: Check subscription and add favorite
+                  }}
+                />
                 <TouchableOpacity style={styles.retryButton} onPress={handleReset}>
+                  <Ionicons name="refresh-outline" size={20} color={Colors.primary} />
                   <Text style={styles.retryText}>再種一顆</Text>
+                </TouchableOpacity>
+              </Animated.View>
+            )}
+
+            {showResult && !resultCafe && (
+              <Animated.View style={[styles.resultContainer, { opacity: fadeAnim }]}>
+                <Text style={styles.noResultText}>
+                  附近沒有找到咖啡廳 ☕{'\n'}試試換個地方？
+                </Text>
+                <TouchableOpacity style={styles.retryButton} onPress={handleReset}>
+                  <Text style={styles.retryText}>再試一次</Text>
                 </TouchableOpacity>
               </Animated.View>
             )}
@@ -163,10 +210,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
   },
+  loadingContainer: {
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: Spacing.md,
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+  },
   seedRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: Spacing.lg,
+    flexWrap: 'wrap',
   },
   seedButton: {
     width: 100,
@@ -181,6 +237,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
+  seedButtonDisabled: {
+    opacity: 0.4,
+  },
   seedEmoji: {
     fontSize: 40,
   },
@@ -189,66 +248,44 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.sm,
   },
+  noCafeText: {
+    width: '100%',
+    textAlign: 'center',
+    marginTop: Spacing.lg,
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    lineHeight: 24,
+  },
   growArea: {
     alignItems: 'center',
+    width: '100%',
   },
   treeContainer: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   treeEmoji: {
     fontSize: 80,
   },
-  resultCard: {
+  resultContainer: {
     width: width - Spacing.lg * 2,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  resultTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: Spacing.md,
-  },
-  resultPlaceholder: {
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: Spacing.lg,
-  },
-  resultActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    gap: Spacing.xs,
-  },
-  actionText: {
-    color: Colors.surface,
-    fontSize: FontSize.sm,
-    fontWeight: '600',
   },
   retryButton: {
+    flexDirection: 'row',
     alignSelf: 'center',
-    paddingVertical: Spacing.sm,
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
   },
   retryText: {
     color: Colors.primary,
     fontSize: FontSize.md,
     fontWeight: '600',
+  },
+  noResultText: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });

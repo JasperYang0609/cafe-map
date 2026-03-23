@@ -1,36 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import * as Location from 'expo-location';
-import { Colors, Spacing, FontSize } from '../../src/constants/theme';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { DEFAULT_REGION } from '../../src/constants/config';
+import { useLocation } from '../../src/hooks/useLocation';
+import { useCafes } from '../../src/hooks/useCafes';
 
 export default function MapScreen() {
-  const [location, setLocation] = useState(DEFAULT_REGION);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const location = useLocation();
+  const { cafes, loading, fetchCafes } = useCafes();
+  const mapRef = useRef<MapView>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('需要位置權限才能顯示附近咖啡廳');
-        setLoading(false);
-        return;
-      }
+    if (!location.loading && !location.error) {
+      fetchCafes(location.latitude, location.longitude);
+    }
+  }, [location.loading, location.error, location.latitude, location.longitude]);
 
-      const loc = await Location.getCurrentPositionAsync({});
-      setLocation({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
+  const handleRecenter = () => {
+    if (mapRef.current && !location.loading) {
+      mapRef.current.animateToRegion({
+        latitude: location.latitude,
+        longitude: location.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       });
-      setLoading(false);
-    })();
-  }, []);
+    }
+  };
 
-  if (loading) {
+  if (location.loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -42,19 +43,59 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
-        initialRegion={location}
+        initialRegion={{
+          latitude: location.latitude,
+          longitude: location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
         showsUserLocation
-        showsMyLocationButton
+        showsMyLocationButton={false}
       >
-        {/* TODO: Add cafe markers from H3 cache */}
-        {/* TODO: Add tree markers for favorites */}
+        {cafes.map((cafe) => (
+          <Marker
+            key={cafe.place_id}
+            coordinate={{
+              latitude: cafe.latitude,
+              longitude: cafe.longitude,
+            }}
+            title={cafe.name}
+            description={`⭐ ${cafe.rating > 0 ? cafe.rating.toFixed(1) : '-'} · ${
+              cafe.distance
+                ? cafe.distance < 1000
+                  ? `${Math.round(cafe.distance)}m`
+                  : `${(cafe.distance / 1000).toFixed(1)}km`
+                : ''
+            }`}
+          >
+            {/* Custom marker - coffee cup */}
+            <View style={styles.markerContainer}>
+              <Text style={styles.markerEmoji}>☕</Text>
+            </View>
+          </Marker>
+        ))}
+
+        {/* TODO: Add tree markers for favorites (subscription) */}
       </MapView>
 
-      {errorMsg && (
+      {/* Recenter button */}
+      <TouchableOpacity style={styles.recenterButton} onPress={handleRecenter}>
+        <Ionicons name="locate-outline" size={22} color={Colors.primary} />
+      </TouchableOpacity>
+
+      {/* Cafe count badge */}
+      <View style={styles.countBadge}>
+        <Text style={styles.countText}>
+          {loading ? '搜尋中...' : `☕ ${cafes.length} 家`}
+        </Text>
+      </View>
+
+      {location.error && (
         <View style={styles.errorBanner}>
-          <Text style={styles.errorText}>{errorMsg}</Text>
+          <Text style={styles.errorText}>{location.error}</Text>
         </View>
       )}
     </View>
@@ -79,9 +120,57 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
   },
-  errorBanner: {
+  markerContainer: {
+    backgroundColor: Colors.surface,
+    borderRadius: 20,
+    padding: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  markerEmoji: {
+    fontSize: 18,
+  },
+  recenterButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: Spacing.lg,
+    backgroundColor: Colors.surface,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  countBadge: {
     position: 'absolute',
     top: 60,
+    alignSelf: 'center',
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  countText: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  errorBanner: {
+    position: 'absolute',
+    top: 100,
     left: Spacing.md,
     right: Spacing.md,
     backgroundColor: Colors.error,
