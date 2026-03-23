@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,21 +9,30 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { useFocusEffect } from 'expo-router';
+import { Colors, Spacing, FontSize } from '../../src/constants/theme';
 import CafeCard from '../../src/components/CafeCard';
-import { Cafe } from '../../src/types/cafe';
-
-// TODO: Replace with real data from Supabase
-const MOCK_HISTORY: (Cafe & { viewed_at: string })[] = [];
+import { getLocalHistory, clearLocalHistory, HistoryEntry } from '../../src/lib/localHistory';
 
 export default function HistoryScreen() {
-  const [history, setHistory] = useState(MOCK_HISTORY);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Refresh when tab is focused
+  useFocusEffect(
+    useCallback(() => {
+      loadHistory();
+    }, [])
+  );
+
+  const loadHistory = async () => {
+    const data = await getLocalHistory();
+    setHistory(data);
+  };
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // TODO: Fetch from Supabase
+    await loadHistory();
     setRefreshing(false);
   }, []);
 
@@ -36,13 +45,28 @@ export default function HistoryScreen() {
         {
           text: '清除',
           style: 'destructive',
-          onPress: () => {
-            // TODO: Clear from Supabase
+          onPress: async () => {
+            await clearLocalHistory();
             setHistory([]);
           },
         },
       ]
     );
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return '剛剛';
+    if (diffMins < 60) return `${diffMins} 分鐘前`;
+    if (diffHours < 24) return `${diffHours} 小時前`;
+    if (diffDays < 7) return `${diffDays} 天前`;
+    return date.toLocaleDateString('zh-TW');
   };
 
   return (
@@ -67,17 +91,15 @@ export default function HistoryScreen() {
       ) : (
         <FlatList
           data={history}
-          keyExtractor={(item) => `${item.id}-${item.viewed_at}`}
+          keyExtractor={(item, index) => `${item.cafe.place_id}-${index}`}
           renderItem={({ item }) => (
             <View style={styles.cardContainer}>
-              <Text style={styles.dateText}>
-                {new Date(item.viewed_at).toLocaleDateString('zh-TW')}
-              </Text>
+              <Text style={styles.dateText}>{formatDate(item.viewed_at)}</Text>
               <CafeCard
-                cafe={item}
+                cafe={item.cafe}
                 showFavoriteButton={true}
                 onFavorite={() => {
-                  // TODO: Handle favorite (check subscription)
+                  // TODO: Check subscription
                 }}
               />
             </View>
@@ -142,10 +164,9 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: Spacing.lg,
-    gap: Spacing.md,
   },
   cardContainer: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   dateText: {
     fontSize: FontSize.xs,

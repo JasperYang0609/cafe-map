@@ -14,6 +14,7 @@ import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/the
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
 import CafeCard from '../../src/components/CafeCard';
+import { recordLocalView } from '../../src/lib/localHistory';
 
 const { width } = Dimensions.get('window');
 
@@ -53,6 +54,11 @@ export default function ExploreScreen() {
     // Get random cafe
     const cafe = getRandomCafe();
     setResultCafe(cafe);
+
+    // Record to local history
+    if (cafe) {
+      recordLocalView(cafe);
+    }
 
     // Animation sequence
     Animated.sequence([
