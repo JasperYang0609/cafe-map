@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
@@ -22,7 +23,27 @@ export default function MapScreen() {
   const location = useLocation();
   const { cafes, loading, fetchCafes } = useCafes();
   const mapRef = useRef<MapView>(null);
+  const router = useRouter();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
+
+  const handleOpenDetail = (cafe: Cafe) => {
+    router.push({
+      pathname: '/cafe/[id]',
+      params: {
+        id: cafe.place_id,
+        place_id: cafe.place_id,
+        name: cafe.name,
+        address: cafe.address || '',
+        latitude: String(cafe.latitude),
+        longitude: String(cafe.longitude),
+        rating: String(cafe.rating),
+        total_ratings: String(cafe.total_ratings),
+        photo_references: JSON.stringify(cafe.photo_references || []),
+        is_open: cafe.is_open === null || cafe.is_open === undefined ? '' : String(cafe.is_open),
+        distance: cafe.distance !== undefined ? String(cafe.distance) : '',
+      },
+    });
+  };
 
   useEffect(() => {
     if (!location.loading && !location.error) {
@@ -120,7 +141,7 @@ export default function MapScreen() {
       {/* Bottom card when marker selected */}
       {selectedCafe && (
         <View style={styles.bottomCard}>
-          <View style={styles.cardRow}>
+          <TouchableOpacity style={styles.cardRow} onPress={() => handleOpenDetail(selectedCafe)} activeOpacity={0.8}>
           {/* Photo */}
           {selectedCafe.photo_reference ? (
             <Image
@@ -161,7 +182,7 @@ export default function MapScreen() {
               )}
             </View>
           </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.cardActions}>
             <TouchableOpacity

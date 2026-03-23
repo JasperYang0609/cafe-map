@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
 import { Cafe } from '../types/cafe';
 import { getPhotoUrl } from '../lib/places';
@@ -26,7 +27,27 @@ export default function CafeCard({
   isFavorited = false,
   showFavoriteButton = true,
 }: CafeCardProps) {
+  const router = useRouter();
   const photoUrl = cafe.photo_reference ? getPhotoUrl(cafe.photo_reference) : null;
+
+  const handleCardPress = () => {
+    router.push({
+      pathname: '/cafe/[id]',
+      params: {
+        id: cafe.place_id,
+        place_id: cafe.place_id,
+        name: cafe.name,
+        address: cafe.address || '',
+        latitude: String(cafe.latitude),
+        longitude: String(cafe.longitude),
+        rating: String(cafe.rating),
+        total_ratings: String(cafe.total_ratings),
+        photo_references: JSON.stringify(cafe.photo_references || []),
+        is_open: cafe.is_open === null || cafe.is_open === undefined ? '' : String(cafe.is_open),
+        distance: cafe.distance !== undefined ? String(cafe.distance) : '',
+      },
+    });
+  };
 
   const handleNavigate = async () => {
     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;
@@ -70,7 +91,7 @@ export default function CafeCard({
   };
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={handleCardPress} activeOpacity={0.9}>
       {/* Photo */}
       {photoUrl ? (
         <Image source={{ uri: photoUrl }} style={styles.photo} />
@@ -134,7 +155,7 @@ export default function CafeCard({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

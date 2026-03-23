@@ -8,10 +8,14 @@ export interface Cafe {
   rating: number;
   total_ratings: number;
   photo_reference?: string;
+  photo_references?: string[]; // multiple photos
   photo_url?: string;
   is_open?: boolean;
   price_level?: number;
-  distance?: number; // calculated client-side
+  distance?: number;
+  opening_hours?: string[];
+  phone?: string;
+  website?: string;
 }
 
 export interface CafeDetail extends Cafe {

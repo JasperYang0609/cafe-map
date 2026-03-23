@@ -62,6 +62,7 @@ export async function searchNearbyCafes(
       rating: place.rating || 0,
       total_ratings: place.userRatingCount || 0,
       photo_reference: place.photos?.[0]?.name || null,
+      photo_references: place.photos?.map((p: any) => p.name).slice(0, 5) || [],
       is_open: place.currentOpeningHours?.openNow ?? null,
       price_level: place.priceLevel ? parsePriceLevel(place.priceLevel) : null,
     }));
