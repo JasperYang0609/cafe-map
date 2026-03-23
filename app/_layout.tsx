@@ -20,12 +20,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="cafe/[id]"
               options={{
-                headerShown: true,
-                headerTitle: '',
-                headerBackTitle: ' ',
-                headerBackTitleVisible: false,
-                headerStyle: { backgroundColor: Colors.background },
-                headerTintColor: Colors.text,
+                headerShown: false,
               }}
             />
           </Stack>

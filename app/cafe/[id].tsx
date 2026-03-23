@@ -94,6 +94,11 @@ export default function CafeDetailScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Back button overlay */}
+      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <Ionicons name="arrow-back" size={24} color={Colors.text} />
+      </TouchableOpacity>
+
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Photo carousel */}
         {photos.length > 0 ? (
@@ -207,6 +212,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  backBtn: {
+    position: 'absolute',
+    top: 50,
+    left: 16,
+    zIndex: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   photo: {
     width: width,
