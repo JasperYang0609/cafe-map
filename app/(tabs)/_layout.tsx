@@ -49,6 +49,7 @@ export default function TabLayout() {
         name="favorites"
         options={{
           title: '收藏',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart-outline" size={size} color={color} />
           ),
