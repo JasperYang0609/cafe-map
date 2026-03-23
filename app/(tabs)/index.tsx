@@ -131,8 +131,7 @@ export default function ExploreScreen() {
         <View style={styles.titleRow}>
           <Text style={styles.title}>{t('explore.title')}</Text>
           <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilter(true)}>
-            <Ionicons name="options-outline" size={20} color={Colors.primary} />
-            <Text style={styles.filterText}>{t('explore.filter')}</Text>
+            <Ionicons name="options-outline" size={22} color={Colors.primary} />
           </TouchableOpacity>
         </View>
         <Text style={styles.subtitle}>{getSubtitle()}</Text>
@@ -236,13 +235,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.md },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
+  title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text, flex: 1, marginRight: Spacing.sm },
   filterButton: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full, borderWidth: 1, borderColor: Colors.primary,
+    width: 40, height: 40, borderRadius: 20,
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: Colors.primary,
   },
-  filterText: { fontSize: FontSize.sm, color: Colors.primary, fontWeight: '600' },
   subtitle: { fontSize: FontSize.md, color: Colors.textSecondary, marginTop: Spacing.xs },
   seedArea: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.lg },
   loadingContainer: { alignItems: 'center' },
