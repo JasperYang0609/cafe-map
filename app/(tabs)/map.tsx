@@ -93,10 +93,12 @@ export default function MapScreen() {
               latitude: cafe.latitude,
               longitude: cafe.longitude,
             }}
-            onPress={() => setSelectedCafe(cafe)}
+            onPress={(e) => {
+              e.stopPropagation();
+              setSelectedCafe(cafe);
+            }}
             tracksViewChanges={false}
             pinColor="#6F4E37"
-            title={cafe.name}
           />
         ))}
       </MapView>
