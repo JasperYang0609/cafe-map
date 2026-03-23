@@ -21,8 +21,8 @@ export default function RootLayout() {
               name="cafe/[id]"
               options={{
                 headerShown: true,
-                headerTitle: '咖啡廳詳情',
-                headerBackTitle: '返回',
+                headerTitle: '',
+                headerBackTitle: '',
                 headerStyle: { backgroundColor: Colors.background },
                 headerTintColor: Colors.text,
               }}

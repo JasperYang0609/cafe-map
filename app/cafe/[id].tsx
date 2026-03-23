@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useI18n } from '../../src/context/I18nContext';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { getPhotoUrl } from '../../src/lib/places';
 
@@ -21,6 +22,7 @@ const { width } = Dimensions.get('window');
 export default function CafeDetailScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const { t } = useI18n();
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   // Parse cafe data from params
@@ -59,18 +61,18 @@ export default function CafeDetailScreen() {
 
   const handleFavorite = () => {
     Alert.alert(
-      '培養你的咖啡森林 🌿',
-      '訂閱後每收藏一家咖啡廳，地圖上就會長出一棵樹，去越多店森林越茂密！',
+      t('ad.forest_title'),
+      t('ad.forest_msg'),
       [
-        { text: '之後再說', style: 'cancel' },
-        { text: '了解訂閱方案', onPress: () => {} },
+        { text: t('ad.later'), style: 'cancel' },
+        { text: t('ad.learn_more'), onPress: () => {} },
       ]
     );
   };
 
   const handleShare = async () => {
     // TODO: Share functionality
-    Alert.alert('分享', '分享功能即將推出！');
+    Alert.alert(t('detail.share'), t('common.share_coming'));
   };
 
   const renderStars = (rating: number) => {
@@ -128,7 +130,7 @@ export default function CafeDetailScreen() {
         ) : (
           <View style={styles.photoPlaceholder}>
             <Ionicons name="cafe-outline" size={60} color={Colors.textSecondary} />
-            <Text style={styles.noPhotoText}>暫無照片</Text>
+            <Text style={styles.noPhotoText}>{t('detail.no_photo')}</Text>
           </View>
         )}
 
@@ -142,7 +144,7 @@ export default function CafeDetailScreen() {
             <Text style={styles.ratingText}>
               {cafe.rating > 0 ? cafe.rating.toFixed(1) : '-'}
             </Text>
-            <Text style={styles.reviewCount}>({cafe.total_ratings} 則評論)</Text>
+            <Text style={styles.reviewCount}>({t('detail.reviews', { count: cafe.total_ratings })})</Text>
           </View>
 
           {/* Status + Distance */}
@@ -176,7 +178,7 @@ export default function CafeDetailScreen() {
             Linking.openURL(`https://www.google.com/maps/place/?q=place_id:${cafe.place_id}`);
           }}>
             <Ionicons name="open-outline" size={20} color={Colors.primary} />
-            <Text style={[styles.detailText, { color: Colors.primary }]}>在 Google Maps 查看更多</Text>
+            <Text style={[styles.detailText, { color: Colors.primary }]}>{t('detail.view_on_google')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -185,12 +187,12 @@ export default function CafeDetailScreen() {
       <View style={styles.bottomBar}>
         <TouchableOpacity style={styles.navButton} onPress={handleNavigate}>
           <Ionicons name="navigate" size={20} color={Colors.surface} />
-          <Text style={styles.navText}>導航</Text>
+          <Text style={styles.navText}>{t('detail.navigate')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.favButton} onPress={handleFavorite}>
           <Ionicons name="heart-outline" size={20} color={Colors.primary} />
-          <Text style={styles.favText}>培養咖啡森林</Text>
+          <Text style={styles.favText}>{t('detail.forest')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.shareButton} onPress={handleShare}>

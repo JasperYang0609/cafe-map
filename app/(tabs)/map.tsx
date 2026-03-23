@@ -91,7 +91,7 @@ export default function MapScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>定位中...</Text>
+        <Text style={styles.loadingText}>{t('map.locating')}</Text>
       </View>
     );
   }
@@ -155,7 +155,7 @@ export default function MapScreen() {
       {/* Cafe count badge */}
       <View style={styles.countBadge}>
         <Text style={styles.countText}>
-          {loading ? t('map.searching') : `☕ ${cafes.length} 家`}
+          {loading ? t('map.searching') : t('map.count', { count: cafes.length })}
         </Text>
       </View>
 
@@ -180,7 +180,7 @@ export default function MapScreen() {
               {selectedCafe.is_open !== null && selectedCafe.is_open !== undefined && (
                 <View style={[styles.statusBadge, !selectedCafe.is_open && styles.closedBadge]}>
                   <Text style={[styles.statusText, !selectedCafe.is_open && styles.closedText]}>
-                    {selectedCafe.is_open ? '營業中' : '休息中'}
+                    {selectedCafe.is_open ? t('detail.open') : t('detail.closed')}
                   </Text>
                 </View>
               )}
