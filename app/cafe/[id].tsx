@@ -39,9 +39,13 @@ export default function CafeDetailScreen() {
     distance: params.distance ? parseFloat(params.distance as string) : undefined,
   };
 
-  const photos = cafe.photo_references.length > 0
-    ? cafe.photo_references.map((ref: string) => getPhotoUrl(ref, 600))
+  // Try multiple photos first, fallback to single photo_reference
+  const photoRefs = cafe.photo_references.length > 0
+    ? cafe.photo_references
+    : params.photo_reference
+    ? [params.photo_reference as string]
     : [];
+  const photos = photoRefs.map((ref: string) => getPhotoUrl(ref, 600));
 
   const handleNavigate = async () => {
     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;

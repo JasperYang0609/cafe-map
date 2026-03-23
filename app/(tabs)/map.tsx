@@ -38,6 +38,7 @@ export default function MapScreen() {
         longitude: String(cafe.longitude),
         rating: String(cafe.rating),
         total_ratings: String(cafe.total_ratings),
+        photo_reference: cafe.photo_reference || '',
         photo_references: JSON.stringify(cafe.photo_references || []),
         is_open: cafe.is_open === null || cafe.is_open === undefined ? '' : String(cafe.is_open),
         distance: cafe.distance !== undefined ? String(cafe.distance) : '',
