@@ -1,7 +1,7 @@
-import * as FileSystem from 'expo-file-system';
+import { File, Paths } from 'expo-file-system/next';
 import { Cafe } from '../types/cafe';
 
-const HISTORY_FILE = `${FileSystem.documentDirectory}search_history.json`;
+const HISTORY_FILE = new File(Paths.document, 'search_history.json');
 const MAX_HISTORY = 100;
 
 export interface HistoryEntry {
@@ -28,7 +28,7 @@ export async function recordLocalView(cafe: Cafe): Promise<void> {
     // Keep max entries
     const trimmed = filtered.slice(0, MAX_HISTORY);
 
-    await FileSystem.writeAsStringAsync(HISTORY_FILE, JSON.stringify(trimmed));
+    HISTORY_FILE.write(JSON.stringify(trimmed));
   } catch (error) {
     console.error('[LocalHistory] Record error:', error);
   }
@@ -39,10 +39,8 @@ export async function recordLocalView(cafe: Cafe): Promise<void> {
  */
 export async function getLocalHistory(): Promise<HistoryEntry[]> {
   try {
-    const info = await FileSystem.getInfoAsync(HISTORY_FILE);
-    if (!info.exists) return [];
-
-    const data = await FileSystem.readAsStringAsync(HISTORY_FILE);
+    if (!HISTORY_FILE.exists) return [];
+    const data = HISTORY_FILE.text();
     return JSON.parse(data) as HistoryEntry[];
   } catch {
     return [];
@@ -54,9 +52,8 @@ export async function getLocalHistory(): Promise<HistoryEntry[]> {
  */
 export async function clearLocalHistory(): Promise<void> {
   try {
-    const info = await FileSystem.getInfoAsync(HISTORY_FILE);
-    if (info.exists) {
-      await FileSystem.deleteAsync(HISTORY_FILE);
+    if (HISTORY_FILE.exists) {
+      HISTORY_FILE.delete();
     }
   } catch (error) {
     console.error('[LocalHistory] Clear error:', error);
