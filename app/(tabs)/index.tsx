@@ -39,7 +39,7 @@ export default function ExploreScreen() {
 
   const filteredCafes = cafes.filter((cafe) => {
     if (filters.minRating > 0 && cafe.rating < filters.minRating) return false;
-    if (filters.openNow && cafe.is_open === false) return false;
+    if (filters.openNow && cafe.is_open !== true) return false;
     if (cafe.distance && cafe.distance > filters.maxDistance * 1000) return false;
     return true;
   });
