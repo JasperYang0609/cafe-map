@@ -12,7 +12,7 @@ export default function LanguagePicker() {
     <>
       <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
         <Text style={styles.flag}>{currentLang.flag}</Text>
-        <Text style={styles.label}>{currentLang.label.length > 4 ? currentLang.label.slice(0, 4) : currentLang.label}</Text>
+        <Text style={styles.label}>{currentLang.label}</Text>
       </TouchableOpacity>
 
       <Modal visible={visible} animationType="fade" transparent>
