@@ -127,6 +127,10 @@ export default function ProfileScreen() {
       <ScrollView>
         <View style={styles.header}>
           <Text style={styles.title}>我的</Text>
+          <TouchableOpacity style={styles.langButton}>
+            <Text style={styles.langFlag}>🇹🇼</Text>
+            <Text style={styles.langText}>中文</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Guest card */}
@@ -155,17 +159,8 @@ export default function ProfileScreen() {
 
         {/* Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>設定</Text>
-
           <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="language-outline" size={22} color={Colors.text} />
-            <Text style={styles.menuText}>語言</Text>
-            <Text style={styles.menuValue}>繁體中文</Text>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="star-outline" size={22} color={Colors.text} />
+            <Ionicons name="star-outline" size={22} color={Colors.primary} />
             <Text style={styles.menuText}>訂閱方案</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
           </TouchableOpacity>
@@ -175,14 +170,9 @@ export default function ProfileScreen() {
             <Text style={styles.menuText}>隱私權政策</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="information-circle-outline" size={22} color={Colors.text} />
-            <Text style={styles.menuText}>關於</Text>
-            <Text style={styles.menuValue}>v0.1.0</Text>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
-          </TouchableOpacity>
         </View>
+
+        <Text style={styles.versionText}>v0.1.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -194,14 +184,42 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
+    paddingTop: Spacing.xl + 20,
     paddingBottom: Spacing.md,
   },
   title: {
     fontSize: FontSize.xxl,
     fontWeight: '700',
     color: Colors.text,
+  },
+  langButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  langFlag: {
+    fontSize: 16,
+  },
+  langText: {
+    fontSize: FontSize.sm,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  versionText: {
+    textAlign: 'center',
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    paddingVertical: Spacing.lg,
   },
   // Guest card
   guestCard: {
@@ -263,19 +281,14 @@ const styles = StyleSheet.create({
   // Settings section
   section: {
     margin: Spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-    textTransform: 'uppercase',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.md,
-    backgroundColor: Colors.surface,
+    padding: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
