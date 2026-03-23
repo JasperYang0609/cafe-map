@@ -1,10 +1,11 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from '../src/constants/theme';
+import { HistoryProvider } from '../src/context/HistoryContext';
 
 export default function RootLayout() {
   return (
-    <>
+    <HistoryProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -23,6 +24,6 @@ export default function RootLayout() {
           }}
         />
       </Stack>
-    </>
+    </HistoryProvider>
   );
 }

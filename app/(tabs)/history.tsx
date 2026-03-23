@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,35 +6,14 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
-  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
 import { Colors, Spacing, FontSize } from '../../src/constants/theme';
 import CafeCard from '../../src/components/CafeCard';
-import { getLocalHistory, clearLocalHistory, HistoryEntry } from '../../src/lib/localHistory';
+import { useHistory } from '../../src/context/HistoryContext';
 
 export default function HistoryScreen() {
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
-
-  // Refresh when tab is focused
-  useFocusEffect(
-    useCallback(() => {
-      loadHistory();
-    }, [])
-  );
-
-  const loadHistory = async () => {
-    const data = await getLocalHistory();
-    setHistory(data);
-  };
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadHistory();
-    setRefreshing(false);
-  }, []);
+  const { history, clearHistory } = useHistory();
 
   const handleClear = () => {
     Alert.alert(
@@ -45,10 +24,7 @@ export default function HistoryScreen() {
         {
           text: '清除',
           style: 'destructive',
-          onPress: async () => {
-            await clearLocalHistory();
-            setHistory([]);
-          },
+          onPress: clearHistory,
         },
       ]
     );
@@ -105,13 +81,6 @@ export default function HistoryScreen() {
             </View>
           )}
           contentContainerStyle={styles.list}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={Colors.primary}
-            />
-          }
         />
       )}
     </SafeAreaView>

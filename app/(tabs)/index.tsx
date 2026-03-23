@@ -14,7 +14,7 @@ import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/the
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
 import CafeCard from '../../src/components/CafeCard';
-import { recordLocalView } from '../../src/lib/localHistory';
+import { useHistory } from '../../src/context/HistoryContext';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +27,7 @@ const SEEDS = [
 export default function ExploreScreen() {
   const location = useLocation();
   const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
+  const { addToHistory } = useHistory();
 
   const [selectedSeed, setSelectedSeed] = useState<number | null>(null);
   const [isGrowing, setIsGrowing] = useState(false);
@@ -55,9 +56,9 @@ export default function ExploreScreen() {
     const cafe = getRandomCafe();
     setResultCafe(cafe);
 
-    // Record to local history
+    // Record to history
     if (cafe) {
-      recordLocalView(cafe);
+      addToHistory(cafe);
     }
 
     // Animation sequence
