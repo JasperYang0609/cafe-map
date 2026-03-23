@@ -35,8 +35,9 @@ export async function getCafesWithCache(
   console.log(`[Cache] MISS for ${gridKey}, fetching from API...`);
   const cafes = await searchNearbyCafes(latitude, longitude);
 
-  // Save to cache (fire and forget)
-  saveCafeCache(gridKey, cafes).catch(console.error);
+  // Save to cache without is_open (it's a point-in-time snapshot, becomes stale)
+  const cafesForCache = cafes.map(({ is_open, ...rest }) => rest);
+  saveCafeCache(gridKey, cafesForCache).catch(console.error);
 
   return cafes;
 }
