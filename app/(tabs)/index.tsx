@@ -16,6 +16,7 @@ import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
 import CafeCard from '../../src/components/CafeCard';
 import { useHistory } from '../../src/context/HistoryContext';
+import { showRewardedAd, shouldShowAd } from '../../src/lib/ads';
 
 const { width } = Dimensions.get('window');
 
@@ -34,6 +35,8 @@ export default function ExploreScreen() {
   const [isGrowing, setIsGrowing] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [resultCafe, setResultCafe] = useState<any>(null);
+  const [isFirstSeed, setIsFirstSeed] = useState(true);
+  const [adLoading, setAdLoading] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -89,11 +92,20 @@ export default function ExploreScreen() {
     });
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    // Show ad before resetting (except first seed is free)
+    if (shouldShowAd()) {
+      setAdLoading(true);
+      const adWatched = await showRewardedAd();
+      setAdLoading(false);
+      if (!adWatched) return; // Ad cancelled
+    }
+
     setSelectedSeed(null);
     setIsGrowing(false);
     setShowResult(false);
     setResultCafe(null);
+    setIsFirstSeed(false);
     scaleAnim.setValue(1);
     fadeAnim.setValue(0);
     treeScale.setValue(0);
@@ -175,9 +187,28 @@ export default function ExploreScreen() {
                     );
                   }}
                 />
-                <TouchableOpacity style={styles.retryButton} onPress={handleReset}>
-                  <Ionicons name="refresh-outline" size={20} color={Colors.primary} />
-                  <Text style={styles.retryText}>再種一顆</Text>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={handleReset}
+                  disabled={adLoading}
+                >
+                  {adLoading ? (
+                    <>
+                      <ActivityIndicator size="small" color={Colors.primary} />
+                      <Text style={styles.retryText}>載入中...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Ionicons name="refresh-outline" size={20} color={Colors.primary} />
+                      <Text style={styles.retryText}>再種一顆</Text>
+                      {shouldShowAd() && (
+                        <View style={styles.adBadge}>
+                          <Ionicons name="play-circle-outline" size={14} color={Colors.textSecondary} />
+                          <Text style={styles.adBadgeText}>看廣告</Text>
+                        </View>
+                      )}
+                    </>
+                  )}
                 </TouchableOpacity>
               </Animated.View>
             )}
@@ -296,6 +327,20 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: FontSize.md,
     fontWeight: '600',
+  },
+  adBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: Colors.border,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginLeft: 4,
+  },
+  adBadgeText: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
   },
   noResultText: {
     fontSize: FontSize.md,
