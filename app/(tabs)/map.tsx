@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { DEFAULT_REGION } from '../../src/constants/config';
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
+import MapCallout from '../../src/components/MapCallout';
 
 export default function MapScreen() {
   const location = useLocation();
@@ -62,19 +63,16 @@ export default function MapScreen() {
               latitude: cafe.latitude,
               longitude: cafe.longitude,
             }}
-            title={cafe.name}
-            description={`⭐ ${cafe.rating > 0 ? cafe.rating.toFixed(1) : '-'} · ${
-              cafe.distance
-                ? cafe.distance < 1000
-                  ? `${Math.round(cafe.distance)}m`
-                  : `${(cafe.distance / 1000).toFixed(1)}km`
-                : ''
-            }`}
           >
-            {/* Custom marker - coffee cup */}
             <View style={styles.markerContainer}>
               <Text style={styles.markerEmoji}>☕</Text>
             </View>
+            <MapCallout
+              cafe={cafe}
+              onFavorite={() => {
+                // TODO: Check subscription and add favorite
+              }}
+            />
           </Marker>
         ))}
 
