@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Linking,
+  Alert,
+  Platform,
+} from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
-import { DEFAULT_REGION } from '../../src/constants/config';
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
-import MapCallout from '../../src/components/MapCallout';
+import { Cafe } from '../../src/types/cafe';
 
 export default function MapScreen() {
   const location = useLocation();
   const { cafes, loading, fetchCafes } = useCafes();
   const mapRef = useRef<MapView>(null);
-  const router = useRouter();
+  const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
 
   useEffect(() => {
     if (!location.loading && !location.error) {
@@ -30,6 +37,28 @@ export default function MapScreen() {
         longitudeDelta: 0.01,
       });
     }
+  };
+
+  const handleNavigate = async (cafe: Cafe) => {
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;
+    const canOpenGoogle = await Linking.canOpenURL('comgooglemaps://');
+
+    if (canOpenGoogle) {
+      Linking.openURL(`comgooglemaps://?daddr=${cafe.latitude},${cafe.longitude}&directionsmode=driving`);
+    } else {
+      Linking.openURL(googleMapsUrl);
+    }
+  };
+
+  const handleFavorite = () => {
+    Alert.alert(
+      '訂閱後可收藏 ☕',
+      '訂閱後即可收藏咖啡廳，收藏的店會在地圖上長成一棵樹 🌳',
+      [
+        { text: '之後再說', style: 'cancel' },
+        { text: '了解訂閱方案', onPress: () => { /* TODO: navigate to subscription */ } },
+      ]
+    );
   };
 
   if (location.loading) {
@@ -50,11 +79,12 @@ export default function MapScreen() {
         initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
         }}
         showsUserLocation
         showsMyLocationButton={false}
+        onPress={() => setSelectedCafe(null)}
       >
         {cafes.map((cafe) => (
           <Marker
@@ -63,20 +93,13 @@ export default function MapScreen() {
               latitude: cafe.latitude,
               longitude: cafe.longitude,
             }}
+            onPress={() => setSelectedCafe(cafe)}
           >
             <View style={styles.markerContainer}>
               <Text style={styles.markerEmoji}>☕</Text>
             </View>
-            <MapCallout
-              cafe={cafe}
-              onFavorite={() => {
-                // TODO: Check subscription and add favorite
-              }}
-            />
           </Marker>
         ))}
-
-        {/* TODO: Add tree markers for favorites (subscription) */}
       </MapView>
 
       {/* Recenter button */}
@@ -90,6 +113,59 @@ export default function MapScreen() {
           {loading ? '搜尋中...' : `☕ ${cafes.length} 家`}
         </Text>
       </View>
+
+      {/* Bottom card when marker selected */}
+      {selectedCafe && (
+        <View style={styles.bottomCard}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardTitleRow}>
+              <Text style={styles.cardName} numberOfLines={1}>{selectedCafe.name}</Text>
+              {selectedCafe.is_open !== null && selectedCafe.is_open !== undefined && (
+                <View style={[styles.statusBadge, !selectedCafe.is_open && styles.closedBadge]}>
+                  <Text style={[styles.statusText, !selectedCafe.is_open && styles.closedText]}>
+                    {selectedCafe.is_open ? '營業中' : '休息中'}
+                  </Text>
+                </View>
+              )}
+            </View>
+            {selectedCafe.address ? (
+              <Text style={styles.cardAddress} numberOfLines={1}>{selectedCafe.address}</Text>
+            ) : null}
+            <View style={styles.cardInfoRow}>
+              <Ionicons name="star" size={14} color={Colors.star} />
+              <Text style={styles.cardRating}>
+                {selectedCafe.rating > 0 ? selectedCafe.rating.toFixed(1) : '-'}
+              </Text>
+              <Text style={styles.cardReviews}>({selectedCafe.total_ratings})</Text>
+              {selectedCafe.distance !== undefined && (
+                <Text style={styles.cardDistance}>
+                  · {selectedCafe.distance < 1000
+                    ? `${Math.round(selectedCafe.distance)}m`
+                    : `${(selectedCafe.distance / 1000).toFixed(1)}km`}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.cardActions}>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => handleNavigate(selectedCafe)}
+            >
+              <Ionicons name="navigate" size={18} color={Colors.surface} />
+              <Text style={styles.navText}>導航</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.favButton}
+              onPress={handleFavorite}
+            >
+              <Ionicons name="heart-outline" size={18} color={Colors.primary} />
+              <Text style={styles.favText}>訂閱後可收藏</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {location.error && (
         <View style={styles.errorBanner}>
@@ -133,7 +209,7 @@ const styles = StyleSheet.create({
   },
   recenterButton: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 200,
     right: Spacing.lg,
     backgroundColor: Colors.surface,
     width: 44,
@@ -165,6 +241,112 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     fontWeight: '600',
     color: Colors.text,
+  },
+  // Bottom card
+  bottomCard: {
+    position: 'absolute',
+    bottom: 30,
+    left: Spacing.md,
+    right: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  cardHeader: {
+    marginBottom: Spacing.md,
+  },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  cardName: {
+    flex: 1,
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  cardAddress: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  cardInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: Spacing.xs,
+  },
+  cardRating: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  cardReviews: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+  },
+  cardDistance: {
+    fontSize: FontSize.xs,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  statusBadge: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  closedBadge: {
+    backgroundColor: '#FFEBEE',
+  },
+  statusText: {
+    fontSize: 11,
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  closedText: {
+    color: '#C62828',
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  navButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.sm,
+  },
+  navText: {
+    color: Colors.surface,
+    fontSize: FontSize.md,
+    fontWeight: '600',
+  },
+  favButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.sm,
+  },
+  favText: {
+    color: Colors.primary,
+    fontSize: FontSize.sm,
+    fontWeight: '600',
   },
   errorBanner: {
     position: 'absolute',

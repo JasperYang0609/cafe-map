@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -164,7 +165,14 @@ export default function ExploreScreen() {
                   cafe={resultCafe}
                   showFavoriteButton={true}
                   onFavorite={() => {
-                    // TODO: Check subscription and add favorite
+                    Alert.alert(
+                      '訂閱後可收藏 ☕',
+                      '訂閱後即可收藏咖啡廳，收藏的店會在地圖上長成一棵樹 🌳',
+                      [
+                        { text: '之後再說', style: 'cancel' },
+                        { text: '了解訂閱方案', onPress: () => {} },
+                      ]
+                    );
                   }}
                 />
                 <TouchableOpacity style={styles.retryButton} onPress={handleReset}>
