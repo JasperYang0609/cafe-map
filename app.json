@@ -19,7 +19,8 @@
         "googleMapsApiKey": "AIzaSyCtAEBCtImo5zDXYj0ZS5FevJcP9be70l8"
       },
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "我們需要你的位置來顯示附近的咖啡廳"
+        "NSLocationWhenInUseUsageDescription": "我們需要你的位置來顯示附近的咖啡廳",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -36,8 +37,6 @@
         }
       },
       "permissions": [
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ]
