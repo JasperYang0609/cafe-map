@@ -4,12 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { useAuth } from '../../src/context/AuthContext';
 
 export default function FavoritesScreen() {
   const router = useRouter();
-  // TODO: Check if user is logged in and subscribed
-  const isLoggedIn = false;
-  const isSubscribed = false;
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
+  const isSubscribed = false; // TODO: Check subscription status
 
   return (
     <SafeAreaView style={styles.container}>

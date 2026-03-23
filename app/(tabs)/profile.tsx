@@ -13,11 +13,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { useAuth } from '../../src/context/AuthContext';
 
 type AuthMode = 'login' | 'register';
 
 export default function ProfileScreen() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, signIn, signUp, signOut } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,14 +35,28 @@ export default function ProfileScreen() {
     }
 
     setLoading(true);
-    // TODO: Connect to Supabase Auth
-    setTimeout(() => {
-      setLoading(false);
-      Alert.alert(
-        authMode === 'login' ? '登入功能開發中' : '註冊功能開發中',
-        '帳號系統即將上線！'
-      );
-    }, 1000);
+    const result = authMode === 'login'
+      ? await signIn(email, password)
+      : await signUp(email, password);
+    setLoading(false);
+
+    if (result.error) {
+      Alert.alert('錯誤', result.error);
+    } else {
+      if (authMode === 'register') {
+        Alert.alert('註冊成功 ☕', '請查看 Email 確認信件後登入');
+      }
+      setAuthMode(null);
+      setEmail('');
+      setPassword('');
+    }
+  };
+
+  const handleSignOut = () => {
+    Alert.alert('登出', '確定要登出嗎？', [
+      { text: '取消', style: 'cancel' },
+      { text: '登出', style: 'destructive', onPress: signOut },
+    ]);
   };
 
   // Auth form
@@ -121,6 +136,52 @@ export default function ProfileScreen() {
     );
   }
 
+  // Logged in profile
+  if (user) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView>
+          <View style={styles.header}>
+            <Text style={styles.title}>我的</Text>
+            <TouchableOpacity style={styles.langButton}>
+              <Text style={styles.langFlag}>🇹🇼</Text>
+              <Text style={styles.langText}>中文</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.guestCard}>
+            <View style={styles.avatarCircle}>
+              <Ionicons name="person" size={40} color={Colors.primary} />
+            </View>
+            <Text style={styles.guestTitle}>{user.email}</Text>
+            <Text style={styles.guestText}>歡迎回來 ☕</Text>
+          </View>
+
+          <View style={styles.section}>
+            <TouchableOpacity style={styles.menuItem}>
+              <Ionicons name="star-outline" size={22} color={Colors.primary} />
+              <Text style={styles.menuText}>訂閱方案</Text>
+              <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+              <Ionicons name="shield-checkmark-outline" size={22} color={Colors.text} />
+              <Text style={styles.menuText}>隱私權政策</Text>
+              <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.menuItem, styles.logoutItem]} onPress={handleSignOut}>
+              <Ionicons name="log-out-outline" size={22} color={Colors.error} />
+              <Text style={[styles.menuText, { color: Colors.error }]}>登出</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.versionText}>v0.1.0</Text>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   // Guest profile
   return (
     <SafeAreaView style={styles.container}>
@@ -133,7 +194,6 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Guest card */}
         <View style={styles.guestCard}>
           <View style={styles.avatarCircle}>
             <Ionicons name="person" size={40} color={Colors.textSecondary} />
@@ -157,7 +217,6 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Settings */}
         <View style={styles.section}>
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="star-outline" size={22} color={Colors.primary} />
@@ -221,7 +280,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     paddingVertical: Spacing.lg,
   },
-  // Guest card
+  // Guest/User card
   guestCard: {
     alignItems: 'center',
     padding: Spacing.xl,
@@ -253,6 +312,7 @@ const styles = StyleSheet.create({
   authButtons: {
     flexDirection: 'row',
     gap: Spacing.md,
+    width: '100%',
   },
   loginBtn: {
     flex: 1,
@@ -279,7 +339,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontWeight: '600',
   },
-  // Settings section
+  // Section
   section: {
     margin: Spacing.lg,
     backgroundColor: Colors.surface,
@@ -292,6 +352,9 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  logoutItem: {
+    borderBottomWidth: 0,
   },
   menuText: {
     flex: 1,

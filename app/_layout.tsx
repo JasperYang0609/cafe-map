@@ -2,28 +2,31 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Colors } from '../src/constants/theme';
 import { HistoryProvider } from '../src/context/HistoryContext';
+import { AuthProvider } from '../src/context/AuthContext';
 
 export default function RootLayout() {
   return (
-    <HistoryProvider>
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="cafe/[id]"
-          options={{
-            headerShown: true,
-            headerTitle: '咖啡廳詳情',
-            headerBackTitle: '返回',
-            headerStyle: { backgroundColor: Colors.background },
-            headerTintColor: Colors.text,
+    <AuthProvider>
+      <HistoryProvider>
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
           }}
-        />
-      </Stack>
-    </HistoryProvider>
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="cafe/[id]"
+            options={{
+              headerShown: true,
+              headerTitle: '咖啡廳詳情',
+              headerBackTitle: '返回',
+              headerStyle: { backgroundColor: Colors.background },
+              headerTintColor: Colors.text,
+            }}
+          />
+        </Stack>
+      </HistoryProvider>
+    </AuthProvider>
   );
 }
