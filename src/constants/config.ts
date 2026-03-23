@@ -1,5 +1,5 @@
 // Google Maps API
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyCtAEBCtImo5zDXYj0ZS5FevJcP9be70l8';
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyCtAEBCtlmo5zDXYj0ZS5FevJcP9be70I8';
 
 // Map defaults (Taipei)
 export const DEFAULT_REGION = {

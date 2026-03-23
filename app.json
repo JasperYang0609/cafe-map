@@ -16,7 +16,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.ansai.cafemap",
       "config": {
-        "googleMapsApiKey": "AIzaSyCtAEBCtImo5zDXYj0ZS5FevJcP9be70l8"
+        "googleMapsApiKey": "AIzaSyCtAEBCtlmo5zDXYj0ZS5FevJcP9be70I8"
       },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "我們需要你的位置來顯示附近的咖啡廳",
@@ -33,7 +33,7 @@
       },
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCtAEBCtImo5zDXYj0ZS5FevJcP9be70l8"
+          "apiKey": "AIzaSyCtAEBCtlmo5zDXYj0ZS5FevJcP9be70I8"
         }
       },
       "permissions": [
