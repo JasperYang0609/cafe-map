@@ -46,7 +46,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase
         .from('favorites')
         .select(`
-          cafe_id,
+          cafe_id, garden_emoji, garden_item_id,
           cafes (
             id, place_id, name, address, latitude, longitude,
             rating, total_ratings, photo_reference, price_level
@@ -58,7 +58,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       if (!error && data) {
         const cafes = data
           .filter((d: any) => d.cafes)
-          .map((d: any) => d.cafes as Cafe);
+          .map((d: any) => ({
+            ...d.cafes,
+            gardenEmoji: d.garden_emoji || '🌳',
+            gardenItemId: d.garden_item_id || 'tree',
+          } as Cafe));
         setFavorites(cafes);
       }
     } catch (err) {
@@ -111,10 +115,12 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (cafeData) {
-        // Insert favorite
+        // Insert favorite with garden item
         await supabase.from('favorites').upsert({
           user_id: user.id,
           cafe_id: cafeData.id,
+          garden_emoji: gardenItem.emoji,
+          garden_item_id: gardenItem.id,
         }, { onConflict: 'user_id,cafe_id' });
       }
     } catch (err) {

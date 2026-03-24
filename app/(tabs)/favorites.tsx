@@ -107,7 +107,7 @@ export default function FavoritesScreen() {
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
               onSelect={() => isSubscribed && setSelectedCafe(cafe)}
               onPress={() => isSubscribed && setSelectedCafe(cafe)}
-              tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
+              tracksViewChanges={true}
             >
               <View style={[
                 styles.treeMarker,
