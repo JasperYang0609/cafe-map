@@ -8,10 +8,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Linking,
-  Alert,
-  Platform,
+    Platform,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
@@ -81,10 +80,7 @@ export default function MapScreen() {
     }
   };
 
-  const handleFavorite = async () => {
-    // TODO: Save to favorites
-    Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
-  };
+
 
   if (location.loading) {
     return (

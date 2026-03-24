@@ -61,10 +61,7 @@ export default function CafeDetailScreen() {
     }
   };
 
-  const handleFavorite = () => {
-    // TODO: Save to favorites
-    Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
-  };
+
 
   const handleShare = async () => {
     // TODO: Share functionality
@@ -153,7 +150,7 @@ export default function CafeDetailScreen() {
             {cafe.is_open !== null && (
               <View style={[styles.statusBadge, !cafe.is_open && styles.closedBadge]}>
                 <Text style={[styles.statusText, !cafe.is_open && styles.closedText]}>
-                  {cafe.is_open ? '營業中' : '休息中'}
+                  {cafe.is_open ? t('detail.open') : t('detail.closed')}
                 </Text>
               </View>
             )}
@@ -379,22 +376,6 @@ const styles = StyleSheet.create({
   navText: {
     color: Colors.surface,
     fontSize: FontSize.md,
-    fontWeight: '600',
-  },
-  favButton: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.sm,
-  },
-  favText: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
     fontWeight: '600',
   },
   shareButton: {

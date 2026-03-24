@@ -65,10 +65,6 @@ export default function CafeCard({
     }
   };
 
-  const handleCall = () => {
-    // TODO: Implement when we have phone data from Place Details
-  };
-
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);

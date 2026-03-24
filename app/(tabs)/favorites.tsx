@@ -1,4 +1,3 @@
-import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import React, { useState } from 'react';
 import {
   View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking,
