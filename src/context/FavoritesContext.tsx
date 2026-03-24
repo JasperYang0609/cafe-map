@@ -13,7 +13,6 @@ interface FavoritesContextType {
   loading: boolean;
   lastRolled: { emoji: string; rarity: string } | null;
   clearLastRolled: () => void;
-  rerollFavorite: (placeId: string) => void;
 }
 
 const FavoritesContext = createContext<FavoritesContextType>({
@@ -25,7 +24,6 @@ const FavoritesContext = createContext<FavoritesContextType>({
   loading: false,
   lastRolled: null,
   clearLastRolled: () => {},
-  rerollFavorite: () => {},
 });
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
