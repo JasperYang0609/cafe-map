@@ -50,10 +50,11 @@ export default function ExploreScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const treeScale = useRef(new Animated.Value(0)).current;
 
+  // 日曬 Natural / 水洗 Washed / 蜜處理 Honey — no labels, let 跑咖仔 figure it out
   const SEEDS = [
-    { id: 1, emoji: '🫘', label: t('explore.seed_dark') },
-    { id: 2, emoji: '🌿', label: t('explore.seed_light') },
-    { id: 3, emoji: '🍫', label: t('explore.seed_special') },
+    { id: 1, emoji: '☀️' },
+    { id: 2, emoji: '💧' },
+    { id: 3, emoji: '🍯' },
   ];
 
   useEffect(() => {
@@ -173,7 +174,6 @@ export default function ExploreScreen() {
                 disabled={filteredCafes.length === 0}
               >
                 <Text style={styles.seedEmoji}>{seed.emoji}</Text>
-                <Text style={styles.seedLabel}>{seed.label}</Text>
               </TouchableOpacity>
             ))}
             {filteredCafes.length === 0 && !cafesLoading && (
