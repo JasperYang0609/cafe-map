@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/context/I18nContext';
 import LanguagePicker from '../../src/components/LanguagePicker';
@@ -13,6 +14,7 @@ import LanguagePicker from '../../src/components/LanguagePicker';
 type AuthMode = 'login' | 'register';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, signIn, signUp, signOut } = useAuth();
   const { t } = useI18n();
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
@@ -117,7 +119,7 @@ export default function ProfileScreen() {
               <Text style={styles.menuText}>{t('profile.subscription')}</Text>
               <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/privacy')}>
               <Ionicons name="shield-checkmark-outline" size={22} color={Colors.text} />
               <Text style={styles.menuText}>{t('profile.privacy')}</Text>
               <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />

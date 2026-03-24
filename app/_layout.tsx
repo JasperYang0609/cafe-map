@@ -19,9 +19,11 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen
               name="cafe/[id]"
-              options={{
-                headerShown: false,
-              }}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="pages/privacy"
+              options={{ headerShown: false }}
             />
           </Stack>
         </HistoryProvider>
