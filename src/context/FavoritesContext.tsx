@@ -1,38 +1,142 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
 import { Cafe } from '../types/cafe';
+import { useAuth } from './AuthContext';
 
 interface FavoritesContextType {
   favorites: Cafe[];
-  addFavorite: (cafe: Cafe) => boolean;
+  addFavorite: (cafe: Cafe) => void;
   removeFavorite: (placeId: string) => void;
   isFavorited: (placeId: string) => boolean;
   favCount: number;
+  loading: boolean;
 }
 
 const FavoritesContext = createContext<FavoritesContextType>({
   favorites: [],
-  addFavorite: () => false,
+  addFavorite: () => {},
   removeFavorite: () => {},
   isFavorited: () => false,
   favCount: 0,
+  loading: false,
 });
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [favorites, setFavorites] = useState<Cafe[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const addFavorite = useCallback((cafe: Cafe): boolean => {
-    let added = false;
+  // Load favorites from Supabase when user logs in
+  useEffect(() => {
+    if (user) {
+      loadFavorites(user.id);
+    } else {
+      setFavorites([]);
+    }
+  }, [user?.id]);
+
+  const loadFavorites = async (userId: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select(`
+          cafe_id,
+          cafes (
+            id, place_id, name, address, latitude, longitude,
+            rating, total_ratings, photo_reference, price_level
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        const cafes = data
+          .filter((d: any) => d.cafes)
+          .map((d: any) => d.cafes as Cafe);
+        setFavorites(cafes);
+      }
+    } catch (err) {
+      console.error('[Favorites] Load error:', err);
+    }
+    setLoading(false);
+  };
+
+  const addFavorite = useCallback(async (cafe: Cafe) => {
+    if (!user) return;
+
+    // Optimistic update
     setFavorites((prev) => {
       if (prev.some((f) => f.place_id === cafe.place_id)) return prev;
-      added = true;
       return [cafe, ...prev];
     });
-    return added;
-  }, []);
 
-  const removeFavorite = useCallback((placeId: string) => {
+    try {
+      // Upsert cafe to cafes table first
+      await supabase.from('cafes').upsert({
+        place_id: cafe.place_id,
+        name: cafe.name,
+        address: cafe.address || '',
+        latitude: cafe.latitude,
+        longitude: cafe.longitude,
+        rating: cafe.rating,
+        total_ratings: cafe.total_ratings,
+        photo_reference: cafe.photo_reference || null,
+        price_level: cafe.price_level || null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'place_id' });
+
+      // Get the cafe's UUID from DB
+      const { data: cafeData } = await supabase
+        .from('cafes')
+        .select('id')
+        .eq('place_id', cafe.place_id)
+        .single();
+
+      if (cafeData) {
+        // Insert favorite
+        await supabase.from('favorites').upsert({
+          user_id: user.id,
+          cafe_id: cafeData.id,
+        }, { onConflict: 'user_id,cafe_id' });
+      }
+    } catch (err) {
+      console.error('[Favorites] Add error:', err);
+      // Rollback optimistic update
+      setFavorites((prev) => prev.filter((f) => f.place_id !== cafe.place_id));
+    }
+  }, [user]);
+
+  const removeFavorite = useCallback(async (placeId: string) => {
+    if (!user) return;
+
+    // Optimistic update
+    const removed = favorites.find((f) => f.place_id === placeId);
     setFavorites((prev) => prev.filter((f) => f.place_id !== placeId));
-  }, []);
+
+    try {
+      // Get cafe UUID
+      const { data: cafeData } = await supabase
+        .from('cafes')
+        .select('id')
+        .eq('place_id', placeId)
+        .single();
+
+      if (cafeData) {
+        await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('cafe_id', cafeData.id);
+      }
+    } catch (err) {
+      console.error('[Favorites] Remove error:', err);
+      // Rollback
+      if (removed) {
+        setFavorites((prev) => [removed, ...prev]);
+      }
+    }
+  }, [user, favorites]);
 
   const isFavorited = useCallback((placeId: string): boolean => {
     return favorites.some((f) => f.place_id === placeId);
@@ -45,6 +149,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       removeFavorite,
       isFavorited,
       favCount: favorites.length,
+      loading,
     }}>
       {children}
     </FavoritesContext.Provider>
