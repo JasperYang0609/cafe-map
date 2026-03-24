@@ -195,10 +195,7 @@ export default function ExploreScreen() {
                   showFavoriteButton={true}
                   isFavorited={isFavorited(resultCafe.place_id)}
                   onFavorite={() => {
-                    const added = addFavorite(resultCafe);
-                    if (added) {
-                      Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
-                    }
+                    addFavorite(resultCafe);
                   }}
                 />
                 <TouchableOpacity style={styles.retryButton} onPress={handleReset} disabled={adLoading}>
