@@ -107,10 +107,16 @@ export default function FavoritesScreen() {
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
               onSelect={() => isSubscribed && setSelectedCafe(cafe)}
               onPress={() => isSubscribed && setSelectedCafe(cafe)}
-              tracksViewChanges={false}
+              tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
             >
-              <View style={styles.treeMarker}>
-                <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+              <View style={[
+                styles.treeMarker,
+                selectedCafe?.place_id === cafe.place_id && styles.treeMarkerSelected,
+              ]}>
+                <Text style={[
+                  styles.treeEmoji,
+                  selectedCafe?.place_id === cafe.place_id && styles.treeEmojiSelected,
+                ]}>{cafe.gardenEmoji || '🌳'}</Text>
               </View>
             </Marker>
           ))}
@@ -204,7 +210,15 @@ const styles = StyleSheet.create({
   },
   map: { flex: 1 },
   treeMarker: { padding: 2 },
+  treeMarkerSelected: {
+    backgroundColor: 'rgba(111, 78, 55, 0.15)',
+    borderRadius: 20,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
   treeEmoji: { fontSize: 28 },
+  treeEmojiSelected: { fontSize: 38 },
 
   // Blur
   blurOverlay: {
