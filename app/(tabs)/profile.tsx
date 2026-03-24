@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/context/I18nContext';
 import LanguagePicker from '../../src/components/LanguagePicker';
+import { signInWithApple, isAppleAuthAvailable } from '../../src/lib/appleAuth';
 
 type AuthMode = 'login' | 'register';
 
@@ -18,6 +19,16 @@ export default function ProfileScreen() {
   const { user, signIn, signUp, signOut } = useAuth();
   const { t } = useI18n();
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
+  const [appleLoading, setAppleLoading] = useState(false);
+
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    const result = await signInWithApple();
+    setAppleLoading(false);
+    if (result.error && result.error !== 'CANCELLED') {
+      Alert.alert(t('profile.error'), result.error);
+    }
+  };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,6 +79,27 @@ export default function ProfileScreen() {
           <Text style={styles.authSubtitle}>
             {authMode === 'login' ? t('profile.login_subtitle') : t('profile.register_subtitle')}
           </Text>
+          {isAppleAuthAvailable() && (
+            <>
+              <TouchableOpacity
+                style={styles.appleButton}
+                onPress={handleAppleSignIn}
+                disabled={appleLoading}
+              >
+                <Ionicons name="logo-apple" size={20} color="#fff" />
+                <Text style={styles.appleButtonText}>
+                  {appleLoading ? t('profile.processing') : 'Sign in with Apple'}
+                </Text>
+              </TouchableOpacity>
+
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or</Text>
+                <View style={styles.dividerLine} />
+              </View>
+            </>
+          )}
+
           <View style={styles.inputGroup}>
             <View style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={20} color={Colors.textSecondary} />
@@ -148,6 +180,19 @@ export default function ProfileScreen() {
           </View>
           <Text style={styles.guestTitle}>{t('profile.not_logged_in')}</Text>
           <Text style={styles.guestText}>{t('profile.guest_text')}</Text>
+          {isAppleAuthAvailable() && (
+            <TouchableOpacity
+              style={styles.appleButton}
+              onPress={handleAppleSignIn}
+              disabled={appleLoading}
+            >
+              <Ionicons name="logo-apple" size={20} color="#fff" />
+              <Text style={styles.appleButtonText}>
+                {appleLoading ? t('profile.processing') : 'Sign in with Apple'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.authButtons}>
             <TouchableOpacity style={styles.loginBtn} onPress={() => setAuthMode('login')}>
               <Text style={styles.loginBtnText}>{t('profile.login')}</Text>
@@ -202,6 +247,17 @@ const styles = StyleSheet.create({
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   logoutItem: { borderBottomWidth: 0 },
   menuText: { flex: 1, fontSize: FontSize.md, color: Colors.text, marginLeft: Spacing.md },
+  appleButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#000', paddingVertical: Spacing.md, borderRadius: BorderRadius.full,
+    width: '100%', marginBottom: Spacing.md,
+  },
+  appleButtonText: { color: '#fff', fontSize: FontSize.md, fontWeight: '600' },
+  dividerRow: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginBottom: Spacing.lg,
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { fontSize: FontSize.sm, color: Colors.textSecondary },
   authContainer: { flex: 1, paddingHorizontal: Spacing.lg, justifyContent: 'center' },
   backButton: { position: 'absolute', top: Spacing.lg, left: Spacing.lg, zIndex: 1 },
   authTitle: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text, marginBottom: Spacing.xs },
