@@ -120,5 +120,6 @@
     "history": "History",
     "favorites": "Favs",
     "profile": "Me"
-  }
+  },
+  "app_name": "BeanGo"
 }

@@ -49,7 +49,7 @@ export default function PrivacyScreen() {
 const CONTENT_ZH = {
   title: '隱私權政策',
   updated: '最後更新：2026 年 3 月',
-  contact: 'ansai（安賽）開發並營運咖啡廳地圖 App。使用本服務即表示您同意本政策。\n\n如有任何問題，請聯繫：support@ansai.tw',
+  contact: 'ansai（安賽）開發並營運BeanGo 跑咖 App。使用本服務即表示您同意本政策。\n\n如有任何問題，請聯繫：support@ansai.tw',
   sections: [
     {
       title: '1. 資料蒐集',
@@ -89,7 +89,7 @@ const CONTENT_ZH = {
 const CONTENT_EN = {
   title: 'Privacy Policy',
   updated: 'Last updated: March 2026',
-  contact: 'ansai built and operates the Cafe Map app. By using our service, you agree to this policy.\n\nQuestions? Contact: support@ansai.tw',
+  contact: 'ansai built and operates the BeanGo app. By using our service, you agree to this policy.\n\nQuestions? Contact: support@ansai.tw',
   sections: [
     {
       title: '1. Data Collection',
@@ -129,7 +129,7 @@ const CONTENT_EN = {
 const CONTENT_JA = {
   title: 'プライバシーポリシー',
   updated: '最終更新：2026年3月',
-  contact: 'ansai（安賽）がカフェマップアプリを開発・運営しています。本サービスの利用により、このポリシーに同意したものとみなされます。\n\nご質問は：support@ansai.tw',
+  contact: 'ansai（安賽）がBeanGo アプリを開発・運営しています。本サービスの利用により、このポリシーに同意したものとみなされます。\n\nご質問は：support@ansai.tw',
   sections: [
     {
       title: '1. データ収集',
@@ -169,7 +169,7 @@ const CONTENT_JA = {
 const CONTENT_KO = {
   title: '개인정보 처리방침',
   updated: '최종 업데이트: 2026년 3월',
-  contact: 'ansai（안사이）가 카페 맵 앱을 개발 및 운영합니다. 서비스를 이용함으로써 본 정책에 동의하는 것으로 간주됩니다.\n\n문의: support@ansai.tw',
+  contact: 'ansai（안사이）가 BeanGo 앱을 개발 및 운영합니다. 서비스를 이용함으로써 본 정책에 동의하는 것으로 간주됩니다.\n\n문의: support@ansai.tw',
   sections: [
     {
       title: '1. 수집 정보',
@@ -209,7 +209,7 @@ const CONTENT_KO = {
 const CONTENT_TH = {
   title: 'นโยบายความเป็นส่วนตัว',
   updated: 'อัปเดตล่าสุด: มีนาคม 2026',
-  contact: 'ansai พัฒนาและดำเนินการแอป Cafe Map การใช้บริการของเราถือว่าคุณยอมรับนโยบายนี้\n\nสอบถาม: support@ansai.tw',
+  contact: 'ansai พัฒนาและดำเนินการแอป BeanGo การใช้บริการของเราถือว่าคุณยอมรับนโยบายนี้\n\nสอบถาม: support@ansai.tw',
   sections: [
     {
       title: '1. การเก็บข้อมูล',
