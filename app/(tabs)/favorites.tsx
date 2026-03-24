@@ -1,7 +1,7 @@
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Platform,
+  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -13,15 +13,18 @@ import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
 import { useLocation } from '../../src/hooks/useLocation';
 import { getSubscriptionStatus } from '../../src/lib/ads';
+import { getPhotoUrl } from '../../src/lib/places';
+import { Cafe } from '../../src/types/cafe';
 
 export default function FavoritesScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
-  const { favorites, favCount } = useFavorites();
+  const { favorites, removeFavorite, favCount } = useFavorites();
   const location = useLocation();
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
+  const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
 
   // Not logged in
   if (!isLoggedIn) {
@@ -42,7 +45,7 @@ export default function FavoritesScreen() {
     );
   }
 
-  // No favorites yet
+  // No favorites
   if (favorites.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -58,16 +61,22 @@ export default function FavoritesScreen() {
     );
   }
 
-  // Find the densest cluster center for map focus
-  // Use average of all favorites (shows the cluster center)
   const avgLat = favorites.reduce((sum, f) => sum + f.latitude, 0) / favorites.length;
   const avgLng = favorites.reduce((sum, f) => sum + f.longitude, 0) / favorites.length;
-
-  // Tight zoom to show density (closer = more impactful)
   const latSpread = Math.max(...favorites.map(f => f.latitude)) - Math.min(...favorites.map(f => f.latitude));
   const lngSpread = Math.max(...favorites.map(f => f.longitude)) - Math.min(...favorites.map(f => f.longitude));
-  const latDelta = Math.max(0.015, latSpread * 1.3);
-  const lngDelta = Math.max(0.015, lngSpread * 1.3);
+  const latDelta = Math.max(0.015, latSpread * 1.5);
+  const lngDelta = Math.max(0.015, lngSpread * 1.5);
+
+  const handleNavigate = async (cafe: Cafe) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;
+    const canOpen = await Linking.canOpenURL('comgooglemaps://');
+    if (canOpen) {
+      Linking.openURL(`comgooglemaps://?daddr=${cafe.latitude},${cafe.longitude}&directionsmode=driving`);
+    } else {
+      Linking.openURL(url);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -76,7 +85,7 @@ export default function FavoritesScreen() {
         <Text style={styles.countText}>🌳 × {favCount}</Text>
       </View>
 
-      {/* Full-page Forest Map */}
+      {/* Forest Map */}
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
@@ -91,14 +100,13 @@ export default function FavoritesScreen() {
           zoomEnabled={isSubscribed}
           rotateEnabled={false}
           pitchEnabled={false}
+          onPress={() => setSelectedCafe(null)}
         >
           {favorites.map((cafe) => (
             <Marker
               key={cafe.place_id}
-              coordinate={{
-                latitude: cafe.latitude,
-                longitude: cafe.longitude,
-              }}
+              coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
+              onPress={() => isSubscribed && setSelectedCafe(cafe)}
             >
               <View style={styles.treeMarker}>
                 <Text style={styles.treeEmoji}>🌳</Text>
@@ -122,7 +130,59 @@ export default function FavoritesScreen() {
           </View>
         )}
 
-
+        {/* Selected cafe card (subscribers only) */}
+        {selectedCafe && isSubscribed && (
+          <View style={styles.cafeCard}>
+            <TouchableOpacity
+              style={styles.cafeCardRow}
+              onPress={() => router.push({
+                pathname: '/cafe/[id]',
+                params: {
+                  id: selectedCafe.place_id,
+                  place_id: selectedCafe.place_id,
+                  name: selectedCafe.name,
+                  address: selectedCafe.address || '',
+                  latitude: String(selectedCafe.latitude),
+                  longitude: String(selectedCafe.longitude),
+                  rating: String(selectedCafe.rating),
+                  total_ratings: String(selectedCafe.total_ratings),
+                  photo_reference: selectedCafe.photo_reference || '',
+                  photo_references: JSON.stringify(selectedCafe.photo_references || []),
+                  phone: selectedCafe.phone || '',
+                  website: selectedCafe.website || '',
+                  distance: selectedCafe.distance ? String(selectedCafe.distance) : '',
+                },
+              })}
+              activeOpacity={0.8}
+            >
+              {selectedCafe.photo_reference ? (
+                <Image
+                  source={{ uri: getPhotoUrl(selectedCafe.photo_reference, 200) }}
+                  style={styles.cafePhoto}
+                />
+              ) : (
+                <View style={[styles.cafePhoto, styles.cafePhotoPlaceholder]}>
+                  <Ionicons name="cafe-outline" size={24} color={Colors.textSecondary} />
+                </View>
+              )}
+              <View style={styles.cafeInfo}>
+                <Text style={styles.cafeName} numberOfLines={1}>{selectedCafe.name}</Text>
+                <View style={styles.cafeRating}>
+                  <Ionicons name="star" size={12} color={Colors.star} />
+                  <Text style={styles.cafeRatingText}>
+                    {selectedCafe.rating > 0 ? selectedCafe.rating.toFixed(1) : '-'}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.cafeNavBtn}
+              onPress={() => handleNavigate(selectedCafe)}
+            >
+              <Ionicons name="navigate" size={16} color={Colors.surface} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -137,7 +197,6 @@ const styles = StyleSheet.create({
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
   countText: { fontSize: FontSize.md, color: Colors.accent, fontWeight: '600' },
 
-  // Full-page map
   mapContainer: {
     flex: 1, marginHorizontal: Spacing.lg, marginBottom: Spacing.lg,
     borderRadius: BorderRadius.lg, overflow: 'hidden',
@@ -146,7 +205,7 @@ const styles = StyleSheet.create({
   treeMarker: { padding: 2 },
   treeEmoji: { fontSize: 28 },
 
-  // Blur overlay
+  // Blur
   blurOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(255, 248, 240, 0.8)',
@@ -169,20 +228,47 @@ const styles = StyleSheet.create({
   },
   unlockButton: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12,
-    borderRadius: 99,
+    backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 99,
   },
   unlockText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '600' },
 
-  // Tree count badge
-  treeCountBadge: {
-    position: 'absolute', top: 12, right: 12,
-    backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 12, paddingVertical: 6,
-    borderRadius: 20,
+  // Cafe card on map
+  cafeCard: {
+    position: 'absolute', bottom: 16, left: 12, right: 12,
+    backgroundColor: Colors.surface, borderRadius: BorderRadius.lg,
+    flexDirection: 'row', alignItems: 'center',
+    padding: Spacing.sm,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15, shadowRadius: 8, elevation: 5,
   },
-  treeCountText: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.accent },
+  cafeCardRow: {
+    flex: 1, flexDirection: 'row', alignItems: 'center',
+  },
+  cafePhoto: {
+    width: 50, height: 50, borderRadius: BorderRadius.sm,
+  },
+  cafePhotoPlaceholder: {
+    backgroundColor: Colors.border, justifyContent: 'center', alignItems: 'center',
+  },
+  cafeInfo: {
+    flex: 1, marginLeft: Spacing.sm,
+  },
+  cafeName: {
+    fontSize: FontSize.md, fontWeight: '600', color: Colors.text,
+  },
+  cafeRating: {
+    flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2,
+  },
+  cafeRatingText: {
+    fontSize: FontSize.sm, color: Colors.textSecondary,
+  },
+  cafeNavBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center',
+    marginLeft: Spacing.sm,
+  },
 
-  // Empty states
+  // Empty
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.xl },
   emptyEmoji: { fontSize: 64, marginBottom: Spacing.md },
   emptyTitle: { fontSize: FontSize.xl, fontWeight: '600', color: Colors.text, marginBottom: Spacing.sm },
