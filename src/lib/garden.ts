@@ -13,7 +13,7 @@ export interface GardenItem {
 
 export const GARDEN_ITEMS: GardenItem[] = [
   { id: 'sprout',     emoji: '🌱', rarity: 'common',    stars: 1, weight: 25 },
-  { id: 'leaf',       emoji: '🌿', rarity: 'common',    stars: 1, weight: 25 },
+  { id: 'mushroom',   emoji: '🍄', rarity: 'common',    stars: 1, weight: 25 },
   { id: 'tree',       emoji: '🌳', rarity: 'uncommon',  stars: 2, weight: 18 },
   { id: 'sunflower',  emoji: '🌻', rarity: 'uncommon',  stars: 2, weight: 12 },
   { id: 'sakura',     emoji: '🌸', rarity: 'rare',      stars: 3, weight: 8 },
