@@ -76,14 +76,12 @@ export default function MapScreen() {
     }
   };
 
-  const handleFavorite = () => {
+  const handleFavorite = async () => {
+    // TODO: Replace with real AdMob + real favorite save
     Alert.alert(
-      t('ad.forest_title'),
-      t('ad.forest_msg'),
-      [
-        { text: t('ad.later'), style: 'cancel' },
-        { text: t('ad.learn_more'), onPress: () => { /* TODO: navigate to subscription */ } },
-      ]
+      '☕',
+      t('favorites.subscribe_hint'),
+      [{ text: 'OK' }]
     );
   };
 

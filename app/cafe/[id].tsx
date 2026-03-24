@@ -60,14 +60,8 @@ export default function CafeDetailScreen() {
   };
 
   const handleFavorite = () => {
-    Alert.alert(
-      t('ad.forest_title'),
-      t('ad.forest_msg'),
-      [
-        { text: t('ad.later'), style: 'cancel' },
-        { text: t('ad.learn_more'), onPress: () => {} },
-      ]
-    );
+    // TODO: Show rewarded ad then save favorite
+    Alert.alert('☕', t('favorites.subscribe_hint'), [{ text: 'OK' }]);
   };
 
   const handleShare = async () => {
