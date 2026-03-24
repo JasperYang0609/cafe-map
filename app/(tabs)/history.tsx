@@ -5,10 +5,12 @@ import { Colors, Spacing, FontSize } from '../../src/constants/theme';
 import CafeCard from '../../src/components/CafeCard';
 import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
+import { useFavorites } from '../../src/context/FavoritesContext';
 
 export default function HistoryScreen() {
   const { t } = useI18n();
   const { history, clearHistory } = useHistory();
+  const { addFavorite, isFavorited } = useFavorites();
 
   const handleClear = () => {
     Alert.alert(t('history.clear_confirm_title'), t('history.clear_confirm_msg'), [
@@ -56,7 +58,12 @@ export default function HistoryScreen() {
           renderItem={({ item }) => (
             <View style={styles.cardContainer}>
               <Text style={styles.dateText}>{formatDate(item.viewed_at)}</Text>
-              <CafeCard cafe={item.cafe} showFavoriteButton={true} onFavorite={() => {}} />
+              <CafeCard
+                cafe={item.cafe}
+                showFavoriteButton={true}
+                isFavorited={isFavorited(item.cafe.place_id)}
+                onFavorite={() => addFavorite(item.cafe)}
+              />
             </View>
           )}
           contentContainerStyle={styles.list}

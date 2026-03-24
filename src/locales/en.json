@@ -53,7 +53,9 @@
     "empty_title": "No Favorites Yet",
     "empty_text": "Plant a coffee bean to explore\nSaved cafes will grow into trees on the map",
     "subscribe_hint": "Subscribe to save favorites instantly without ads",
-    "saved": "Saved to favorites ☕"
+    "saved": "Saved to favorites ☕",
+    "remove_confirm": "Remove from favorites?",
+    "remove": "Remove"
   },
   "profile": {
     "title": "Profile",

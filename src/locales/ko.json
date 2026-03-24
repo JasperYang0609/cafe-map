@@ -53,7 +53,9 @@
     "empty_title": "즐겨찾기가 없습니다",
     "empty_text": "커피 원두를 심어 탐색해보세요\n저장한 카페가 지도에서 나무가 됩니다",
     "subscribe_hint": "구독하면 광고 없이 바로 즐겨찾기 저장",
-    "saved": "즐겨찾기에 저장됨 ☕"
+    "saved": "즐겨찾기에 저장됨 ☕",
+    "remove_confirm": "즐겨찾기에서 제거하시겠습니까?",
+    "remove": "제거"
   },
   "profile": {
     "title": "마이페이지",

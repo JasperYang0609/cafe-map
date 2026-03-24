@@ -19,9 +19,11 @@ import { useCafes } from '../../src/hooks/useCafes';
 import { getPhotoUrl } from '../../src/lib/places';
 import { Cafe } from '../../src/types/cafe';
 import { useI18n } from '../../src/context/I18nContext';
+import { useFavorites } from '../../src/context/FavoritesContext';
 
 export default function MapScreen() {
   const { t } = useI18n();
+  const { isFavorited } = useFavorites();
   const location = useLocation();
   const { cafes, loading, fetchCafes } = useCafes();
   const mapRef = useRef<MapView>(null);
@@ -121,7 +123,11 @@ export default function MapScreen() {
             }}
             {...(Platform.OS === 'ios'
               ? {
-                  pinColor: selectedCafe?.place_id === cafe.place_id ? '#E53935' : '#6F4E37',
+                  pinColor: selectedCafe?.place_id === cafe.place_id
+                    ? '#E53935'
+                    : isFavorited(cafe.place_id)
+                    ? '#2D5A27'
+                    : '#6F4E37',
                 }
               : {
                   tracksViewChanges: true,
@@ -134,7 +140,7 @@ export default function MapScreen() {
                 selectedCafe?.place_id === cafe.place_id && styles.markerDotSelected,
               ]}>
                 <View style={[
-                  styles.markerInner,
+                  styles.markerInner, isFavorited(cafe.place_id) && styles.markerInnerFavorited,
                   selectedCafe?.place_id === cafe.place_id && styles.markerInnerSelected,
                 ]} />
               </View>
@@ -261,6 +267,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderWidth: 2,
     borderColor: Colors.surface,
+  },
+  markerInnerFavorited: {
+    backgroundColor: '#2D5A27',
   },
   markerInnerSelected: {
     width: 18,

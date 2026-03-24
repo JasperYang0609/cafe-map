@@ -19,6 +19,7 @@ import FilterSheet, { FilterOptions, DEFAULT_FILTERS } from '../../src/component
 import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { showRewardedAd, needsAd, recordPick, getFreePicks, getSubscriptionStatus } from '../../src/lib/ads';
+import { useFavorites } from '../../src/context/FavoritesContext';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function ExploreScreen() {
   const location = useLocation();
   const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
   const { addToHistory } = useHistory();
+  const { addFavorite, isFavorited } = useFavorites();
 
   const [selectedSeed, setSelectedSeed] = useState<number | null>(null);
   const [isGrowing, setIsGrowing] = useState(false);
@@ -191,9 +193,12 @@ export default function ExploreScreen() {
                 <CafeCard
                   cafe={resultCafe}
                   showFavoriteButton={true}
+                  isFavorited={isFavorited(resultCafe.place_id)}
                   onFavorite={() => {
-                    // TODO: Save to favorites
-                    Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
+                    const added = addFavorite(resultCafe);
+                    if (added) {
+                      Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
+                    }
                   }}
                 />
                 <TouchableOpacity style={styles.retryButton} onPress={handleReset} disabled={adLoading}>
