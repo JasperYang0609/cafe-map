@@ -49,7 +49,7 @@ export default function PrivacyScreen() {
 const CONTENT_ZH = {
   title: '隱私權政策',
   updated: '最後更新：2026 年 3 月',
-  contact: '如有任何問題，請聯繫：support@ansai.tw',
+  contact: 'ansai（安賽）開發並營運咖啡廳地圖 App。使用本服務即表示您同意本政策。\n\n如有任何問題，請聯繫：support@ansai.tw',
   sections: [
     {
       title: '1. 資料蒐集',
@@ -73,7 +73,15 @@ const CONTENT_ZH = {
     },
     {
       title: '6. 兒童隱私',
-      body: '本服務不針對 13 歲以下兒童。我們不會故意蒐集兒童的個人資訊。',
+      body: '本服務不針對 13 歲以下兒童。我們不會故意蒐集兒童的個人資訊。如果您是家長或監護人，發現您的孩子提供了個人資訊，請聯繫我們以便刪除。',
+    },
+    {
+      title: '7. 資料保留',
+      body: '我們僅在提供服務所需期間保留您的資料。如果您刪除帳號，所有相關資料將被永久刪除。匿名使用統計資料可能以彙總形式保留，用於分析目的。',
+    },
+    {
+      title: '8. 政策變更',
+      body: '我們可能不時更新本隱私權政策。重大變更將透過更新頁面頂部的「最後更新」日期通知您。建議您定期檢閱本政策。',
     },
   ],
 };
@@ -81,7 +89,7 @@ const CONTENT_ZH = {
 const CONTENT_EN = {
   title: 'Privacy Policy',
   updated: 'Last updated: March 2026',
-  contact: 'Questions? Contact: support@ansai.tw',
+  contact: 'ansai built and operates the Cafe Map app. By using our service, you agree to this policy.\n\nQuestions? Contact: support@ansai.tw',
   sections: [
     {
       title: '1. Data Collection',
@@ -105,7 +113,15 @@ const CONTENT_EN = {
     },
     {
       title: '6. Children\'s Privacy',
-      body: 'This service is not directed at children under 13. We do not knowingly collect personal information from children.',
+      body: 'This service is not directed at children under 13. We do not knowingly collect personal information from children. If you are a parent and believe your child has provided personal information, please contact us.',
+    },
+    {
+      title: '7. Data Retention',
+      body: 'We retain your data only as long as necessary to provide our services. If you delete your account, all associated data will be permanently removed. Anonymized usage data may be retained in aggregate form for analytical purposes.',
+    },
+    {
+      title: '8. Changes to This Policy',
+      body: 'We may update this Privacy Policy from time to time. We will notify you of significant changes by updating the "Last updated" date. We encourage you to review this policy periodically.',
     },
   ],
 };
