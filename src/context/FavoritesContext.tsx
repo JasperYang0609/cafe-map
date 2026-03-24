@@ -13,6 +13,7 @@ interface FavoritesContextType {
   loading: boolean;
   lastRolled: { emoji: string; rarity: string } | null;
   clearLastRolled: () => void;
+  rerollFavorite: (placeId: string) => void;
 }
 
 const FavoritesContext = createContext<FavoritesContextType>({
@@ -24,6 +25,7 @@ const FavoritesContext = createContext<FavoritesContextType>({
   loading: false,
   lastRolled: null,
   clearLastRolled: () => {},
+  rerollFavorite: () => {},
 });
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
@@ -175,6 +177,37 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       loading,
       lastRolled,
       clearLastRolled: () => setLastRolled(null),
+      rerollFavorite: async (placeId: string) => {
+        if (!user) return;
+        const newItem = rollGardenItem();
+        setLastRolled({ emoji: newItem.emoji, rarity: newItem.rarity });
+
+        // Optimistic update
+        setFavorites((prev) => prev.map((f) =>
+          f.place_id === placeId
+            ? { ...f, gardenEmoji: newItem.emoji, gardenItemId: newItem.id }
+            : f
+        ));
+
+        // Update in DB
+        try {
+          const { data: cafeData } = await supabase
+            .from('cafes')
+            .select('id')
+            .eq('place_id', placeId)
+            .single();
+
+          if (cafeData) {
+            await supabase
+              .from('favorites')
+              .update({ garden_emoji: newItem.emoji, garden_item_id: newItem.id })
+              .eq('user_id', user.id)
+              .eq('cafe_id', cafeData.id);
+          }
+        } catch (err) {
+          console.error('[Favorites] Reroll error:', err);
+        }
+      },
     }}>
       {children}
     </FavoritesContext.Provider>

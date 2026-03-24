@@ -19,7 +19,7 @@ export default function FavoritesScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
-  const { favorites, removeFavorite, favCount } = useFavorites();
+  const { favorites, removeFavorite, rerollFavorite, favCount } = useFavorites();
   const location = useLocation();
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
@@ -183,6 +183,14 @@ export default function FavoritesScreen() {
               </View>
             </TouchableOpacity>
             <TouchableOpacity
+              style={styles.rerollBtn}
+              onPress={() => {
+                rerollFavorite(selectedCafe.place_id);
+              }}
+            >
+              <Text style={styles.rerollText}>🎲</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={styles.cafeNavBtn}
               onPress={() => handleNavigate(selectedCafe)}
             >
@@ -277,6 +285,12 @@ const styles = StyleSheet.create({
   cafeRatingText: {
     fontSize: FontSize.sm, color: Colors.textSecondary,
   },
+  rerollBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: Colors.border, justifyContent: 'center', alignItems: 'center',
+    marginLeft: Spacing.sm,
+  },
+  rerollText: { fontSize: 20 },
   cafeNavBtn: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center',
