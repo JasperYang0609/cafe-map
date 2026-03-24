@@ -1,6 +1,6 @@
 {
   "explore": {
-    "title": "種一顆咖啡豆",
+    "title": "選一顆咖啡豆",
     "subtitle_loading": "定位中...",
     "subtitle_searching": "搜尋附近咖啡廳...",
     "subtitle_found": "附近找到 %{count} 家咖啡廳",

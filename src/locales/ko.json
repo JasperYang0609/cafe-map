@@ -1,6 +1,6 @@
 {
   "explore": {
-    "title": "커피 원두를 심어보세요",
+    "title": "커피 원두를 골라보세요",
     "subtitle_loading": "위치 확인 중...",
     "subtitle_searching": "근처 카페 검색 중...",
     "subtitle_found": "근처에 %{count}개의 카페",

@@ -1,6 +1,6 @@
 {
   "explore": {
-    "title": "Plant a Coffee Bean",
+    "title": "Pick a Coffee Bean",
     "subtitle_loading": "Locating...",
     "subtitle_searching": "Searching nearby cafes...",
     "subtitle_found": "Found %{count} cafes nearby",

@@ -1,6 +1,6 @@
 {
   "explore": {
-    "title": "コーヒー豆を植えよう",
+    "title": "コーヒー豆を選ぼう",
     "subtitle_loading": "位置情報を取得中...",
     "subtitle_searching": "近くのカフェを検索中...",
     "subtitle_found": "近くに %{count} 件のカフェ",
