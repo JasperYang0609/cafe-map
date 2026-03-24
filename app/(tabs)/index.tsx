@@ -177,6 +177,7 @@ export default function ExploreScreen() {
                   cafe={resultCafe}
                   showFavoriteButton={true}
                   onFavorite={() => {
+                    // TODO: Show rewarded ad then add to favorites
                     Alert.alert(
                       t('ad.forest_title'),
                       t('ad.forest_msg'),

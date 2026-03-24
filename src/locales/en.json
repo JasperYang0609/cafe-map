@@ -19,7 +19,8 @@
     "count": "☕ %{count}",
     "locating": "Locating...",
     "navigate": "Navigate",
-    "forest": "Grow Forest"
+    "forest": "Grow Forest",
+    "favorite": "Save"
   },
   "history": {
     "title": "History",
@@ -47,7 +48,8 @@
     "benefit_forest": "Grow your own coffee forest 🌳",
     "benefit_no_ads": "Ad-free experience",
     "empty_title": "No Favorites Yet",
-    "empty_text": "Plant a coffee bean to explore\nSaved cafes will grow into trees on the map"
+    "empty_text": "Plant a coffee bean to explore\nSaved cafes will grow into trees on the map",
+    "subscribe_hint": "Subscribe to save favorites instantly without ads"
   },
   "profile": {
     "title": "Profile",
@@ -97,7 +99,8 @@
     "navigate": "Navigate",
     "forest": "Grow Forest",
     "share": "Share",
-    "no_photo": "No photos"
+    "no_photo": "No photos",
+    "favorite": "Save"
   },
   "ad": {
     "forest_title": "Grow Your Coffee Forest 🌿",

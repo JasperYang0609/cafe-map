@@ -19,7 +19,8 @@
     "count": "☕ %{count}개",
     "locating": "위치 확인 중...",
     "navigate": "길안내",
-    "forest": "커피 숲"
+    "forest": "커피 숲",
+    "favorite": "저장"
   },
   "history": {
     "title": "검색 기록",
@@ -47,7 +48,8 @@
     "benefit_forest": "나만의 커피 숲 키우기 🌳",
     "benefit_no_ads": "광고 없는 경험",
     "empty_title": "즐겨찾기가 없습니다",
-    "empty_text": "커피 원두를 심어 탐색해보세요\n저장한 카페가 지도에서 나무가 됩니다"
+    "empty_text": "커피 원두를 심어 탐색해보세요\n저장한 카페가 지도에서 나무가 됩니다",
+    "subscribe_hint": "구독하면 광고 없이 바로 즐겨찾기 저장"
   },
   "profile": {
     "title": "마이페이지",
@@ -97,7 +99,8 @@
     "navigate": "길안내",
     "forest": "커피 숲",
     "share": "공유",
-    "no_photo": "사진 없음"
+    "no_photo": "사진 없음",
+    "favorite": "저장"
   },
   "ad": {
     "forest_title": "커피 숲을 키워보세요 🌿",

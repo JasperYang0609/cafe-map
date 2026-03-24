@@ -197,7 +197,7 @@ export default function CafeDetailScreen() {
 
         <TouchableOpacity style={styles.favButton} onPress={handleFavorite}>
           <Ionicons name="heart-outline" size={20} color={Colors.primary} />
-          <Text style={styles.favText}>{t('detail.forest')}</Text>
+          <Text style={styles.favText}>{t('detail.favorite')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.shareButton} onPress={handleShare}>

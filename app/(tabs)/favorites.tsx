@@ -12,7 +12,7 @@ export default function FavoritesScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
   const isLoggedIn = !!user;
-  const isSubscribed = false;
+  const isSubscribed = false; // TODO: Check subscription
 
   return (
     <SafeAreaView style={styles.container}>
@@ -29,35 +29,21 @@ export default function FavoritesScreen() {
             <Text style={styles.loginText}>{t('favorites.login_button')}</Text>
           </TouchableOpacity>
         </View>
-      ) : !isSubscribed ? (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>🔒</Text>
-          <Text style={styles.emptyTitle}>{t('favorites.forest_title')}</Text>
-          <Text style={styles.emptyText}>{t('favorites.forest_text')}</Text>
-          <TouchableOpacity style={styles.subscribeButton}>
-            <Ionicons name="star" size={18} color={Colors.surface} />
-            <Text style={styles.subscribeText}>{t('favorites.subscribe_button')}</Text>
-          </TouchableOpacity>
-          <View style={styles.benefitList}>
-            <View style={styles.benefitRow}>
-              <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
-              <Text style={styles.benefitText}>{t('favorites.benefit_collect')}</Text>
-            </View>
-            <View style={styles.benefitRow}>
-              <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
-              <Text style={styles.benefitText}>{t('favorites.benefit_forest')}</Text>
-            </View>
-            <View style={styles.benefitRow}>
-              <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
-              <Text style={styles.benefitText}>{t('favorites.benefit_no_ads')}</Text>
-            </View>
-          </View>
-        </View>
       ) : (
         <View style={styles.emptyState}>
           <Text style={styles.emptyEmoji}>🌱</Text>
           <Text style={styles.emptyTitle}>{t('favorites.empty_title')}</Text>
           <Text style={styles.emptyText}>{t('favorites.empty_text')}</Text>
+
+          {!isSubscribed && (
+            <View style={styles.subscribeCard}>
+              <Ionicons name="star" size={20} color={Colors.primary} />
+              <Text style={styles.subscribeCardText}>{t('favorites.subscribe_hint')}</Text>
+              <TouchableOpacity style={styles.subscribeBtn}>
+                <Text style={styles.subscribeBtnText}>{t('favorites.subscribe_button')}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
     </SafeAreaView>
@@ -74,12 +60,17 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: FontSize.md, color: Colors.textSecondary, textAlign: 'center', lineHeight: 24, marginBottom: Spacing.lg },
   loginButton: { backgroundColor: Colors.primary, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm + 4, borderRadius: BorderRadius.full },
   loginText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '600' },
-  subscribeButton: {
-    flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, backgroundColor: Colors.primary,
-    paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm + 4, borderRadius: BorderRadius.full, marginBottom: Spacing.xl,
+  subscribeCard: {
+    alignItems: 'center', padding: Spacing.lg, marginTop: Spacing.md,
+    backgroundColor: Colors.surface, borderRadius: BorderRadius.lg, width: '100%',
   },
-  subscribeText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '600' },
-  benefitList: { gap: Spacing.md },
-  benefitRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  benefitText: { fontSize: FontSize.md, color: Colors.text },
+  subscribeCardText: {
+    fontSize: FontSize.sm, color: Colors.textSecondary, textAlign: 'center',
+    marginTop: Spacing.sm, marginBottom: Spacing.md, lineHeight: 20,
+  },
+  subscribeBtn: {
+    backgroundColor: Colors.primary, paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.sm, borderRadius: BorderRadius.full,
+  },
+  subscribeBtnText: { color: Colors.surface, fontSize: FontSize.sm, fontWeight: '600' },
 });

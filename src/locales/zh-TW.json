@@ -19,7 +19,8 @@
     "count": "☕ %{count} 家",
     "locating": "定位中...",
     "navigate": "導航",
-    "forest": "培養咖啡森林"
+    "forest": "培養咖啡森林",
+    "favorite": "收藏"
   },
   "history": {
     "title": "搜尋紀錄",
@@ -47,7 +48,8 @@
     "benefit_forest": "培養你的專屬咖啡森林 🌳",
     "benefit_no_ads": "享受無廣告體驗",
     "empty_title": "還沒有收藏",
-    "empty_text": "去探索頁種一顆咖啡豆\n收藏的咖啡廳會在地圖上長成一棵樹"
+    "empty_text": "去探索頁種一顆咖啡豆\n收藏的咖啡廳會在地圖上長成一棵樹",
+    "subscribe_hint": "訂閱可免除廣告，直接收藏不用等"
   },
   "profile": {
     "title": "我的",
@@ -97,7 +99,8 @@
     "navigate": "導航",
     "forest": "培養咖啡森林",
     "share": "分享",
-    "no_photo": "暫無照片"
+    "no_photo": "暫無照片",
+    "favorite": "收藏"
   },
   "ad": {
     "forest_title": "培養你的咖啡森林 🌿",

@@ -219,7 +219,7 @@ export default function MapScreen() {
               onPress={handleFavorite}
             >
               <Ionicons name="heart-outline" size={18} color={Colors.primary} />
-              <Text style={styles.favText}>{ t('map.forest') }</Text>
+              <Text style={styles.favText}>{ t('map.favorite') }</Text>
             </TouchableOpacity>
           </View>
         </View>

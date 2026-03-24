@@ -19,7 +19,8 @@
     "count": "☕ %{count} 件",
     "locating": "位置情報を取得中...",
     "navigate": "ナビ",
-    "forest": "コーヒーの森"
+    "forest": "コーヒーの森",
+    "favorite": "保存"
   },
   "history": {
     "title": "履歴",
@@ -47,7 +48,8 @@
     "benefit_forest": "あなただけのコーヒーの森 🌳",
     "benefit_no_ads": "広告なしの体験",
     "empty_title": "お気に入りがありません",
-    "empty_text": "コーヒー豆を植えて探索しよう\n保存したカフェが地図上で木になります"
+    "empty_text": "コーヒー豆を植えて探索しよう\n保存したカフェが地図上で木になります",
+    "subscribe_hint": "購読すると広告なしでお気に入りを直接保存"
   },
   "profile": {
     "title": "マイページ",
@@ -97,7 +99,8 @@
     "navigate": "ナビ",
     "forest": "コーヒーの森",
     "share": "共有",
-    "no_photo": "写真なし"
+    "no_photo": "写真なし",
+    "favorite": "保存"
   },
   "ad": {
     "forest_title": "コーヒーの森を育てよう 🌿",
