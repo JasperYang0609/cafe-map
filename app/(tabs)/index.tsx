@@ -33,6 +33,18 @@ export default function ExploreScreen() {
   const { addToHistory } = useHistory();
   const { addFavorite, isFavorited, lastRolled, clearLastRolled } = useFavorites();
 
+  // Show garden roll result when favoriting
+  useEffect(() => {
+    if (lastRolled) {
+      const rarityMsg = lastRolled.rarity === 'legendary' ? '🎉 Legendary!'
+        : lastRolled.rarity === 'epic' ? '✨ Epic!'
+        : lastRolled.rarity === 'rare' ? '💎 Rare!'
+        : '';
+      Alert.alert(lastRolled.emoji, rarityMsg || undefined);
+      clearLastRolled();
+    }
+  }, [lastRolled]);
+
   const [selectedSeed, setSelectedSeed] = useState<number | null>(null);
   const [isGrowing, setIsGrowing] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -200,15 +212,6 @@ export default function ExploreScreen() {
                   onFavorite={() => {
                     if (!isFavorited(resultCafe.place_id)) {
                       addFavorite(resultCafe);
-                      // Show roll result briefly
-                      setTimeout(() => {
-                        if (lastRolled) {
-                          Alert.alert(
-                            lastRolled.emoji,
-                            `${lastRolled.rarity === 'legendary' ? '🎉 Legendary!' : lastRolled.rarity === 'epic' ? '✨ Epic!' : lastRolled.rarity === 'rare' ? '💎 Rare!' : ''}`,
-                          );
-                        }
-                      }, 100);
                     }
                   }}
                 />
