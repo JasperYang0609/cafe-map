@@ -203,19 +203,11 @@ export default function MapScreen() {
 
           <View style={styles.cardActions}>
             <TouchableOpacity
-              style={styles.navButton}
+              style={styles.navButtonFull}
               onPress={() => handleNavigate(selectedCafe)}
             >
               <Ionicons name="navigate" size={18} color={Colors.surface} />
               <Text style={styles.navText}>{ t('map.navigate') }</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.favButton}
-              onPress={handleFavorite}
-            >
-              <Ionicons name="heart-outline" size={18} color={Colors.primary} />
-              <Text style={styles.favText}>{ t('map.favorite') }</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -402,6 +394,11 @@ const styles = StyleSheet.create({
   cardActions: {
     flexDirection: 'row',
     gap: Spacing.sm,
+  },
+  navButtonFull: {
+    flex: 1,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: Colors.primary, paddingVertical: Spacing.sm + 2, borderRadius: BorderRadius.sm,
   },
   navButton: {
     flex: 1,
