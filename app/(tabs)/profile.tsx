@@ -163,7 +163,7 @@ export default function ProfileScreen() {
             <Text style={styles.menuText}>{t('profile.subscription')}</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/privacy')}>
             <Ionicons name="shield-checkmark-outline" size={22} color={Colors.text} />
             <Text style={styles.menuText}>{t('profile.privacy')}</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
