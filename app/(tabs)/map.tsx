@@ -23,7 +23,12 @@ import { useFavorites } from '../../src/context/FavoritesContext';
 
 export default function MapScreen() {
   const { t } = useI18n();
-  const { isFavorited } = useFavorites();
+  const { isFavorited, favorites } = useFavorites();
+
+  const getFavEmoji = (placeId: string): string | null => {
+    const fav = favorites.find(f => f.place_id === placeId);
+    return fav?.gardenEmoji || null;
+  };
   const location = useLocation();
   const { cafes, loading, fetchCafes } = useCafes();
   const mapRef = useRef<MapView>(null);

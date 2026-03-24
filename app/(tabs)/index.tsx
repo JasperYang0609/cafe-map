@@ -21,6 +21,7 @@ import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { showRewardedAd, needsAd, recordPick, getFreePicks, getSubscriptionStatus } from '../../src/lib/ads';
 import { useFavorites } from '../../src/context/FavoritesContext';
+import { getRarityColor } from '../../src/lib/garden';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 
 const { width } = Dimensions.get('window');
@@ -30,7 +31,7 @@ export default function ExploreScreen() {
   const location = useLocation();
   const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
   const { addToHistory } = useHistory();
-  const { addFavorite, isFavorited } = useFavorites();
+  const { addFavorite, isFavorited, lastRolled, clearLastRolled } = useFavorites();
 
   const [selectedSeed, setSelectedSeed] = useState<number | null>(null);
   const [isGrowing, setIsGrowing] = useState(false);
@@ -197,7 +198,18 @@ export default function ExploreScreen() {
                   showFavoriteButton={true}
                   isFavorited={isFavorited(resultCafe.place_id)}
                   onFavorite={() => {
-                    addFavorite(resultCafe);
+                    if (!isFavorited(resultCafe.place_id)) {
+                      addFavorite(resultCafe);
+                      // Show roll result briefly
+                      setTimeout(() => {
+                        if (lastRolled) {
+                          Alert.alert(
+                            lastRolled.emoji,
+                            `${lastRolled.rarity === 'legendary' ? '🎉 Legendary!' : lastRolled.rarity === 'epic' ? '✨ Epic!' : lastRolled.rarity === 'rare' ? '💎 Rare!' : ''}`,
+                          );
+                        }
+                      }, 100);
+                    }
                   }}
                 />
                 <TouchableOpacity style={styles.retryButton} onPress={handleReset} disabled={adLoading}>

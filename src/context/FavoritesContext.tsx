@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { supabase } from '../lib/supabase';
 import { Cafe } from '../types/cafe';
 import { useAuth } from './AuthContext';
+import { rollGardenItem } from '../lib/garden';
 
 interface FavoritesContextType {
   favorites: Cafe[];
@@ -10,6 +11,8 @@ interface FavoritesContextType {
   isFavorited: (placeId: string) => boolean;
   favCount: number;
   loading: boolean;
+  lastRolled: { emoji: string; rarity: string } | null;
+  clearLastRolled: () => void;
 }
 
 const FavoritesContext = createContext<FavoritesContextType>({
@@ -19,6 +22,8 @@ const FavoritesContext = createContext<FavoritesContextType>({
   isFavorited: () => false,
   favCount: 0,
   loading: false,
+  lastRolled: null,
+  clearLastRolled: () => {},
 });
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
@@ -62,13 +67,25 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   };
 
+  const [lastRolled, setLastRolled] = useState<{ emoji: string; rarity: string } | null>(null);
+
   const addFavorite = useCallback(async (cafe: Cafe) => {
     if (!user) return;
+
+    // Roll garden item
+    const gardenItem = rollGardenItem();
+    const cafeWithGarden = {
+      ...cafe,
+      gardenItemId: gardenItem.id,
+      gardenEmoji: gardenItem.emoji,
+    };
+
+    setLastRolled({ emoji: gardenItem.emoji, rarity: gardenItem.rarity });
 
     // Optimistic update
     setFavorites((prev) => {
       if (prev.some((f) => f.place_id === cafe.place_id)) return prev;
-      return [cafe, ...prev];
+      return [cafeWithGarden, ...prev];
     });
 
     try {
@@ -150,6 +167,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       isFavorited,
       favCount: favorites.length,
       loading,
+      lastRolled,
+      clearLastRolled: () => setLastRolled(null),
     }}>
       {children}
     </FavoritesContext.Provider>

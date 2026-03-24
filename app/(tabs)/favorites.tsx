@@ -110,7 +110,7 @@ export default function FavoritesScreen() {
               tracksViewChanges={false}
             >
               <View style={styles.treeMarker}>
-                <Text style={styles.treeEmoji}>🌳</Text>
+                <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
               </View>
             </Marker>
           ))}
