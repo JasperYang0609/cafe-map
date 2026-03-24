@@ -21,6 +21,7 @@ import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { showRewardedAd, needsAd, recordPick, getFreePicks, getSubscriptionStatus } from '../../src/lib/ads';
 import { useFavorites } from '../../src/context/FavoritesContext';
+import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 
 const { width } = Dimensions.get('window');
 
@@ -233,6 +234,7 @@ export default function ExploreScreen() {
         )}
       </View>
 
+      <BannerAdPlaceholder />
       <FilterSheet
         visible={showFilter}
         onClose={() => setShowFilter(false)}

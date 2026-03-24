@@ -1,3 +1,4 @@
+import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -218,6 +219,8 @@ export default function MapScreen() {
           </View>
         </View>
       )}
+
+      <BannerAdPlaceholder />
 
       {location.error && (
         <View style={styles.errorBanner}>
