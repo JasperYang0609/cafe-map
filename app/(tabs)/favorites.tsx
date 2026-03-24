@@ -106,21 +106,13 @@ export default function FavoritesScreen() {
             <Marker
               key={cafe.place_id}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
-              onPress={(e) => {
-                e.stopPropagation();
-                if (isSubscribed) setSelectedCafe(cafe);
-              }}
+              onSelect={() => isSubscribed && setSelectedCafe(cafe)}
+              onPress={() => isSubscribed && setSelectedCafe(cafe)}
               tracksViewChanges={false}
-              {...(Platform.OS === 'ios'
-                ? { pinColor: '#2D5A27' }
-                : {}
-              )}
             >
-              {Platform.OS === 'android' && (
-                <View style={styles.treeMarker}>
-                  <Text style={styles.treeEmoji}>🌳</Text>
-                </View>
-              )}
+              <View style={styles.treeMarker}>
+                <Text style={styles.treeEmoji}>🌳</Text>
+              </View>
             </Marker>
           ))}
         </MapView>
