@@ -53,9 +53,9 @@ export default function ExploreScreen() {
 
   // 日曬 Natural / 水洗 Washed / 蜜處理 Honey — no labels, let 跑咖仔 figure it out
   const SEEDS = [
-    { id: 1, image: require('../../src/assets/images/seed-natural.png') },
-    { id: 2, image: require('../../src/assets/images/seed-washed.png') },
-    { id: 3, image: require('../../src/assets/images/seed-honey.png') },
+    { id: 1, image: require('../../src/assets/images/seed-natural-tarot.png') },
+    { id: 2, image: require('../../src/assets/images/seed-washed-tarot.png') },
+    { id: 3, image: require('../../src/assets/images/seed-honey-tarot.png') },
   ];
 
   useEffect(() => {
@@ -259,12 +259,12 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: Spacing.md, fontSize: FontSize.md, color: Colors.textSecondary },
   seedRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.lg, flexWrap: 'wrap' },
   seedButton: {
-    width: 100, height: 120, backgroundColor: Colors.surface, borderRadius: BorderRadius.lg,
-    justifyContent: 'center', alignItems: 'center',
+    width: 95, height: 130, borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
     shadowColor: Colors.shadow, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 1, shadowRadius: 12, elevation: 4,
   },
   seedButtonDisabled: { opacity: 0.4 },
-  seedImage: { width: 60, height: 60, borderRadius: 12 },
+  seedImage: { width: '100%', height: '100%', borderRadius: BorderRadius.lg },
   seedLabel: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.sm },
   noCafeText: { width: '100%', textAlign: 'center', marginTop: Spacing.lg, fontSize: FontSize.md, color: Colors.textSecondary, lineHeight: 24 },
   growArea: { alignItems: 'center', width: '100%' },
