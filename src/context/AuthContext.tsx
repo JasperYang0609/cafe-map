@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import { setSubscriptionStatus } from '../lib/ads';
 
 interface User {
   id: string;
   email: string;
   displayName?: string;
+  isSubscribed: boolean;
 }
 
 interface AuthContextType {
@@ -27,15 +29,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch profile (subscription status) from Supabase
+  const fetchProfile = async (userId: string, email: string, displayName?: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('is_subscribed, subscription_expires_at')
+      .eq('id', userId)
+      .single();
+
+    let isSubscribed = false;
+    if (data?.is_subscribed) {
+      // Check if subscription hasn't expired
+      if (data.subscription_expires_at) {
+        isSubscribed = new Date(data.subscription_expires_at) > new Date();
+      } else {
+        isSubscribed = true;
+      }
+    }
+
+    // Sync to ads module
+    setSubscriptionStatus(isSubscribed);
+
+    setUser({
+      id: userId,
+      email,
+      displayName,
+      isSubscribed,
+    });
+  };
+
   useEffect(() => {
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          displayName: session.user.user_metadata?.full_name,
-        });
+        fetchProfile(
+          session.user.id,
+          session.user.email || '',
+          session.user.user_metadata?.full_name
+        );
       }
       setLoading(false);
     });
@@ -43,13 +74,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          displayName: session.user.user_metadata?.full_name,
-        });
+        fetchProfile(
+          session.user.id,
+          session.user.email || '',
+          session.user.user_metadata?.full_name
+        );
       } else {
         setUser(null);
+        setSubscriptionStatus(false);
       }
     });
 
@@ -81,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setSubscriptionStatus(false);
   };
 
   return (
