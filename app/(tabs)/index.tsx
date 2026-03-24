@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   TouchableOpacity,
   Animated,
@@ -52,9 +53,9 @@ export default function ExploreScreen() {
 
   // 日曬 Natural / 水洗 Washed / 蜜處理 Honey — no labels, let 跑咖仔 figure it out
   const SEEDS = [
-    { id: 1, emoji: '☀️' },
-    { id: 2, emoji: '💧' },
-    { id: 3, emoji: '🍯' },
+    { id: 1, image: require('../../src/assets/images/seed-natural.png') },
+    { id: 2, image: require('../../src/assets/images/seed-washed.png') },
+    { id: 3, image: require('../../src/assets/images/seed-honey.png') },
   ];
 
   useEffect(() => {
@@ -173,7 +174,7 @@ export default function ExploreScreen() {
                 activeOpacity={0.7}
                 disabled={filteredCafes.length === 0}
               >
-                <Text style={styles.seedEmoji}>{seed.emoji}</Text>
+                <Image source={seed.image} style={styles.seedImage} />
               </TouchableOpacity>
             ))}
             {filteredCafes.length === 0 && !cafesLoading && (
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     shadowColor: Colors.shadow, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 1, shadowRadius: 12, elevation: 4,
   },
   seedButtonDisabled: { opacity: 0.4 },
-  seedEmoji: { fontSize: 40 },
+  seedImage: { width: 60, height: 60, borderRadius: 12 },
   seedLabel: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.sm },
   noCafeText: { width: '100%', textAlign: 'center', marginTop: Spacing.lg, fontSize: FontSize.md, color: Colors.textSecondary, lineHeight: 24 },
   growArea: { alignItems: 'center', width: '100%' },
