@@ -18,7 +18,7 @@ import CafeCard from '../../src/components/CafeCard';
 import FilterSheet, { FilterOptions, DEFAULT_FILTERS } from '../../src/components/FilterSheet';
 import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
-import { showRewardedAd, shouldShowAd } from '../../src/lib/ads';
+import { showRewardedAd, needsAd, recordPick, getFreePicks, getSubscriptionStatus } from '../../src/lib/ads';
 
 const { width } = Dimensions.get('window');
 
@@ -60,8 +60,18 @@ export default function ExploreScreen() {
     }
   }, [location.loading, location.error, location.latitude, location.longitude]);
 
-  const handleSeedPress = (seedId: number) => {
+  const handleSeedPress = async (seedId: number) => {
     if (isGrowing || cafesLoading) return;
+
+    // Check if ad needed (after daily free picks)
+    if (needsAd()) {
+      setAdLoading(true);
+      const watched = await showRewardedAd();
+      setAdLoading(false);
+      if (!watched) return;
+    }
+
+    recordPick();
     setSelectedSeed(seedId);
     setIsGrowing(true);
     setShowResult(false);
@@ -99,13 +109,7 @@ export default function ExploreScreen() {
     });
   };
 
-  const handleReset = async () => {
-    if (shouldShowAd()) {
-      setAdLoading(true);
-      const adWatched = await showRewardedAd();
-      setAdLoading(false);
-      if (!adWatched) return;
-    }
+  const handleReset = () => {
     setSelectedSeed(null);
     setIsGrowing(false);
     setShowResult(false);
@@ -116,13 +120,19 @@ export default function ExploreScreen() {
     treeScale.setValue(0);
   };
 
+  const freePicks = getFreePicks();
+  const isSub = getSubscriptionStatus();
+
   const getSubtitle = () => {
     if (location.loading) return t('explore.subtitle_loading');
     if (cafesLoading) return t('explore.subtitle_searching');
-    if (filteredCafes.length < cafes.length) {
-      return t('explore.subtitle_filtered', { filtered: filteredCafes.length, total: cafes.length });
-    }
-    return t('explore.subtitle_found', { count: cafes.length });
+    const cafeCount = filteredCafes.length < cafes.length
+      ? t('explore.subtitle_filtered', { filtered: filteredCafes.length, total: cafes.length })
+      : t('explore.subtitle_found', { count: cafes.length });
+
+    if (isSub) return cafeCount;
+    if (freePicks > 0) return `${cafeCount}\n${t('explore.free_picks', { count: freePicks })}`;
+    return `${cafeCount}\n${t('explore.no_free_picks')}`;
   };
 
   return (
@@ -138,7 +148,12 @@ export default function ExploreScreen() {
       </View>
 
       <View style={styles.seedArea}>
-        {(location.loading || cafesLoading) && !isGrowing ? (
+        {adLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.loadingText}>{t('explore.loading_ad')}</Text>
+          </View>
+        ) : (location.loading || cafesLoading) && !isGrowing ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.primary} />
             <Text style={styles.loadingText}>
@@ -191,10 +206,10 @@ export default function ExploreScreen() {
                     <>
                       <Ionicons name="refresh-outline" size={20} color={Colors.primary} />
                       <Text style={styles.retryText}>{t('explore.retry')}</Text>
-                      {shouldShowAd() && (
+                      {needsAd() && (
                         <View style={styles.adBadge}>
                           <Ionicons name="play-circle-outline" size={14} color={Colors.textSecondary} />
-                          <Text style={styles.adBadgeText}>{t('explore.watch_ad')}</Text>
+                          <Text style={styles.adBadgeText}>{t('explore.watch_ad_to_pick')}</Text>
                         </View>
                       )}
                     </>

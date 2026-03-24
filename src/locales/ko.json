@@ -12,7 +12,10 @@
     "retry": "다시 심기",
     "watch_ad": "광고 보기",
     "loading_ad": "로딩 중...",
-    "filter": "필터"
+    "filter": "필터",
+    "free_picks": "오늘 무료 %{count}회",
+    "no_free_picks": "무료 횟수 소진",
+    "watch_ad_to_pick": "광고 보고 다시 뽑기"
   },
   "map": {
     "searching": "검색 중...",

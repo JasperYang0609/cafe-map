@@ -12,7 +12,10 @@
     "retry": "Plant again",
     "watch_ad": "Watch ad",
     "loading_ad": "Loading...",
-    "filter": "Filter"
+    "filter": "Filter",
+    "free_picks": "%{count} free picks today",
+    "no_free_picks": "Free picks used up",
+    "watch_ad_to_pick": "Watch ad to pick again"
   },
   "map": {
     "searching": "Searching...",

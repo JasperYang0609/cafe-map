@@ -12,7 +12,10 @@
     "retry": "再種一顆",
     "watch_ad": "看廣告",
     "loading_ad": "載入中...",
-    "filter": "篩選"
+    "filter": "篩選",
+    "free_picks": "今日免費 %{count} 次",
+    "no_free_picks": "免費次數已用完",
+    "watch_ad_to_pick": "看廣告再抽一次"
   },
   "map": {
     "searching": "搜尋中...",
