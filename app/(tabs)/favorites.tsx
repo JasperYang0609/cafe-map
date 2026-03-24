@@ -72,7 +72,7 @@ export default function FavoritesScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('favorites.title')}</Text>
-        <Text style={styles.countText}>🌳 {favCount}</Text>
+        <Text style={styles.countText}>🌳 × {favCount}</Text>
       </View>
 
       {/* Full-page Forest Map */}
@@ -121,10 +121,7 @@ export default function FavoritesScreen() {
           </View>
         )}
 
-        {/* Tree count overlay (always visible) */}
-        <View style={styles.treeCountBadge}>
-          <Text style={styles.treeCountText}>🌳 × {favCount}</Text>
-        </View>
+
       </View>
     </SafeAreaView>
   );
