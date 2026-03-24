@@ -1,25 +1,23 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Platform,
+  View, Text, StyleSheet, TouchableOpacity, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
-import { DEFAULT_REGION } from '../../src/constants/config';
 import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
 import { useLocation } from '../../src/hooks/useLocation';
-import CafeCard from '../../src/components/CafeCard';
 import { getSubscriptionStatus } from '../../src/lib/ads';
 
 export default function FavoritesScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
-  const { favorites, removeFavorite } = useFavorites();
+  const { favorites, favCount } = useFavorites();
   const location = useLocation();
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
@@ -59,29 +57,32 @@ export default function FavoritesScreen() {
     );
   }
 
-  // Calculate map region to fit all favorites
-  const lats = favorites.map(f => f.latitude);
-  const lngs = favorites.map(f => f.longitude);
-  const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
-  const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
-  const latDelta = Math.max(0.02, (Math.max(...lats) - Math.min(...lats)) * 1.5);
-  const lngDelta = Math.max(0.02, (Math.max(...lngs) - Math.min(...lngs)) * 1.5);
+  // Find the densest cluster center for map focus
+  // Use average of all favorites (shows the cluster center)
+  const avgLat = favorites.reduce((sum, f) => sum + f.latitude, 0) / favorites.length;
+  const avgLng = favorites.reduce((sum, f) => sum + f.longitude, 0) / favorites.length;
+
+  // Tight zoom to show density (closer = more impactful)
+  const latSpread = Math.max(...favorites.map(f => f.latitude)) - Math.min(...favorites.map(f => f.latitude));
+  const lngSpread = Math.max(...favorites.map(f => f.longitude)) - Math.min(...favorites.map(f => f.longitude));
+  const latDelta = Math.max(0.015, latSpread * 1.3);
+  const lngDelta = Math.max(0.015, lngSpread * 1.3);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('favorites.title')}</Text>
-        <Text style={styles.countText}>🌳 {favorites.length}</Text>
+        <Text style={styles.countText}>🌳 {favCount}</Text>
       </View>
 
-      {/* Forest Map */}
+      {/* Full-page Forest Map */}
       <View style={styles.mapContainer}>
         <MapView
           style={styles.map}
           provider={PROVIDER_GOOGLE}
           initialRegion={{
-            latitude: centerLat || location.latitude,
-            longitude: centerLng || location.longitude,
+            latitude: avgLat,
+            longitude: avgLng,
             latitudeDelta: latDelta,
             longitudeDelta: lngDelta,
           }}
@@ -97,16 +98,10 @@ export default function FavoritesScreen() {
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
               }}
-              {...(Platform.OS === 'ios'
-                ? { pinColor: '#2D5A27' }
-                : { tracksViewChanges: false }
-              )}
             >
-              {Platform.OS === 'android' && (
-                <View style={styles.treeMarker}>
-                  <Text style={styles.treeEmoji}>🌳</Text>
-                </View>
-              )}
+              <View style={styles.treeMarker}>
+                <Text style={styles.treeEmoji}>🌳</Text>
+              </View>
             </Marker>
           ))}
         </MapView>
@@ -114,47 +109,23 @@ export default function FavoritesScreen() {
         {/* Blur overlay for free users */}
         {!isSubscribed && (
           <View style={styles.blurOverlay}>
-            <View style={styles.lockBadge}>
-              <Ionicons name="lock-closed" size={20} color={Colors.surface} />
-              <Text style={styles.lockText}>{t('favorites.forest_title')}</Text>
+            <View style={styles.lockCard}>
+              <Ionicons name="lock-closed" size={28} color={Colors.primary} />
+              <Text style={styles.lockTitle}>{t('favorites.forest_title')}</Text>
+              <Text style={styles.lockDesc}>{t('favorites.subscribe_hint')}</Text>
+              <TouchableOpacity style={styles.unlockButton}>
+                <Ionicons name="star" size={16} color={Colors.surface} />
+                <Text style={styles.unlockText}>{t('favorites.subscribe_button')}</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.unlockButton}>
-              <Ionicons name="star" size={16} color={Colors.surface} />
-              <Text style={styles.unlockText}>{t('favorites.subscribe_button')}</Text>
-            </TouchableOpacity>
           </View>
         )}
-      </View>
 
-      {/* Subscribe banner */}
-      {!isSubscribed && (
-        <View style={styles.subscribeBanner}>
-          <Ionicons name="star" size={16} color={Colors.primary} />
-          <Text style={styles.subscribeBannerText}>{t('favorites.subscribe_hint')}</Text>
+        {/* Tree count overlay (always visible) */}
+        <View style={styles.treeCountBadge}>
+          <Text style={styles.treeCountText}>🌳 × {favCount}</Text>
         </View>
-      )}
-
-      {/* Cafe list */}
-      <FlatList
-        data={favorites}
-        keyExtractor={(item) => item.place_id}
-        renderItem={({ item }) => (
-          <View style={styles.cardContainer}>
-            <CafeCard
-              cafe={item}
-              showFavoriteButton={true}
-              isFavorited={true}
-              onFavorite={() => {
-                Alert.alert('🗑️', t('favorites.remove_confirm'), [
-                  { text: t('common.cancel'), style: 'cancel' },
-                  { text: t('favorites.remove'), style: 'destructive', onPress: () => removeFavorite(item.place_id) },
-                ]);
-              }}
-            />
-          </View>
-        )}
-        contentContainerStyle={styles.list}
-      />
+      </View>
     </SafeAreaView>
   );
 }
@@ -168,55 +139,56 @@ const styles = StyleSheet.create({
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
   countText: { fontSize: FontSize.md, color: Colors.accent, fontWeight: '600' },
 
-  // Map
+  // Full-page map
   mapContainer: {
-    height: 200, marginHorizontal: Spacing.lg,
+    flex: 1, marginHorizontal: Spacing.lg, marginBottom: Spacing.lg,
     borderRadius: BorderRadius.lg, overflow: 'hidden',
-    marginBottom: Spacing.md,
   },
   map: { flex: 1 },
-  treeMarker: {
-    backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 16, padding: 4,
-  },
-  treeEmoji: { fontSize: 20 },
+  treeMarker: { padding: 2 },
+  treeEmoji: { fontSize: 28 },
 
   // Blur overlay
   blurOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 248, 240, 0.75)',
+    backgroundColor: 'rgba(255, 248, 240, 0.8)',
     justifyContent: 'center', alignItems: 'center',
   },
-  lockBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, marginBottom: 12,
+  lockCard: {
+    alignItems: 'center', backgroundColor: Colors.surface,
+    padding: Spacing.xl, borderRadius: BorderRadius.lg,
+    marginHorizontal: Spacing.xl,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1, shadowRadius: 12, elevation: 5,
   },
-  lockText: { color: Colors.surface, fontSize: FontSize.sm, fontWeight: '600' },
+  lockTitle: {
+    fontSize: FontSize.lg, fontWeight: '700', color: Colors.text,
+    marginTop: Spacing.md, marginBottom: Spacing.sm,
+  },
+  lockDesc: {
+    fontSize: FontSize.sm, color: Colors.textSecondary,
+    textAlign: 'center', lineHeight: 20, marginBottom: Spacing.lg,
+  },
   unlockButton: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: Colors.primary, paddingHorizontal: 20, paddingVertical: 10,
+    backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12,
+    borderRadius: 99,
+  },
+  unlockText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '600' },
+
+  // Tree count badge
+  treeCountBadge: {
+    position: 'absolute', top: 12, right: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 12, paddingVertical: 6,
     borderRadius: 20,
   },
-  unlockText: { color: Colors.surface, fontSize: FontSize.sm, fontWeight: '600' },
+  treeCountText: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.accent },
 
-  // Subscribe banner
-  subscribeBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: Spacing.sm,
-    marginHorizontal: Spacing.lg, marginBottom: Spacing.md,
-    padding: Spacing.md, backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.sm, borderWidth: 1, borderColor: Colors.border,
-  },
-  subscribeBannerText: { flex: 1, fontSize: FontSize.xs, color: Colors.textSecondary },
-
-  // Empty
+  // Empty states
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.xl },
   emptyEmoji: { fontSize: 64, marginBottom: Spacing.md },
   emptyTitle: { fontSize: FontSize.xl, fontWeight: '600', color: Colors.text, marginBottom: Spacing.sm },
   emptyText: { fontSize: FontSize.md, color: Colors.textSecondary, textAlign: 'center', lineHeight: 24, marginBottom: Spacing.lg },
   loginButton: { backgroundColor: Colors.primary, paddingHorizontal: Spacing.xl, paddingVertical: Spacing.sm + 4, borderRadius: BorderRadius.full },
   loginText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '600' },
-
-  // List
-  list: { padding: Spacing.lg },
-  cardContainer: { marginBottom: Spacing.lg },
 });
