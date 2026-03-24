@@ -30,6 +30,8 @@ export async function searchNearbyCafes(
           'places.photos',
           'places.currentOpeningHours',
           'places.priceLevel',
+          'places.nationalPhoneNumber',
+          'places.websiteUri',
         ].join(','),
       },
       body: JSON.stringify({
@@ -63,6 +65,8 @@ export async function searchNearbyCafes(
       total_ratings: place.userRatingCount || 0,
       photo_reference: place.photos?.[0]?.name || null,
       photo_references: place.photos?.map((p: any) => p.name).slice(0, 5) || [],
+      phone: place.nationalPhoneNumber || null,
+      website: place.websiteUri || null,
       is_open: place.currentOpeningHours?.openNow ?? null,
       price_level: place.priceLevel ? parsePriceLevel(place.priceLevel) : null,
     }));

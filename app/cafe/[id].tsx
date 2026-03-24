@@ -39,6 +39,8 @@ export default function CafeDetailScreen() {
       : [],
     is_open: params.is_open === 'true' ? true : params.is_open === 'false' ? false : null,
     distance: params.distance ? parseFloat(params.distance as string) : undefined,
+    phone: (params.phone as string) || null,
+    website: (params.website as string) || null,
   };
 
   // Try multiple photos first, fallback to single photo_reference
@@ -60,8 +62,8 @@ export default function CafeDetailScreen() {
   };
 
   const handleFavorite = () => {
-    // TODO: Show rewarded ad then save favorite
-    Alert.alert('☕', t('favorites.subscribe_hint'), [{ text: 'OK' }]);
+    // TODO: Save to favorites
+    Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
   };
 
   const handleShare = async () => {
@@ -170,6 +172,24 @@ export default function CafeDetailScreen() {
               <Ionicons name="location-outline" size={20} color={Colors.textSecondary} />
               <Text style={styles.detailText}>{cafe.address}</Text>
             </View>
+          ) : null}
+
+          {/* Phone */}
+          {cafe.phone ? (
+            <TouchableOpacity style={styles.detailRow} onPress={() => Linking.openURL(`tel:${cafe.phone}`)}>
+              <Ionicons name="call-outline" size={20} color={Colors.primary} />
+              <Text style={[styles.detailText, { color: Colors.primary }]}>{cafe.phone}</Text>
+            </TouchableOpacity>
+          ) : null}
+
+          {/* Website */}
+          {cafe.website ? (
+            <TouchableOpacity style={styles.detailRow} onPress={() => Linking.openURL(cafe.website!)}>
+              <Ionicons name="globe-outline" size={20} color={Colors.primary} />
+              <Text style={[styles.detailText, { color: Colors.primary }]} numberOfLines={1}>
+                {cafe.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+              </Text>
+            </TouchableOpacity>
           ) : null}
 
           {/* Google Maps link */}

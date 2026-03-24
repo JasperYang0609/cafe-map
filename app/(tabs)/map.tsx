@@ -42,6 +42,8 @@ export default function MapScreen() {
         total_ratings: String(cafe.total_ratings),
         photo_reference: cafe.photo_reference || '',
         photo_references: JSON.stringify(cafe.photo_references || []),
+        phone: cafe.phone || '',
+        website: cafe.website || '',
         is_open: cafe.is_open === null || cafe.is_open === undefined ? '' : String(cafe.is_open),
         distance: cafe.distance !== undefined ? String(cafe.distance) : '',
       },
@@ -77,12 +79,8 @@ export default function MapScreen() {
   };
 
   const handleFavorite = async () => {
-    // TODO: Replace with real AdMob + real favorite save
-    Alert.alert(
-      '☕',
-      t('favorites.subscribe_hint'),
-      [{ text: 'OK' }]
-    );
+    // TODO: Save to favorites
+    Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
   };
 
   if (location.loading) {

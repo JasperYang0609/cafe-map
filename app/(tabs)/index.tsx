@@ -177,8 +177,8 @@ export default function ExploreScreen() {
                   cafe={resultCafe}
                   showFavoriteButton={true}
                   onFavorite={() => {
-                    // TODO: Show rewarded ad then save favorite
-                    Alert.alert('☕', t('favorites.subscribe_hint'), [{ text: 'OK' }]);
+                    // TODO: Save to favorites
+                    Alert.alert('✅', t('favorites.saved'), [{ text: 'OK' }]);
                   }}
                 />
                 <TouchableOpacity style={styles.retryButton} onPress={handleReset} disabled={adLoading}>

@@ -44,6 +44,8 @@ export default function CafeCard({
         total_ratings: String(cafe.total_ratings),
         photo_reference: cafe.photo_reference || '',
         photo_references: JSON.stringify(cafe.photo_references || []),
+        phone: cafe.phone || '',
+        website: cafe.website || '',
         is_open: cafe.is_open === null || cafe.is_open === undefined ? '' : String(cafe.is_open),
         distance: cafe.distance !== undefined ? String(cafe.distance) : '',
       },
