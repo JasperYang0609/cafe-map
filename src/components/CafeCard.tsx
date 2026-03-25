@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -29,6 +29,7 @@ export default function CafeCard({
 }: CafeCardProps) {
   const router = useRouter();
   const photoUrl = cafe.photo_reference ? getPhotoUrl(cafe.photo_reference) : null;
+  const [heartRating, setHeartRating] = useState(0);
 
   const handleCardPress = () => {
     router.push({
@@ -150,8 +151,22 @@ export default function CafeCard({
         <View style={styles.actions}>
           <TouchableOpacity style={styles.actionButton} onPress={handleNavigate}>
             <Ionicons name="navigate-outline" size={18} color={Colors.surface} />
-            <Text style={styles.actionText}>導航</Text>
           </TouchableOpacity>
+
+          <View style={styles.heartRating}>
+            {[1, 2, 3].map((level) => (
+              <TouchableOpacity
+                key={level}
+                onPress={() => setHeartRating(heartRating === level ? 0 : level)}
+              >
+                <Ionicons
+                  name={heartRating >= level ? 'heart' : 'heart-outline'}
+                  size={24}
+                  color={heartRating >= level ? '#E53935' : Colors.border}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -253,6 +268,12 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
     gap: Spacing.xs,
+  },
+  heartRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginLeft: 'auto',
   },
   actionText: {
     color: Colors.surface,
