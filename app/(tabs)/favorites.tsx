@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking,
+  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -24,6 +24,17 @@ export default function FavoritesScreen() {
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+
+  const triggerBounce = () => {
+    bounceAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(bounceAnim, { toValue: -12, duration: 150, useNativeDriver: true }),
+      Animated.timing(bounceAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
+      Animated.timing(bounceAnim, { toValue: -6, duration: 100, useNativeDriver: true }),
+      Animated.timing(bounceAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+    ]).start();
+  };
 
   // Not logged in
   if (!isLoggedIn) {
@@ -105,19 +116,20 @@ export default function FavoritesScreen() {
             <Marker
               key={cafe.place_id}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
-              onSelect={() => isSubscribed && setSelectedCafe(cafe)}
-              onPress={() => isSubscribed && setSelectedCafe(cafe)}
+              onSelect={() => {
+                if (isSubscribed) { setSelectedCafe(cafe); triggerBounce(); }
+              }}
+              onPress={() => {
+                if (isSubscribed) { setSelectedCafe(cafe); triggerBounce(); }
+              }}
               tracksViewChanges={true}
             >
-              <View style={[
+              <Animated.View style={[
                 styles.treeMarker,
-                selectedCafe?.place_id === cafe.place_id && styles.treeMarkerSelected,
+                selectedCafe?.place_id === cafe.place_id && { transform: [{ translateY: bounceAnim }] },
               ]}>
-                <Text style={[
-                  styles.treeEmoji,
-                  selectedCafe?.place_id === cafe.place_id && styles.treeEmojiSelected,
-                ]}>{cafe.gardenEmoji || '🌳'}</Text>
-              </View>
+                <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+              </Animated.View>
             </Marker>
           ))}
         </MapView>
@@ -210,15 +222,7 @@ const styles = StyleSheet.create({
   },
   map: { flex: 1 },
   treeMarker: { alignItems: 'center', justifyContent: 'center' },
-  treeMarkerSelected: {
-    backgroundColor: 'rgba(111, 78, 55, 0.2)',
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    padding: 4,
-  },
   treeEmoji: { fontSize: 22 },
-  treeEmojiSelected: { fontSize: 22 },
 
   // Blur
   blurOverlay: {
