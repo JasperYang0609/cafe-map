@@ -92,17 +92,6 @@ export default function FavoritesScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('favorites.title')}</Text>
-        <View style={styles.emojiCounts}>
-          {Object.entries(
-            favorites.reduce((acc: Record<string, number>, f) => {
-              const e = f.gardenEmoji || '🌳';
-              acc[e] = (acc[e] || 0) + 1;
-              return acc;
-            }, {})
-          ).map(([emoji, count]) => (
-            <Text key={emoji} style={styles.emojiCount}>{emoji}{count}</Text>
-          ))}
-        </View>
       </View>
 
       {/* Forest Map */}
@@ -213,6 +202,19 @@ export default function FavoritesScreen() {
           </View>
         )}
       </View>
+
+      {/* Emoji collection counts */}
+      <View style={styles.emojiCountsBar}>
+        {Object.entries(
+          favorites.reduce((acc: Record<string, number>, f) => {
+            const e = f.gardenEmoji || '🌳';
+            acc[e] = (acc[e] || 0) + 1;
+            return acc;
+          }, {})
+        ).map(([emoji, count]) => (
+          <Text key={emoji} style={styles.emojiCount}>{emoji}×{count}</Text>
+        ))}
+      </View>
     </SafeAreaView>
   );
 }
@@ -224,7 +226,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl + 20, paddingBottom: Spacing.md,
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
-  emojiCounts: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  emojiCountsBar: {
+    flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center',
+    gap: 8, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
+  },
   emojiCount: { fontSize: FontSize.sm, color: Colors.text, fontWeight: '600' },
 
   mapContainer: {
