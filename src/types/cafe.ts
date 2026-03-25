@@ -16,8 +16,9 @@ export interface Cafe {
   opening_hours?: string[];
   phone?: string;
   website?: string;
-  gardenItemId?: string; // garden collection item assigned on favorite
+  gardenItemId?: string;
   gardenEmoji?: string;
+  heartRating?: number; // user's personal rating (0-3 hearts)
 }
 
 export interface CafeDetail extends Cafe {

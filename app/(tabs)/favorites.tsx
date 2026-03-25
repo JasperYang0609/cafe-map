@@ -24,6 +24,19 @@ export default function FavoritesScreen() {
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
+  const [heartFilter, setHeartFilter] = useState<number | null>(null); // null=all, 0=no rating, 1-3=hearts
+
+  const filteredFavorites = heartFilter === null
+    ? favorites
+    : favorites.filter(f => (f.heartRating || 0) === heartFilter);
+
+  const FILTER_OPTIONS = [
+    { value: null, label: '全部' },
+    { value: 0, label: '🤍' },
+    { value: 1, label: '❤️' },
+    { value: 2, label: '❤️❤️' },
+    { value: 3, label: '❤️❤️❤️' },
+  ];
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
   const triggerBounce = () => {
@@ -71,10 +84,11 @@ export default function FavoritesScreen() {
     );
   }
 
-  const avgLat = favorites.reduce((sum, f) => sum + f.latitude, 0) / favorites.length;
-  const avgLng = favorites.reduce((sum, f) => sum + f.longitude, 0) / favorites.length;
-  const latSpread = Math.max(...favorites.map(f => f.latitude)) - Math.min(...favorites.map(f => f.latitude));
-  const lngSpread = Math.max(...favorites.map(f => f.longitude)) - Math.min(...favorites.map(f => f.longitude));
+  const ff = filteredFavorites.length > 0 ? filteredFavorites : favorites;
+  const avgLat = ff.reduce((sum, f) => sum + f.latitude, 0) / ff.length;
+  const avgLng = ff.reduce((sum, f) => sum + f.longitude, 0) / ff.length;
+  const latSpread = Math.max(...ff.map(f => f.latitude)) - Math.min(...ff.map(f => f.latitude));
+  const lngSpread = Math.max(...ff.map(f => f.longitude)) - Math.min(...ff.map(f => f.longitude));
   const latDelta = Math.max(0.015, latSpread * 1.5);
   const lngDelta = Math.max(0.015, lngSpread * 1.5);
 
@@ -94,6 +108,21 @@ export default function FavoritesScreen() {
         <Text style={styles.title}>{t('favorites.title')}</Text>
       </View>
 
+      {/* Heart filter chips */}
+      <View style={styles.filterRow}>
+        {FILTER_OPTIONS.map((opt) => (
+          <TouchableOpacity
+            key={String(opt.value)}
+            style={[styles.filterChip, heartFilter === opt.value && styles.filterChipActive]}
+            onPress={() => setHeartFilter(heartFilter === opt.value ? null : opt.value)}
+          >
+            <Text style={[styles.filterChipText, heartFilter === opt.value && styles.filterChipTextActive]}>
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {/* Forest Map */}
       <View style={styles.mapContainer}>
         <MapView
@@ -111,7 +140,7 @@ export default function FavoritesScreen() {
           pitchEnabled={false}
           onPress={() => setSelectedCafe(null)}
         >
-          {favorites.map((cafe) => (
+          {filteredFavorites.map((cafe) => (
             <Marker
               key={cafe.place_id}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
@@ -226,6 +255,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl + 20, paddingBottom: Spacing.md,
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
+  filterRow: {
+    flexDirection: 'row', paddingHorizontal: Spacing.lg, gap: 6, marginBottom: Spacing.sm,
+  },
+  filterChip: {
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 16,
+    backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,
+  },
+  filterChipActive: {
+    backgroundColor: Colors.primary, borderColor: Colors.primary,
+  },
+  filterChipText: {
+    fontSize: FontSize.xs, color: Colors.text,
+  },
+  filterChipTextActive: {
+    color: Colors.surface,
+  },
   emojiCountsBar: {
     flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center',
     gap: 8, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
