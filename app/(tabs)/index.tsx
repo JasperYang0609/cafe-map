@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   growArea: { flex: 1, width: '100%' },
   growAreaContent: { alignItems: 'center', paddingBottom: Spacing.md },
   treeContainer: { marginBottom: Spacing.sm },
-  treeEmoji: { fontSize: 60 },
+  treeEmoji: { fontSize: 40 },
   resultContainer: { width: width - Spacing.lg * 2 },
   retryButton: {
     flexDirection: 'row', alignSelf: 'center', alignItems: 'center', gap: Spacing.xs, paddingVertical: Spacing.md, marginTop: Spacing.sm,
