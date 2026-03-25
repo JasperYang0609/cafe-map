@@ -97,6 +97,7 @@ export default function MapScreen() {
   }
 
   return (
+    <View style={{flex:1}}>
     <View style={styles.container}>
       <MapView
         ref={mapRef}
@@ -221,13 +222,14 @@ export default function MapScreen() {
         </View>
       )}
 
-      <BannerAdPlaceholder />
 
       {location.error && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorText}>{location.error}</Text>
         </View>
       )}
+    </View>
+    <BannerAdPlaceholder />
     </View>
   );
 }

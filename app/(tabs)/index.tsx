@@ -155,7 +155,8 @@ export default function ExploreScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>{t('explore.title')}</Text>
@@ -250,21 +251,21 @@ export default function ExploreScreen() {
         )}
       </View>
 
-      <View style={styles.bannerContainer}>
-        <BannerAdPlaceholder />
-      </View>
       <FilterSheet
         visible={showFilter}
         onClose={() => setShowFilter(false)}
         onApply={(f) => setFilters(f)}
         currentFilters={filters}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+      <BannerAdPlaceholder />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  safeArea: { flex: 1 },
   header: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.md },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text, flex: 1, marginRight: Spacing.sm },

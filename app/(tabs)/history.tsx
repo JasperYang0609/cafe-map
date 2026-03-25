@@ -36,6 +36,7 @@ export default function HistoryScreen() {
   };
 
   return (
+    <View style={{flex:1, backgroundColor: Colors.background}}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('history.title')}</Text>
@@ -70,8 +71,9 @@ export default function HistoryScreen() {
           contentContainerStyle={styles.list}
         />
       )}
-      <BannerAdPlaceholder />
     </SafeAreaView>
+    <BannerAdPlaceholder />
+    </View>
   );
 }
 
