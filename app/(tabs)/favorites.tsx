@@ -37,10 +37,10 @@ export default function FavoritesScreen() {
   const triggerBounce = () => {
     bounceAnim.setValue(0);
     Animated.sequence([
-      Animated.timing(bounceAnim, { toValue: -12, duration: 150, useNativeDriver: true }),
-      Animated.timing(bounceAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-      Animated.timing(bounceAnim, { toValue: -6, duration: 100, useNativeDriver: true }),
-      Animated.timing(bounceAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+      Animated.timing(bounceAnim, { toValue: -5, duration: 120, useNativeDriver: true }),
+      Animated.timing(bounceAnim, { toValue: 0, duration: 120, useNativeDriver: true }),
+      Animated.timing(bounceAnim, { toValue: -3, duration: 80, useNativeDriver: true }),
+      Animated.timing(bounceAnim, { toValue: 0, duration: 80, useNativeDriver: true }),
     ]).start();
   };
 
@@ -150,7 +150,7 @@ export default function FavoritesScreen() {
               onPress={() => {
                 if (isSubscribed) { setSelectedCafe(cafe); triggerBounce(); }
               }}
-              tracksViewChanges={true}
+              tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
             >
               <Animated.View style={[
                 styles.treeMarker,
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg, overflow: 'hidden',
   },
   map: { flex: 1 },
-  treeMarker: { alignItems: 'center', justifyContent: 'center' },
+  treeMarker: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   treeEmoji: { fontSize: 22 },
 
   // Blur
