@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking, Animated,
+  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking, Animated, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -19,7 +19,7 @@ export default function FavoritesScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
-  const { favorites, removeFavorite, favCount } = useFavorites();
+  const { favorites, removeFavorite, favCount, setRating, getRating } = useFavorites();
   const location = useLocation();
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
@@ -112,7 +112,7 @@ export default function FavoritesScreen() {
       </View>
 
       {/* Bean rating filter */}
-      <View style={styles.filterRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterRow}>
         {FILTER_OPTIONS.map((opt) => (
           <TouchableOpacity
             key={String(opt.value)}
@@ -136,7 +136,7 @@ export default function FavoritesScreen() {
             )}
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* Forest Map */}
       <View style={styles.mapContainer}>
@@ -229,11 +229,23 @@ export default function FavoritesScreen() {
               )}
               <View style={styles.cafeInfo}>
                 <Text style={styles.cafeName} numberOfLines={1}>{selectedCafe.name}</Text>
-                <View style={styles.cafeRating}>
-                  <Ionicons name="star" size={12} color={Colors.star} />
-                  <Text style={styles.cafeRatingText}>
-                    {selectedCafe.rating > 0 ? selectedCafe.rating.toFixed(1) : '-'}
-                  </Text>
+                <View style={styles.cafeRatingRow}>
+                  <View style={styles.cafeRating}>
+                    <Ionicons name="star" size={12} color={Colors.star} />
+                    <Text style={styles.cafeRatingText}>
+                      {selectedCafe.rating > 0 ? selectedCafe.rating.toFixed(1) : '-'}
+                    </Text>
+                  </View>
+                  <View style={styles.cafeBeanRating}>
+                    {[1, 2, 3, 4].map((level) => (
+                      <TouchableOpacity key={level} onPress={() => setRating(selectedCafe.place_id, getRating(selectedCafe.place_id) === level ? 0 : level)}>
+                        <Image
+                          source={getRating(selectedCafe.place_id) >= level ? beanImg : beanGrayImg}
+                          style={styles.cafeBeanIcon}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </View>
             </TouchableOpacity>
@@ -270,8 +282,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl + 20, paddingBottom: Spacing.md,
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
+  filterScroll: { flexGrow: 0, marginBottom: Spacing.sm },
   filterRow: {
-    flexDirection: 'row', paddingHorizontal: Spacing.lg, gap: 6, marginBottom: Spacing.sm,
+    flexDirection: 'row', paddingHorizontal: Spacing.lg, gap: 6,
   },
   filterChip: {
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 16,
@@ -357,8 +370,17 @@ const styles = StyleSheet.create({
   cafeName: {
     fontSize: FontSize.md, fontWeight: '600', color: Colors.text,
   },
+  cafeRatingRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2,
+  },
   cafeRating: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+  },
+  cafeBeanRating: {
+    flexDirection: 'row', alignItems: 'center', gap: 2,
+  },
+  cafeBeanIcon: {
+    width: 14, height: 14, resizeMode: 'contain',
   },
   cafeRatingText: {
     fontSize: FontSize.sm, color: Colors.textSecondary,

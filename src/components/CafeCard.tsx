@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
 import { Cafe } from '../types/cafe';
 import { getPhotoUrl } from '../lib/places';
+import { useFavorites } from '../context/FavoritesContext';
 
 interface CafeCardProps {
   cafe: Cafe;
@@ -28,8 +29,9 @@ export default function CafeCard({
   showFavoriteButton = true,
 }: CafeCardProps) {
   const router = useRouter();
+  const { setRating, getRating } = useFavorites();
   const photoUrl = cafe.photo_reference ? getPhotoUrl(cafe.photo_reference) : null;
-  const [heartRating, setHeartRating] = useState(0);
+  const heartRating = getRating(cafe.place_id);
 
   const handleCardPress = () => {
     router.push({
@@ -157,7 +159,7 @@ export default function CafeCard({
             {[1, 2, 3, 4].map((level) => (
               <TouchableOpacity
                 key={level}
-                onPress={() => setHeartRating(heartRating === level ? 0 : level)}
+                onPress={() => setRating(cafe.place_id, heartRating === level ? 0 : level)}
               >
                 <Image
                   source={heartRating >= level
