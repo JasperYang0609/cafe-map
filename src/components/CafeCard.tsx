@@ -159,11 +159,9 @@ export default function CafeCard({
                 key={level}
                 onPress={() => setHeartRating(heartRating === level ? 0 : level)}
               >
-                <Ionicons
-                  name={heartRating >= level ? 'heart' : 'heart-outline'}
-                  size={24}
-                  color={heartRating >= level ? '#E53935' : Colors.border}
-                />
+                <Text style={{ fontSize: 20, opacity: heartRating >= level ? 1 : 0.25 }}>
+                  ☕
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
