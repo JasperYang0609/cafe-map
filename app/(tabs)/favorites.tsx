@@ -30,14 +30,6 @@ export default function FavoritesScreen() {
     ? favorites
     : favorites.filter(f => (f.heartRating || 0) === heartFilter);
 
-  const FILTER_OPTIONS: { value: number | null; beans: number }[] = [
-    { value: null, beans: 0 },
-    { value: 0, beans: 0 },
-    { value: 1, beans: 1 },
-    { value: 2, beans: 2 },
-    { value: 3, beans: 3 },
-    { value: 4, beans: 4 },
-  ];
   const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
   const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
   const bounceAnim = useRef(new Animated.Value(0)).current;
@@ -111,32 +103,20 @@ export default function FavoritesScreen() {
         <Text style={styles.title}>{t('favorites.title')}</Text>
       </View>
 
-      {/* Bean rating filter */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterRow}>
-        {FILTER_OPTIONS.map((opt) => (
+      {/* Bean rating filter - same style as CafeCard rating */}
+      <View style={styles.filterRow}>
+        {[1, 2, 3, 4].map((level) => (
           <TouchableOpacity
-            key={String(opt.value)}
-            style={[styles.filterChip, heartFilter === opt.value && styles.filterChipActive]}
-            onPress={() => setHeartFilter(heartFilter === opt.value ? null : opt.value)}
+            key={level}
+            onPress={() => setHeartFilter(heartFilter === level ? null : level)}
           >
-            {opt.value === null ? (
-              <Text style={[styles.filterChipText, heartFilter === opt.value && styles.filterChipTextActive]}>全部</Text>
-            ) : opt.beans === 0 ? (
-              <Text style={[styles.filterChipText, heartFilter === opt.value && styles.filterChipTextActive]}>☆</Text>
-            ) : (
-              <View style={styles.filterBeans}>
-                {Array.from({ length: opt.beans }).map((_, i) => (
-                  <Image
-                    key={i}
-                    source={heartFilter === opt.value ? beanImg : beanGrayImg}
-                    style={styles.filterBeanIcon}
-                  />
-                ))}
-              </View>
-            )}
+            <Image
+              source={(heartFilter !== null && heartFilter >= level) ? beanImg : beanGrayImg}
+              style={styles.filterBeanIcon}
+            />
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </View>
 
       {/* Forest Map */}
       <View style={styles.mapContainer}>
@@ -282,28 +262,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl + 20, paddingBottom: Spacing.md,
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
-  filterScroll: { flexGrow: 0, marginBottom: Spacing.sm },
   filterRow: {
-    flexDirection: 'row', paddingHorizontal: Spacing.lg, gap: 6,
-  },
-  filterChip: {
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 16,
-    backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border,
-  },
-  filterChipActive: {
-    backgroundColor: Colors.primary, borderColor: Colors.primary,
-  },
-  filterChipText: {
-    fontSize: FontSize.xs, color: Colors.text,
-  },
-  filterChipTextActive: {
-    color: Colors.surface,
-  },
-  filterBeans: {
-    flexDirection: 'row', gap: 2,
+    flexDirection: 'row', justifyContent: 'center', gap: 8,
+    paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
   },
   filterBeanIcon: {
-    width: 16, height: 16, resizeMode: 'contain',
+    width: 28, height: 28, resizeMode: 'contain',
   },
   emojiCountsBar: {
     flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center',
