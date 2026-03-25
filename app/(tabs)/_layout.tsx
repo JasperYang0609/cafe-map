@@ -26,6 +26,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t('tabs.explore'),
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="compass-outline" size={size} color={color} />
           ),
@@ -35,6 +36,7 @@ export default function TabLayout() {
         name="map"
         options={{
           title: t('tabs.map'),
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="map-outline" size={size} color={color} />
           ),
@@ -44,6 +46,7 @@ export default function TabLayout() {
         name="history"
         options={{
           title: t('tabs.history'),
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="time-outline" size={size} color={color} />
           ),

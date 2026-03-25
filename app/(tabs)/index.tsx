@@ -9,6 +9,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -196,7 +197,7 @@ export default function ExploreScreen() {
             )}
           </View>
         ) : (
-          <View style={styles.growArea}>
+          <ScrollView style={styles.growArea} contentContainerStyle={styles.growAreaContent} showsVerticalScrollIndicator={false}>
             <Animated.View
               style={[styles.treeContainer, { opacity: fadeAnim, transform: [{ scale: treeScale }] }]}
             >
@@ -245,7 +246,7 @@ export default function ExploreScreen() {
                 </TouchableOpacity>
               </Animated.View>
             )}
-          </View>
+          </ScrollView>
         )}
       </View>
 
@@ -286,7 +287,8 @@ const styles = StyleSheet.create({
   seedImage: { width: '100%', height: '100%', borderRadius: BorderRadius.lg },
   seedLabel: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.sm },
   noCafeText: { width: '100%', textAlign: 'center', marginTop: Spacing.lg, fontSize: FontSize.md, color: Colors.textSecondary, lineHeight: 24 },
-  growArea: { alignItems: 'center', width: '100%', flex: 1, justifyContent: 'center' },
+  growArea: { flex: 1, width: '100%' },
+  growAreaContent: { alignItems: 'center', paddingBottom: Spacing.md },
   treeContainer: { marginBottom: Spacing.sm },
   treeEmoji: { fontSize: 60 },
   resultContainer: { width: width - Spacing.lg * 2 },

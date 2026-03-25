@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   photo: {
     width: '100%',
-    height: 160,
+    height: 120,
   },
   photoPlaceholder: {
     backgroundColor: Colors.border,
