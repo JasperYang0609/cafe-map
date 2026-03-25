@@ -92,7 +92,17 @@ export default function FavoritesScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('favorites.title')}</Text>
-        <Text style={styles.countText}>❤️ {favCount}</Text>
+        <View style={styles.emojiCounts}>
+          {Object.entries(
+            favorites.reduce((acc: Record<string, number>, f) => {
+              const e = f.gardenEmoji || '🌳';
+              acc[e] = (acc[e] || 0) + 1;
+              return acc;
+            }, {})
+          ).map(([emoji, count]) => (
+            <Text key={emoji} style={styles.emojiCount}>{emoji}{count}</Text>
+          ))}
+        </View>
       </View>
 
       {/* Forest Map */}
@@ -214,7 +224,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl + 20, paddingBottom: Spacing.md,
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
-  countText: { fontSize: FontSize.md, color: Colors.accent, fontWeight: '600' },
+  emojiCounts: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  emojiCount: { fontSize: FontSize.sm, color: Colors.text, fontWeight: '600' },
 
   mapContainer: {
     flex: 1, marginHorizontal: Spacing.lg, marginBottom: Spacing.lg,
