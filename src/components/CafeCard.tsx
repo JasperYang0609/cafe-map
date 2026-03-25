@@ -154,14 +154,18 @@ export default function CafeCard({
           </TouchableOpacity>
 
           <View style={styles.heartRating}>
-            {[1, 2, 3].map((level) => (
+            {[1, 2, 3, 4].map((level) => (
               <TouchableOpacity
                 key={level}
                 onPress={() => setHeartRating(heartRating === level ? 0 : level)}
               >
-                <Text style={{ fontSize: 20, opacity: heartRating >= level ? 1 : 0.25 }}>
-                  ☕
-                </Text>
+                <Image
+                  source={heartRating >= level
+                    ? require('../assets/images/coffee-bean-nobg.png')
+                    : require('../assets/images/coffee-bean-gray.png')
+                  }
+                  style={styles.beanIcon}
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -270,8 +274,13 @@ const styles = StyleSheet.create({
   heartRating: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     marginLeft: 'auto',
+  },
+  beanIcon: {
+    width: 22,
+    height: 22,
+    resizeMode: 'contain',
   },
   actionText: {
     color: Colors.surface,

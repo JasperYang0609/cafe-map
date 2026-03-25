@@ -33,9 +33,10 @@ export default function FavoritesScreen() {
   const FILTER_OPTIONS = [
     { value: null, label: '全部' },
     { value: 0, label: '☆' },
-    { value: 1, label: '☕' },
-    { value: 2, label: '☕☕' },
-    { value: 3, label: '☕☕☕' },
+    { value: 1, label: '🫘' },
+    { value: 2, label: '🫘🫘' },
+    { value: 3, label: '🫘🫘🫘' },
+    { value: 4, label: '🫘🫘🫘🫘' },
   ];
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
