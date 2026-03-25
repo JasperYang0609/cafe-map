@@ -103,19 +103,24 @@ export default function FavoritesScreen() {
         <Text style={styles.title}>{t('favorites.title')}</Text>
       </View>
 
-      {/* Bean rating filter - same style as CafeCard rating */}
+      {/* Bean rating filter */}
       <View style={styles.filterRow}>
-        {[1, 2, 3, 4].map((level) => (
-          <TouchableOpacity
-            key={level}
-            onPress={() => setHeartFilter(heartFilter === level ? null : level)}
-          >
-            <Image
-              source={(heartFilter !== null && heartFilter >= level) ? beanImg : beanGrayImg}
-              style={styles.filterBeanIcon}
-            />
-          </TouchableOpacity>
-        ))}
+        <View style={styles.filterBeans}>
+          {[1, 2, 3, 4].map((level) => (
+            <TouchableOpacity
+              key={level}
+              onPress={() => setHeartFilter(heartFilter === level ? null : level)}
+            >
+              <Image
+                source={(heartFilter !== null && heartFilter >= level) ? beanImg : beanGrayImg}
+                style={styles.filterBeanIcon}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Text style={styles.filterCount}>
+          × {heartFilter === null ? favorites.length : filteredFavorites.length}
+        </Text>
       </View>
 
       {/* Forest Map */}
@@ -263,11 +268,17 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
   filterRow: {
-    flexDirection: 'row', justifyContent: 'center', gap: 8,
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
     paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
+  },
+  filterBeans: {
+    flexDirection: 'row', gap: 6,
   },
   filterBeanIcon: {
     width: 28, height: 28, resizeMode: 'contain',
+  },
+  filterCount: {
+    fontSize: FontSize.lg, fontWeight: '700', color: Colors.text, marginLeft: 4,
   },
   emojiCountsBar: {
     flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center',
