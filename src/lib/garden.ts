@@ -55,11 +55,11 @@ export function getRarityColor(rarity: string): string {
  */
 export function getRarityLabel(rarity: string): string {
   switch (rarity) {
-    case 'common':    return '★';
-    case 'uncommon':  return '★★';
-    case 'rare':      return '★★★';
-    case 'epic':      return '★★★★';
-    case 'legendary': return '★★★★★';
-    default:          return '★';
+    case 'common':    return '';
+    case 'uncommon':  return 'N';
+    case 'rare':      return 'R';
+    case 'epic':      return 'SR';
+    case 'legendary': return 'SSR';
+    default:          return '';
   }
 }

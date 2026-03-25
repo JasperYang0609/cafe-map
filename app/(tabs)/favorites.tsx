@@ -30,14 +30,16 @@ export default function FavoritesScreen() {
     ? favorites
     : favorites.filter(f => (f.heartRating || 0) === heartFilter);
 
-  const FILTER_OPTIONS = [
-    { value: null, label: '全部' },
-    { value: 0, label: '☆' },
-    { value: 1, label: '🫘' },
-    { value: 2, label: '🫘🫘' },
-    { value: 3, label: '🫘🫘🫘' },
-    { value: 4, label: '🫘🫘🫘🫘' },
+  const FILTER_OPTIONS: { value: number | null; beans: number }[] = [
+    { value: null, beans: 0 },
+    { value: 0, beans: 0 },
+    { value: 1, beans: 1 },
+    { value: 2, beans: 2 },
+    { value: 3, beans: 3 },
+    { value: 4, beans: 4 },
   ];
+  const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
+  const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
   const triggerBounce = () => {
@@ -109,7 +111,7 @@ export default function FavoritesScreen() {
         <Text style={styles.title}>{t('favorites.title')}</Text>
       </View>
 
-      {/* Heart filter chips */}
+      {/* Bean rating filter */}
       <View style={styles.filterRow}>
         {FILTER_OPTIONS.map((opt) => (
           <TouchableOpacity
@@ -117,9 +119,21 @@ export default function FavoritesScreen() {
             style={[styles.filterChip, heartFilter === opt.value && styles.filterChipActive]}
             onPress={() => setHeartFilter(heartFilter === opt.value ? null : opt.value)}
           >
-            <Text style={[styles.filterChipText, heartFilter === opt.value && styles.filterChipTextActive]}>
-              {opt.label}
-            </Text>
+            {opt.value === null ? (
+              <Text style={[styles.filterChipText, heartFilter === opt.value && styles.filterChipTextActive]}>全部</Text>
+            ) : opt.beans === 0 ? (
+              <Text style={[styles.filterChipText, heartFilter === opt.value && styles.filterChipTextActive]}>☆</Text>
+            ) : (
+              <View style={styles.filterBeans}>
+                {Array.from({ length: opt.beans }).map((_, i) => (
+                  <Image
+                    key={i}
+                    source={heartFilter === opt.value ? beanImg : beanGrayImg}
+                    style={styles.filterBeanIcon}
+                  />
+                ))}
+              </View>
+            )}
           </TouchableOpacity>
         ))}
       </View>
@@ -271,6 +285,12 @@ const styles = StyleSheet.create({
   },
   filterChipTextActive: {
     color: Colors.surface,
+  },
+  filterBeans: {
+    flexDirection: 'row', gap: 2,
+  },
+  filterBeanIcon: {
+    width: 16, height: 16, resizeMode: 'contain',
   },
   emojiCountsBar: {
     flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center',

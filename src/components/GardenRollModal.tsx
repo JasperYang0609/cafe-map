@@ -36,10 +36,10 @@ export default function GardenRollModal({ visible, emoji, rarity, onClose }: Pro
     }
   }, [visible]);
 
-  const rarityLabel = rarity === 'legendary' ? '🎉 LEGENDARY!'
-    : rarity === 'epic' ? '✨ EPIC!'
-    : rarity === 'rare' ? '💎 RARE!'
-    : rarity === 'uncommon' ? '⭐ UNCOMMON'
+  const rarityLabel = rarity === 'legendary' ? 'SSR'
+    : rarity === 'epic' ? 'SR'
+    : rarity === 'rare' ? 'R'
+    : rarity === 'uncommon' ? 'N'
     : '';
 
   const rarityColor = getRarityColor(rarity);
@@ -86,10 +86,10 @@ const styles = StyleSheet.create({
     fontSize: 72,
   },
   rarity: {
-    fontSize: FontSize.md,
+    fontSize: FontSize.sm,
     fontWeight: '800',
-    marginTop: Spacing.md,
-    letterSpacing: 1,
+    marginTop: Spacing.sm,
+    letterSpacing: 2,
   },
   okButton: {
     marginTop: Spacing.lg,
