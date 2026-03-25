@@ -22,7 +22,7 @@ import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { showRewardedAd, needsAd, recordPick, getFreePicks, getSubscriptionStatus } from '../../src/lib/ads';
 import { useFavorites } from '../../src/context/FavoritesContext';
-import { getRarityColor } from '../../src/lib/garden';
+import GardenRollModal from '../../src/components/GardenRollModal';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 
 const { width } = Dimensions.get('window');
@@ -34,14 +34,14 @@ export default function ExploreScreen() {
   const { addToHistory } = useHistory();
   const { addFavorite, isFavorited, lastRolled, clearLastRolled } = useFavorites();
 
+  const [showRollModal, setShowRollModal] = useState(false);
+  const [rollDisplay, setRollDisplay] = useState({ emoji: '', rarity: '' });
+
   // Show garden roll result when favoriting
   useEffect(() => {
     if (lastRolled) {
-      const rarityMsg = lastRolled.rarity === 'legendary' ? '🎉 Legendary!'
-        : lastRolled.rarity === 'epic' ? '✨ Epic!'
-        : lastRolled.rarity === 'rare' ? '💎 Rare!'
-        : '';
-      Alert.alert(lastRolled.emoji, rarityMsg || undefined);
+      setRollDisplay(lastRolled);
+      setShowRollModal(true);
       clearLastRolled();
     }
   }, [lastRolled]);
@@ -259,6 +259,12 @@ export default function ExploreScreen() {
       />
       </SafeAreaView>
       <BannerAdPlaceholder />
+      <GardenRollModal
+        visible={showRollModal}
+        emoji={rollDisplay.emoji}
+        rarity={rollDisplay.rarity}
+        onClose={() => setShowRollModal(false)}
+      />
     </View>
   );
 }
