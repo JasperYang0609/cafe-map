@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg, overflow: 'hidden',
   },
   map: { flex: 1 },
-  treeMarker: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  treeMarker: { alignItems: 'center', justifyContent: 'center', padding: 4 },
   treeMarkerSelected: {
     width: 48, height: 48,
     backgroundColor: 'rgba(111, 78, 55, 0.15)',
