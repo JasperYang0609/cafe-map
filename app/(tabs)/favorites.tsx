@@ -209,16 +209,16 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg, overflow: 'hidden',
   },
   map: { flex: 1 },
-  treeMarker: { alignItems: 'center', justifyContent: 'center', padding: 4 },
+  treeMarker: { alignItems: 'center', justifyContent: 'center' },
   treeMarkerSelected: {
-    width: 48, height: 48,
-    backgroundColor: 'rgba(111, 78, 55, 0.15)',
+    backgroundColor: 'rgba(111, 78, 55, 0.2)',
     borderRadius: 24,
     borderWidth: 2,
     borderColor: Colors.primary,
+    padding: 4,
   },
   treeEmoji: { fontSize: 22 },
-  treeEmojiSelected: { fontSize: 30 },
+  treeEmojiSelected: { fontSize: 22 },
 
   // Blur
   blurOverlay: {
