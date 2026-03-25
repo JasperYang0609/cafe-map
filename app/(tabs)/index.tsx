@@ -249,7 +249,9 @@ export default function ExploreScreen() {
         )}
       </View>
 
-      <BannerAdPlaceholder />
+      <View style={styles.bannerContainer}>
+        <BannerAdPlaceholder />
+      </View>
       <FilterSheet
         visible={showFilter}
         onClose={() => setShowFilter(false)}
@@ -271,7 +273,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.primary,
   },
   subtitle: { fontSize: FontSize.md, color: Colors.textSecondary, marginTop: Spacing.xs },
-  seedArea: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.lg },
+  seedArea: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.lg, overflow: 'hidden' },
   loadingContainer: { alignItems: 'center' },
   loadingText: { marginTop: Spacing.md, fontSize: FontSize.md, color: Colors.textSecondary },
   seedRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.lg, flexWrap: 'wrap' },
@@ -284,9 +286,9 @@ const styles = StyleSheet.create({
   seedImage: { width: '100%', height: '100%', borderRadius: BorderRadius.lg },
   seedLabel: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.sm },
   noCafeText: { width: '100%', textAlign: 'center', marginTop: Spacing.lg, fontSize: FontSize.md, color: Colors.textSecondary, lineHeight: 24 },
-  growArea: { alignItems: 'center', width: '100%' },
-  treeContainer: { marginBottom: Spacing.lg },
-  treeEmoji: { fontSize: 80 },
+  growArea: { alignItems: 'center', width: '100%', flex: 1, justifyContent: 'center' },
+  treeContainer: { marginBottom: Spacing.sm },
+  treeEmoji: { fontSize: 60 },
   resultContainer: { width: width - Spacing.lg * 2 },
   retryButton: {
     flexDirection: 'row', alignSelf: 'center', alignItems: 'center', gap: Spacing.xs, paddingVertical: Spacing.md, marginTop: Spacing.sm,
@@ -297,5 +299,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginLeft: 4,
   },
   adBadgeText: { fontSize: FontSize.xs, color: Colors.textSecondary },
+  bannerContainer: { flexShrink: 0 },
   noResultText: { fontSize: FontSize.md, color: Colors.textSecondary, textAlign: 'center', lineHeight: 24 },
 });
