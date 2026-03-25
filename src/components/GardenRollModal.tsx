@@ -32,9 +32,7 @@ export default function GardenRollModal({ visible, emoji, rarity, onClose }: Pro
         }),
       ]).start();
 
-      // Auto close after 2s
-      const timer = setTimeout(onClose, 2000);
-      return () => clearTimeout(timer);
+      // No auto close - user must tap OK
     }
   }, [visible]);
 
@@ -48,7 +46,7 @@ export default function GardenRollModal({ visible, emoji, rarity, onClose }: Pro
 
   return (
     <Modal visible={visible} transparent animationType="fade">
-      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
+      <View style={styles.overlay}>
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
           <Text style={styles.emoji}>{emoji}</Text>
           {rarityLabel ? (
@@ -56,8 +54,11 @@ export default function GardenRollModal({ visible, emoji, rarity, onClose }: Pro
               {rarityLabel}
             </Animated.Text>
           ) : null}
+          <TouchableOpacity style={styles.okButton} onPress={onClose}>
+            <Text style={styles.okText}>OK</Text>
+          </TouchableOpacity>
         </Animated.View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 }
@@ -89,5 +90,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginTop: Spacing.md,
     letterSpacing: 1,
+  },
+  okButton: {
+    marginTop: Spacing.lg,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 40,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.full,
+  },
+  okText: {
+    color: Colors.surface,
+    fontSize: FontSize.md,
+    fontWeight: '700',
   },
 });
