@@ -115,7 +115,8 @@
     "cancel": "キャンセル",
     "confirm": "確認",
     "error": "エラー",
-    "share_coming": "共有機能は近日公開！"
+    "share_coming": "共有機能は近日公開！",
+    "back": "戻る"
   },
   "tabs": {
     "explore": "探索",
@@ -142,13 +143,7 @@
     "feature_unlimited": "無制限の探索",
     "feature_unlimited_desc": "1日の制限なし",
     "monthly": "月額",
-    "yearly": "年額",
-    "lifetime": "買い切り",
     "per_month": "/月",
-    "per_year": "/年",
-    "one_time": "一括",
-    "best_value": "お得",
-    "popular": "人気",
     "subscribe_btn": "今すぐ登録",
     "restore": "購入を復元",
     "restore_success": "購入を復元しました",
@@ -157,6 +152,10 @@
     "purchase_success_msg": "BeanGo Pro へようこそ！",
     "purchase_fail": "購入に失敗しました",
     "terms": "サブスクリプションは自動更新されます。設定からいつでもキャンセルできます。",
-    "loading": "プランを読み込み中..."
+    "loading": "プランを読み込み中...",
+    "login_first": "先にログインしてください",
+    "not_ready": "サブスクリプション準備中です。後でお試しください",
+    "already_pro": "すでに Pro メンバーです ☕",
+    "already_pro_msg": "ご支援ありがとうございます！BeanGo Pro の全機能をお楽しみください。"
   }
 }

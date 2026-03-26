@@ -11,11 +11,9 @@ import { useI18n } from '../../src/context/I18nContext';
 import { useAuth } from '../../src/context/AuthContext';
 import {
   getOfferings, purchasePackage, restorePurchases,
-  isPurchasesAvailable, checkSubscription,
+  isPurchasesAvailable,
 } from '../../src/lib/purchases';
 import { setSubscriptionStatus } from '../../src/lib/ads';
-
-type PlanType = 'monthly' | 'yearly' | 'lifetime';
 
 const FEATURES = [
   { icon: 'ban-outline' as const, key: 'no_ads' },
@@ -27,9 +25,8 @@ const FEATURES = [
 export default function SubscribeScreen() {
   const router = useRouter();
   const { t } = useI18n();
-  const { user } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<PlanType>('yearly');
-  const [packages, setPackages] = useState<any[]>([]);
+  const { user, refreshSubscription } = useAuth();
+  const [monthlyPkg, setMonthlyPkg] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
 
@@ -43,54 +40,38 @@ export default function SubscribeScreen() {
       return;
     }
     const pkgs = await getOfferings();
-    setPackages(pkgs);
+    const monthly = pkgs.find(p =>
+      p.identifier?.toLowerCase().includes('monthly') ||
+      p.packageType?.toLowerCase().includes('monthly') ||
+      p.identifier === '$rc_monthly'
+    );
+    setMonthlyPkg(monthly || null);
     setLoading(false);
   };
 
-  const getPackageByType = (type: PlanType) => {
-    const identifierMap: Record<PlanType, string[]> = {
-      monthly: ['$rc_monthly', 'monthly'],
-      yearly: ['$rc_annual', 'yearly', 'annual'],
-      lifetime: ['$rc_lifetime', 'lifetime'],
-    };
-    return packages.find(p =>
-      identifierMap[type].some(id =>
-        p.identifier?.toLowerCase().includes(id) ||
-        p.packageType?.toLowerCase().includes(id)
-      )
-    );
-  };
-
-  const getPriceText = (type: PlanType): string => {
-    const pkg = getPackageByType(type);
-    if (pkg?.product?.priceString) return pkg.product.priceString;
-    // Fallback placeholder prices
-    switch (type) {
-      case 'monthly': return 'NT$50';
-      case 'yearly': return 'NT$390';
-      case 'lifetime': return 'NT$990';
-    }
+  const getPriceText = (): string => {
+    if (monthlyPkg?.product?.priceString) return monthlyPkg.product.priceString;
+    return 'NT$30';
   };
 
   const handlePurchase = async () => {
     if (!user) {
-      Alert.alert(t('profile.error'), '請先登入');
+      Alert.alert(t('profile.error'), t('subscribe.login_first'));
       return;
     }
 
-    const pkg = getPackageByType(selectedPlan);
-    if (!pkg) {
-      // No real package yet (App Store Connect not configured)
-      Alert.alert('提示', '訂閱商品尚未在 App Store 設定，請稍後再試');
+    if (!monthlyPkg) {
+      Alert.alert('提示', t('subscribe.not_ready'));
       return;
     }
 
     setPurchasing(true);
-    const result = await purchasePackage(pkg);
+    const result = await purchasePackage(monthlyPkg);
     setPurchasing(false);
 
     if (result.success) {
       setSubscriptionStatus(true);
+      await refreshSubscription();
       Alert.alert(t('subscribe.purchase_success'), t('subscribe.purchase_success_msg'), [
         { text: 'OK', onPress: () => router.back() },
       ]);
@@ -106,6 +87,7 @@ export default function SubscribeScreen() {
 
     if (restored) {
       setSubscriptionStatus(true);
+      await refreshSubscription();
       Alert.alert(t('subscribe.restore_success'), '', [
         { text: 'OK', onPress: () => router.back() },
       ]);
@@ -114,11 +96,26 @@ export default function SubscribeScreen() {
     }
   };
 
-  const plans: { type: PlanType; badge?: string }[] = [
-    { type: 'yearly', badge: t('subscribe.best_value') },
-    { type: 'monthly', badge: t('subscribe.popular') },
-    { type: 'lifetime' },
-  ];
+  // Already subscribed
+  if (user?.isSubscribed) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+            <Ionicons name="close" size={28} color={Colors.text} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.subscribedContainer}>
+          <Text style={styles.subscribedIcon}>☕</Text>
+          <Text style={styles.subscribedTitle}>{t('subscribe.already_pro')}</Text>
+          <Text style={styles.subscribedText}>{t('subscribe.already_pro_msg')}</Text>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Text style={styles.backBtnText}>{t('common.back')}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -156,62 +153,22 @@ export default function SubscribeScreen() {
           ))}
         </View>
 
-        {/* Plans */}
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator color={Colors.primary} />
-            <Text style={styles.loadingText}>{t('subscribe.loading')}</Text>
+        {/* Price Card */}
+        <View style={styles.priceCard}>
+          <Text style={styles.priceLabel}>{t('subscribe.monthly')}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.priceAmount}>
+              {loading ? '...' : getPriceText()}
+            </Text>
+            <Text style={styles.pricePeriod}>{t('subscribe.per_month')}</Text>
           </View>
-        ) : (
-          <View style={styles.plans}>
-            {plans.map(({ type, badge }) => (
-              <TouchableOpacity
-                key={type}
-                style={[
-                  styles.planCard,
-                  selectedPlan === type && styles.planCardSelected,
-                ]}
-                onPress={() => setSelectedPlan(type)}
-              >
-                {badge && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{badge}</Text>
-                  </View>
-                )}
-                <View style={styles.planRadio}>
-                  <View style={[
-                    styles.radioOuter,
-                    selectedPlan === type && styles.radioOuterSelected,
-                  ]}>
-                    {selectedPlan === type && <View style={styles.radioInner} />}
-                  </View>
-                </View>
-                <View style={styles.planInfo}>
-                  <Text style={[
-                    styles.planName,
-                    selectedPlan === type && styles.planNameSelected,
-                  ]}>
-                    {t(`subscribe.${type}`)}
-                  </Text>
-                  <Text style={styles.planPrice}>
-                    {getPriceText(type)}
-                    <Text style={styles.planPeriod}>
-                      {type === 'monthly' ? t('subscribe.per_month') :
-                       type === 'yearly' ? t('subscribe.per_year') :
-                       ` (${t('subscribe.one_time')})`}
-                    </Text>
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
+        </View>
 
         {/* Subscribe Button */}
         <TouchableOpacity
           style={[styles.subscribeBtn, purchasing && styles.subscribeBtnDisabled]}
           onPress={handlePurchase}
-          disabled={purchasing}
+          disabled={purchasing || loading}
         >
           {purchasing ? (
             <ActivityIndicator color="#fff" />
@@ -246,52 +203,23 @@ const styles = StyleSheet.create({
   featureRow: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.lg },
   featureIcon: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: Colors.primaryLight || '#F0E6D3',
-    justifyContent: 'center', alignItems: 'center', marginRight: Spacing.md,
+    backgroundColor: Colors.primaryLight, justifyContent: 'center',
+    alignItems: 'center', marginRight: Spacing.md,
   },
   featureText: { flex: 1 },
   featureTitle: { fontSize: FontSize.md, fontWeight: '600', color: Colors.text },
   featureDesc: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: 2 },
 
-  loadingContainer: { alignItems: 'center', padding: Spacing.xl },
-  loadingText: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.sm },
-
-  plans: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.lg },
-  planCard: {
-    flexDirection: 'row', alignItems: 'center',
+  priceCard: {
+    marginHorizontal: Spacing.lg, marginBottom: Spacing.xl,
     backgroundColor: Colors.surface, borderRadius: BorderRadius.lg,
-    borderWidth: 2, borderColor: Colors.border,
-    padding: Spacing.lg, marginBottom: Spacing.md,
-    position: 'relative', overflow: 'hidden',
+    borderWidth: 2, borderColor: Colors.primary,
+    padding: Spacing.xl, alignItems: 'center',
   },
-  planCardSelected: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primaryLight || '#FFF8F0',
-  },
-  badge: {
-    position: 'absolute', top: 0, right: 0,
-    backgroundColor: Colors.primary, paddingHorizontal: Spacing.sm, paddingVertical: 2,
-    borderBottomLeftRadius: BorderRadius.sm,
-  },
-  badgeText: { fontSize: FontSize.xs, fontWeight: '700', color: '#fff' },
-
-  planRadio: { marginRight: Spacing.md },
-  radioOuter: {
-    width: 22, height: 22, borderRadius: 11,
-    borderWidth: 2, borderColor: Colors.border,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  radioOuterSelected: { borderColor: Colors.primary },
-  radioInner: {
-    width: 12, height: 12, borderRadius: 6,
-    backgroundColor: Colors.primary,
-  },
-
-  planInfo: { flex: 1 },
-  planName: { fontSize: FontSize.md, fontWeight: '600', color: Colors.text },
-  planNameSelected: { color: Colors.primary },
-  planPrice: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.text, marginTop: 2 },
-  planPeriod: { fontSize: FontSize.sm, fontWeight: '400', color: Colors.textSecondary },
+  priceLabel: { fontSize: FontSize.md, fontWeight: '600', color: Colors.primary, marginBottom: Spacing.sm },
+  priceRow: { flexDirection: 'row', alignItems: 'baseline' },
+  priceAmount: { fontSize: 36, fontWeight: '800', color: Colors.text },
+  pricePeriod: { fontSize: FontSize.md, color: Colors.textSecondary, marginLeft: 4 },
 
   subscribeBtn: {
     backgroundColor: Colors.primary, marginHorizontal: Spacing.lg,
@@ -309,4 +237,15 @@ const styles = StyleSheet.create({
     textAlign: 'center', paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.lg,
   },
+
+  // Already subscribed state
+  subscribedContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
+  subscribedIcon: { fontSize: 64, marginBottom: Spacing.lg },
+  subscribedTitle: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.text, marginBottom: Spacing.sm },
+  subscribedText: { fontSize: FontSize.md, color: Colors.textSecondary, textAlign: 'center', marginBottom: Spacing.xl },
+  backBtn: {
+    backgroundColor: Colors.primary, paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl * 2, borderRadius: BorderRadius.full,
+  },
+  backBtnText: { color: '#fff', fontSize: FontSize.md, fontWeight: '600' },
 });

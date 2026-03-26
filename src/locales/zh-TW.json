@@ -115,7 +115,8 @@
     "cancel": "取消",
     "confirm": "確認",
     "error": "錯誤",
-    "share_coming": "分享功能即將推出！"
+    "share_coming": "分享功能即將推出！",
+    "back": "返回"
   },
   "tabs": {
     "explore": "探索",
@@ -142,13 +143,7 @@
     "feature_unlimited": "無限次探索",
     "feature_unlimited_desc": "不限每日次數",
     "monthly": "月訂閱",
-    "yearly": "年訂閱",
-    "lifetime": "終身方案",
     "per_month": "/月",
-    "per_year": "/年",
-    "one_time": "一次付費",
-    "best_value": "最划算",
-    "popular": "熱門",
     "subscribe_btn": "立即訂閱",
     "restore": "恢復購買",
     "restore_success": "購買已恢復",
@@ -157,6 +152,10 @@
     "purchase_success_msg": "歡迎成為 BeanGo Pro！",
     "purchase_fail": "購買失敗",
     "terms": "訂閱會自動續訂。可隨時在設定中取消。",
-    "loading": "載入方案中..."
+    "loading": "載入方案中...",
+    "login_first": "請先登入",
+    "not_ready": "訂閱商品準備中，請稍後再試",
+    "already_pro": "你已經是 Pro 會員 ☕",
+    "already_pro_msg": "感謝支持！你已享有完整的 BeanGo Pro 體驗。"
   }
 }

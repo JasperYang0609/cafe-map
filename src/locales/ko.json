@@ -115,7 +115,8 @@
     "cancel": "취소",
     "confirm": "확인",
     "error": "오류",
-    "share_coming": "공유 기능 곧 출시!"
+    "share_coming": "공유 기능 곧 출시!",
+    "back": "돌아가기"
   },
   "tabs": {
     "explore": "탐색",
@@ -142,13 +143,7 @@
     "feature_unlimited": "무제한 탐색",
     "feature_unlimited_desc": "일일 제한 없음",
     "monthly": "월간",
-    "yearly": "연간",
-    "lifetime": "평생",
     "per_month": "/월",
-    "per_year": "/년",
-    "one_time": "일회성",
-    "best_value": "최고 가치",
-    "popular": "인기",
     "subscribe_btn": "지금 구독",
     "restore": "구매 복원",
     "restore_success": "구매가 복원되었습니다",
@@ -157,6 +152,10 @@
     "purchase_success_msg": "BeanGo Pro에 오신 것을 환영합니다!",
     "purchase_fail": "구매 실패",
     "terms": "구독은 자동 갱신됩니다. 설정에서 언제든지 취소할 수 있습니다.",
-    "loading": "플랜 로딩 중..."
+    "loading": "플랜 로딩 중...",
+    "login_first": "먼저 로그인해주세요",
+    "not_ready": "구독 상품 준비 중입니다. 나중에 다시 시도해주세요",
+    "already_pro": "이미 Pro 회원입니다 ☕",
+    "already_pro_msg": "지원해 주셔서 감사합니다! BeanGo Pro의 모든 기능을 즐기세요."
   }
 }

@@ -115,7 +115,8 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "error": "Error",
-    "share_coming": "Share feature coming soon!"
+    "share_coming": "Share feature coming soon!",
+    "back": "Back"
   },
   "tabs": {
     "explore": "Explore",
@@ -142,13 +143,7 @@
     "feature_unlimited": "Unlimited explores",
     "feature_unlimited_desc": "No daily limits",
     "monthly": "Monthly",
-    "yearly": "Yearly",
-    "lifetime": "Lifetime",
     "per_month": "/mo",
-    "per_year": "/yr",
-    "one_time": "one-time",
-    "best_value": "Best Value",
-    "popular": "Popular",
     "subscribe_btn": "Subscribe Now",
     "restore": "Restore Purchases",
     "restore_success": "Purchases restored",
@@ -157,6 +152,10 @@
     "purchase_success_msg": "Welcome to BeanGo Pro!",
     "purchase_fail": "Purchase failed",
     "terms": "Subscriptions auto-renew. Cancel anytime in Settings.",
-    "loading": "Loading plans..."
+    "loading": "Loading plans...",
+    "login_first": "Please log in first",
+    "not_ready": "Subscription not ready yet, please try later",
+    "already_pro": "You're already Pro ☕",
+    "already_pro_msg": "Thanks for your support! You have full BeanGo Pro access."
   }
 }
