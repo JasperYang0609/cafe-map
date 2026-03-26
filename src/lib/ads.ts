@@ -1,17 +1,43 @@
 /**
- * Ad manager - Daily free picks + rewarded ads
+ * Ad manager - Google AdMob integration
  * 
- * Free users: 3 free picks per day, then watch ad for each additional pick
+ * Free users: 3 free picks per day, then watch interstitial ad for each additional pick
  * Subscribers: unlimited picks, no ads
  * 
- * TODO: Replace showRewardedAd with actual AdMob
+ * Test Ad IDs (Google official):
+ * - Interstitial iOS: ca-app-pub-3940256099942544/4411468910
+ * - Interstitial Android: ca-app-pub-3940256099942544/1033173712
+ * - Banner iOS: ca-app-pub-3940256099942544/2934735716
+ * - Banner Android: ca-app-pub-3940256099942544/6300978111
+ * 
+ * TODO: Replace with real Ad Unit IDs from Jasper's AdMob account
  */
 
+import { Platform } from 'react-native';
+
+// --- Config ---
 const DAILY_FREE_PICKS = 3;
 
+// Test Ad Unit IDs (replace with real ones later)
+export const AD_UNIT_IDS = {
+  interstitial: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/4411468910',
+    android: 'ca-app-pub-3940256099942544/1033173712',
+    default: 'ca-app-pub-3940256099942544/4411468910',
+  }),
+  banner: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/2934735716',
+    android: 'ca-app-pub-3940256099942544/6300978111',
+    default: 'ca-app-pub-3940256099942544/2934735716',
+  }),
+};
+
+// --- State ---
 let isSubscribed = false;
 let dailyPickCount = 0;
 let lastResetDate = new Date().toDateString();
+let interstitialLoaded = false;
+let interstitialAd: any = null;
 
 /**
  * Reset daily count if it's a new day
@@ -21,6 +47,57 @@ function checkDailyReset() {
   if (today !== lastResetDate) {
     dailyPickCount = 0;
     lastResetDate = today;
+  }
+}
+
+/**
+ * Initialize AdMob SDK (call once on app start)
+ */
+export async function initAds() {
+  try {
+    const ads = require('react-native-google-mobile-ads');
+    const mobileAds = ads.default;
+    await mobileAds().initialize();
+    console.log('[Ads] AdMob initialized');
+    preloadInterstitial();
+  } catch (e) {
+    console.log('[Ads] AdMob not available (Expo Go?), using fallback');
+  }
+}
+
+/**
+ * Preload an interstitial ad
+ */
+function preloadInterstitial() {
+  try {
+    const { InterstitialAd, AdEventType, TestIds } = require('react-native-google-mobile-ads');
+    const adUnitId = AD_UNIT_IDS.interstitial;
+    
+    interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
+      requestNonPersonalizedAdsOnly: true,
+    });
+
+    interstitialAd.addAdEventListener(AdEventType.LOADED, () => {
+      interstitialLoaded = true;
+      console.log('[Ads] Interstitial loaded');
+    });
+
+    interstitialAd.addAdEventListener(AdEventType.ERROR, (error: any) => {
+      interstitialLoaded = false;
+      console.log('[Ads] Interstitial load error:', error);
+      // Retry after 30s
+      setTimeout(preloadInterstitial, 30000);
+    });
+
+    interstitialAd.addAdEventListener(AdEventType.CLOSED, () => {
+      interstitialLoaded = false;
+      // Preload next one
+      preloadInterstitial();
+    });
+
+    interstitialAd.load();
+  } catch (e) {
+    console.log('[Ads] Cannot preload interstitial (Expo Go?)');
   }
 }
 
@@ -50,17 +127,35 @@ export function recordPick() {
 }
 
 /**
- * Show a rewarded ad
- * Returns true if ad was watched (or skipped for subscribers)
+ * Show an interstitial ad
+ * Returns true if ad was shown (or skipped for subscribers / Expo Go)
  */
 export async function showRewardedAd(): Promise<boolean> {
   if (isSubscribed) return true;
 
-  // TODO: Replace with actual AdMob rewarded ad
+  // Try to show real interstitial
+  if (interstitialLoaded && interstitialAd) {
+    return new Promise((resolve) => {
+      try {
+        const { AdEventType } = require('react-native-google-mobile-ads');
+        
+        const closeListener = interstitialAd.addAdEventListener(AdEventType.CLOSED, () => {
+          closeListener();
+          resolve(true);
+        });
+
+        interstitialAd.show();
+      } catch (e) {
+        console.log('[Ads] Failed to show interstitial:', e);
+        resolve(true); // Don't block user
+      }
+    });
+  }
+
+  // Fallback: 2 second wait (for Expo Go or if ad not loaded)
+  console.log('[Ads] No interstitial ready, using fallback delay');
   return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, 2000);
+    setTimeout(() => resolve(true), 2000);
   });
 }
 

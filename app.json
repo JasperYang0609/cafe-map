@@ -21,6 +21,12 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "我們需要你的位置來顯示附近的咖啡廳",
         "ITSAppUsesNonExemptEncryption": false,
+        "SKAdNetworkItems": [
+          { "SKAdNetworkIdentifier": "cstr6suwn9.skadnetwork" },
+          { "SKAdNetworkIdentifier": "4fzdc2evr5.skadnetwork" },
+          { "SKAdNetworkIdentifier": "2fnua5tdw4.skadnetwork" }
+        ],
+        "NSUserTrackingUsageDescription": "此權限可讓我們提供更相關的廣告體驗",
         "LSApplicationQueriesSchemes": [
           "comgooglemaps"
         ]
@@ -64,7 +70,14 @@
           "iosUrlScheme": "com.googleusercontent.apps.884465277657-h3ulofb2q17hift5gjb269osq7jl0cn6"
         }
       ],
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ]
     ],
     "scheme": "beango",
     "extra": {
