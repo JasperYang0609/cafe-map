@@ -124,5 +124,10 @@
     "favorites": "โปรด",
     "profile": "ฉัน"
   },
-  "app_name": "BeanGo"
+  "app_name": "BeanGo",
+  "subscription": {
+    "required_title": "ต้องสมัครสมาชิก",
+    "required_msg": "ฟีเจอร์รายการโปรดต้องสมัครสมาชิก สมัครเพื่อสะสมร้านกาแฟและปลูกต้นไม้บนแผนที่ 🌳",
+    "upgrade": "ดูเพิ่มเติม"
+  }
 }

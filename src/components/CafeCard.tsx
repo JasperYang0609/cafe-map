@@ -20,6 +20,7 @@ interface CafeCardProps {
   onFavorite?: () => void;
   isFavorited?: boolean;
   showFavoriteButton?: boolean;
+  onSubscriptionRequired?: () => void;
 }
 
 export default function CafeCard({
@@ -27,6 +28,7 @@ export default function CafeCard({
   onFavorite,
   isFavorited = false,
   showFavoriteButton = true,
+  onSubscriptionRequired,
 }: CafeCardProps) {
   const router = useRouter();
   const { setRating, getRating } = useFavorites();
@@ -110,7 +112,14 @@ export default function CafeCard({
             {cafe.name}
           </Text>
           {showFavoriteButton && (
-            <TouchableOpacity onPress={onFavorite}>
+            <TouchableOpacity onPress={() => {
+              if (isFavorited) return; // already favorited
+              if (onSubscriptionRequired) {
+                onSubscriptionRequired();
+              } else if (onFavorite) {
+                onFavorite();
+              }
+            }}>
               <Ionicons
                 name={isFavorited ? 'heart' : 'heart-outline'}
                 size={24}

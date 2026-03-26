@@ -124,5 +124,10 @@
     "favorites": "Favs",
     "profile": "Me"
   },
-  "app_name": "BeanGo"
+  "app_name": "BeanGo",
+  "subscription": {
+    "required_title": "Subscription Required",
+    "required_msg": "Favorites require a subscription. Subscribe to collect cafes and grow trees on your map 🌳",
+    "upgrade": "Learn More"
+  }
 }

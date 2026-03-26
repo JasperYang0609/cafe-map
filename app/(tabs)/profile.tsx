@@ -11,6 +11,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/context/I18nContext';
 import LanguagePicker from '../../src/components/LanguagePicker';
 import { signInWithApple, isAppleAuthAvailable } from '../../src/lib/appleAuth';
+import { signInWithGoogle } from '../../src/lib/googleAuth';
 
 type AuthMode = 'login' | 'register';
 
@@ -20,6 +21,16 @@ export default function ProfileScreen() {
   const { t } = useI18n();
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    const result = await signInWithGoogle();
+    setGoogleLoading(false);
+    if (result.error && result.error !== 'CANCELLED') {
+      Alert.alert(t('profile.error'), result.error);
+    }
+  };
 
   const handleAppleSignIn = async () => {
     setAppleLoading(true);
@@ -80,25 +91,34 @@ export default function ProfileScreen() {
             {authMode === 'login' ? t('profile.login_subtitle') : t('profile.register_subtitle')}
           </Text>
           {isAppleAuthAvailable() && (
-            <>
-              <TouchableOpacity
-                style={styles.appleButton}
-                onPress={handleAppleSignIn}
-                disabled={appleLoading}
-              >
-                <Ionicons name="logo-apple" size={20} color="#fff" />
-                <Text style={styles.appleButtonText}>
-                  {appleLoading ? t('profile.processing') : 'Sign in with Apple'}
-                </Text>
-              </TouchableOpacity>
-
-              <View style={styles.dividerRow}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or</Text>
-                <View style={styles.dividerLine} />
-              </View>
-            </>
+            <TouchableOpacity
+              style={styles.appleButton}
+              onPress={handleAppleSignIn}
+              disabled={appleLoading}
+            >
+              <Ionicons name="logo-apple" size={20} color="#fff" />
+              <Text style={styles.appleButtonText}>
+                {appleLoading ? t('profile.processing') : 'Sign in with Apple'}
+              </Text>
+            </TouchableOpacity>
           )}
+
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={handleGoogleSignIn}
+            disabled={googleLoading}
+          >
+            <Ionicons name="logo-google" size={20} color="#4285F4" />
+            <Text style={styles.googleButtonText}>
+              {googleLoading ? t('profile.processing') : 'Sign in with Google'}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
           <View style={styles.inputGroup}>
             <View style={styles.inputContainer}>
@@ -193,6 +213,17 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
 
+          <TouchableOpacity
+            style={styles.googleButton}
+            onPress={handleGoogleSignIn}
+            disabled={googleLoading}
+          >
+            <Ionicons name="logo-google" size={20} color="#4285F4" />
+            <Text style={styles.googleButtonText}>
+              {googleLoading ? t('profile.processing') : 'Sign in with Google'}
+            </Text>
+          </TouchableOpacity>
+
           <View style={styles.authButtons}>
             <TouchableOpacity style={styles.loginBtn} onPress={() => setAuthMode('login')}>
               <Text style={styles.loginBtnText}>{t('profile.login')}</Text>
@@ -253,6 +284,13 @@ const styles = StyleSheet.create({
     width: '100%', marginBottom: Spacing.md,
   },
   appleButtonText: { color: '#fff', fontSize: FontSize.md, fontWeight: '600' },
+  googleButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#fff', borderWidth: 1, borderColor: Colors.border,
+    paddingVertical: Spacing.md, borderRadius: BorderRadius.full,
+    width: '100%', marginBottom: Spacing.md,
+  },
+  googleButtonText: { color: Colors.text, fontSize: FontSize.md, fontWeight: '600' },
   dividerRow: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginBottom: Spacing.lg,
   },

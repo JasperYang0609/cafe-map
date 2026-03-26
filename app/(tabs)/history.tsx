@@ -7,11 +7,28 @@ import CafeCard from '../../src/components/CafeCard';
 import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
+import { useAuth } from '../../src/context/AuthContext';
 
 export default function HistoryScreen() {
   const { t } = useI18n();
   const { history, clearHistory } = useHistory();
   const { addFavorite, isFavorited } = useFavorites();
+  const { user } = useAuth();
+
+  const handleFavorite = (cafe: any) => {
+    if (!user?.isSubscribed) {
+      Alert.alert(
+        t('subscription.required_title') || '需要訂閱',
+        t('subscription.required_msg') || '收藏功能需要訂閱才能使用，訂閱後即可收藏咖啡廳並在地圖上種樹 🌳',
+        [
+          { text: t('common.cancel') || '取消', style: 'cancel' },
+          { text: t('subscription.upgrade') || '了解訂閱', onPress: () => {} },
+        ]
+      );
+      return;
+    }
+    addFavorite(cafe);
+  };
 
   const handleClear = () => {
     Alert.alert(t('history.clear_confirm_title'), t('history.clear_confirm_msg'), [
@@ -64,7 +81,8 @@ export default function HistoryScreen() {
                 cafe={item.cafe}
                 showFavoriteButton={true}
                 isFavorited={isFavorited(item.cafe.place_id)}
-                onFavorite={() => addFavorite(item.cafe)}
+                onFavorite={() => handleFavorite(item.cafe)}
+                onSubscriptionRequired={!user?.isSubscribed ? () => handleFavorite(item.cafe) : undefined}
               />
             </View>
           )}

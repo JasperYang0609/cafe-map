@@ -22,6 +22,7 @@ import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { showRewardedAd, needsAd, recordPick, getFreePicks, getSubscriptionStatus } from '../../src/lib/ads';
 import { useFavorites } from '../../src/context/FavoritesContext';
+import { useAuth } from '../../src/context/AuthContext';
 import GardenRollModal from '../../src/components/GardenRollModal';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 
@@ -33,6 +34,7 @@ export default function ExploreScreen() {
   const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
   const { addToHistory } = useHistory();
   const { addFavorite, isFavorited, lastRolled, clearLastRolled } = useFavorites();
+  const { user } = useAuth();
 
   const [showRollModal, setShowRollModal] = useState(false);
   const [rollDisplay, setRollDisplay] = useState({ emoji: '', rarity: '' });
@@ -213,6 +215,17 @@ export default function ExploreScreen() {
                   isFavorited={isFavorited(resultCafe.place_id)}
                   onFavorite={() => {
                     if (!isFavorited(resultCafe.place_id)) {
+                      if (!user?.isSubscribed) {
+                        Alert.alert(
+                          t('subscription.required_title') || '需要訂閱',
+                          t('subscription.required_msg') || '收藏功能需要訂閱才能使用，訂閱後即可收藏咖啡廳並在地圖上種樹 🌳',
+                          [
+                            { text: t('common.cancel') || '取消', style: 'cancel' },
+                            { text: t('subscription.upgrade') || '了解訂閱', onPress: () => {} },
+                          ]
+                        );
+                        return;
+                      }
                       addFavorite(resultCafe);
                     }
                   }}

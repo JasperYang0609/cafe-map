@@ -50,12 +50,14 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE(user_id, cafe_id)
 );
 
--- 5. 搜尋紀錄（免費 + 訂閱都有）
+-- 5. 搜尋紀錄（免費 + 訂閱都有，全量保留）
 CREATE TABLE IF NOT EXISTS search_history (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   cafe_id UUID REFERENCES cafes(id) ON DELETE CASCADE NOT NULL,
-  viewed_at TIMESTAMPTZ DEFAULT NOW()
+  viewed_at TIMESTAMPTZ DEFAULT NOW(),
+  user_rating INTEGER DEFAULT 0,
+  UNIQUE(user_id, cafe_id)
 );
 
 -- 6. 照片快取
@@ -102,11 +104,14 @@ CREATE POLICY "Users can delete own favorites" ON favorites FOR DELETE USING (au
 -- Search history: users can only see/manage their own
 CREATE POLICY "Users can view own history" ON search_history FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own history" ON search_history FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own history" ON search_history FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete own history" ON search_history FOR DELETE USING (auth.uid() = user_id);
 
 -- Cafes: everyone can read, only service role can write
 CREATE POLICY "Anyone can view cafes" ON cafes FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Service role can manage cafes" ON cafes FOR ALL TO service_role USING (true);
+CREATE POLICY "Authenticated can insert cafes" ON cafes FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY "Authenticated can update cafes" ON cafes FOR UPDATE TO authenticated USING (true);
 
 -- H3 cache: everyone can read, only service role can write
 CREATE POLICY "Anyone can view h3 cache" ON h3_cache FOR SELECT TO authenticated, anon USING (true);

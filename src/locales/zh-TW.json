@@ -124,5 +124,10 @@
     "favorites": "收藏",
     "profile": "我的"
   },
-  "app_name": "BeanGo 跑咖"
+  "app_name": "BeanGo 跑咖",
+  "subscription": {
+    "required_title": "需要訂閱",
+    "required_msg": "收藏功能需要訂閱才能使用，訂閱後即可收藏咖啡廳並在地圖上種樹 🌳",
+    "upgrade": "了解訂閱"
+  }
 }

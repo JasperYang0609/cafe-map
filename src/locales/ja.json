@@ -124,5 +124,10 @@
     "favorites": "お気に入り",
     "profile": "マイ"
   },
-  "app_name": "BeanGo"
+  "app_name": "BeanGo",
+  "subscription": {
+    "required_title": "サブスク必要",
+    "required_msg": "お気に入り機能はサブスクリプションが必要です。登録してカフェを集めてマップに木を育てましょう 🌳",
+    "upgrade": "詳しく"
+  }
 }

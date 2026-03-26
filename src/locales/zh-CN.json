@@ -110,5 +110,10 @@
     "confirm": "确认",
     "error": "错误",
     "share_coming": "分享功能即将推出！"
+  },
+  "subscription": {
+    "required_title": "需要订阅",
+    "required_msg": "收藏功能需要订阅才能使用，订阅后即可收藏咖啡厅并在地图上种树 🌳",
+    "upgrade": "了解订阅"
   }
 }
