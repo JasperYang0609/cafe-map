@@ -6,11 +6,15 @@ import { HistoryProvider } from '../src/context/HistoryContext';
 import { AuthProvider } from '../src/context/AuthContext';
 import { I18nProvider } from '../src/context/I18nContext';
 import { FavoritesProvider } from '../src/context/FavoritesContext';
-import { initAds } from '../src/lib/ads';
 
 export default function RootLayout() {
   useEffect(() => {
-    initAds();
+    // Lazy import to avoid crash in Expo Go
+    import('../src/lib/ads').then(({ initAds }) => {
+      initAds();
+    }).catch(() => {
+      console.log('[Ads] Failed to load ads module');
+    });
   }, []);
   return (
     <I18nProvider>

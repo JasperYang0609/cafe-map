@@ -70,14 +70,7 @@
           "iosUrlScheme": "com.googleusercontent.apps.884465277657-h3ulofb2q17hift5gjb269osq7jl0cn6"
         }
       ],
-      "@react-native-google-signin/google-signin",
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-7299866937396477~1013131787",
-          "iosAppId": "ca-app-pub-7299866937396477~1013131787"
-        }
-      ]
+      "@react-native-google-signin/google-signin"
     ],
     "scheme": "beango",
     "extra": {
