@@ -17,7 +17,7 @@ try {
   console.log('[Purchases] react-native-purchases not available (Expo Go?)');
 }
 
-const REVENUECAT_API_KEY = 'test_klTjDUchcHnIFxJYpBKpxnbNehP';
+const REVENUECAT_API_KEY = 'appl_gRoXqbZikpsRMiVnMyXdwKXflbi';
 const ENTITLEMENT_ID = 'BeanGo Pro';
 
 let initialized = false;
