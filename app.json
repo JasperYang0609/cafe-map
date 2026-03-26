@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "BeanGo 跑咖",
-    "slug": "beango",
+    "slug": "cafe-map",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

@@ -11,7 +11,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useI18n } from '../../src/context/I18nContext';
 import LanguagePicker from '../../src/components/LanguagePicker';
 import { signInWithApple, isAppleAuthAvailable } from '../../src/lib/appleAuth';
-import { signInWithGoogle } from '../../src/lib/googleAuth';
+import { signInWithGoogle, isGoogleAuthAvailable } from '../../src/lib/googleAuth';
 
 type AuthMode = 'login' | 'register';
 
@@ -103,16 +103,18 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            style={styles.googleButton}
-            onPress={handleGoogleSignIn}
-            disabled={googleLoading}
-          >
-            <Ionicons name="logo-google" size={20} color="#4285F4" />
-            <Text style={styles.googleButtonText}>
-              {googleLoading ? t('profile.processing') : 'Sign in with Google'}
-            </Text>
-          </TouchableOpacity>
+          {isGoogleAuthAvailable() && (
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={handleGoogleSignIn}
+              disabled={googleLoading}
+            >
+              <Ionicons name="logo-google" size={20} color="#4285F4" />
+              <Text style={styles.googleButtonText}>
+                {googleLoading ? t('profile.processing') : 'Sign in with Google'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
@@ -213,16 +215,18 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            style={styles.googleButton}
-            onPress={handleGoogleSignIn}
-            disabled={googleLoading}
-          >
-            <Ionicons name="logo-google" size={20} color="#4285F4" />
-            <Text style={styles.googleButtonText}>
-              {googleLoading ? t('profile.processing') : 'Sign in with Google'}
-            </Text>
-          </TouchableOpacity>
+          {isGoogleAuthAvailable() && (
+            <TouchableOpacity
+              style={styles.googleButton}
+              onPress={handleGoogleSignIn}
+              disabled={googleLoading}
+            >
+              <Ionicons name="logo-google" size={20} color="#4285F4" />
+              <Text style={styles.googleButtonText}>
+                {googleLoading ? t('profile.processing') : 'Sign in with Google'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <View style={styles.authButtons}>
             <TouchableOpacity style={styles.loginBtn} onPress={() => setAuthMode('login')}>
