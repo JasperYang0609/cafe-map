@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { setSubscriptionStatus } from '../lib/ads';
+import { initPurchases, loginPurchases, logoutPurchases, checkSubscription } from '../lib/purchases';
 
 interface User {
   id: string;
@@ -12,6 +13,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  refreshSubscription: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -20,6 +22,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  refreshSubscription: async () => {},
   signIn: async () => ({}),
   signUp: async () => ({}),
   signOut: async () => {},
@@ -29,21 +32,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch profile (subscription status) from Supabase
+  // Fetch profile and check subscription from both Supabase and RevenueCat
   const fetchProfile = async (userId: string, email: string, displayName?: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('is_subscribed, subscription_expires_at')
-      .eq('id', userId)
-      .single();
+    // Initialize RevenueCat and login
+    await initPurchases(userId);
+    await loginPurchases(userId);
 
-    let isSubscribed = false;
-    if (data?.is_subscribed) {
-      // Check if subscription hasn't expired
-      if (data.subscription_expires_at) {
-        isSubscribed = new Date(data.subscription_expires_at) > new Date();
-      } else {
-        isSubscribed = true;
+    // Check RevenueCat subscription first
+    let isSubscribed = await checkSubscription();
+
+    // Fallback: check Supabase profiles (for manual grants or webhook updates)
+    if (!isSubscribed) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_subscribed, subscription_expires_at')
+        .eq('id', userId)
+        .single();
+
+      if (data?.is_subscribed) {
+        if (data.subscription_expires_at) {
+          isSubscribed = new Date(data.subscription_expires_at) > new Date();
+        } else {
+          isSubscribed = true;
+        }
       }
     }
 
@@ -58,7 +69,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // Refresh subscription status (call after purchase)
+  const refreshSubscription = async () => {
+    if (!user) return;
+    const isSubscribed = await checkSubscription();
+
+    // Also check Supabase fallback
+    let finalStatus = isSubscribed;
+    if (!finalStatus) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_subscribed, subscription_expires_at')
+        .eq('id', user.id)
+        .single();
+
+      if (data?.is_subscribed) {
+        if (data.subscription_expires_at) {
+          finalStatus = new Date(data.subscription_expires_at) > new Date();
+        } else {
+          finalStatus = true;
+        }
+      }
+    }
+
+    setSubscriptionStatus(finalStatus);
+    setUser(prev => prev ? { ...prev, isSubscribed: finalStatus } : null);
+  };
+
   useEffect(() => {
+    // Initialize RevenueCat (anonymous mode for non-logged-in users)
+    initPurchases();
+
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -82,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(null);
         setSubscriptionStatus(false);
+        logoutPurchases();
       }
     });
 
@@ -111,13 +153,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    await logoutPurchases();
     await supabase.auth.signOut();
     setUser(null);
     setSubscriptionStatus(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, refreshSubscription, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

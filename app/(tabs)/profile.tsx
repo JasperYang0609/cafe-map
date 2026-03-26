@@ -168,9 +168,10 @@ export default function ProfileScreen() {
             <Text style={styles.guestText}>{t('profile.welcome')}</Text>
           </View>
           <View style={styles.section}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/subscribe')}>
               <Ionicons name="star-outline" size={22} color={Colors.primary} />
               <Text style={styles.menuText}>{t('profile.subscription')}</Text>
+              {user.isSubscribed && <Text style={styles.proBadge}>Pro</Text>}
               <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/privacy')}>
@@ -238,7 +239,7 @@ export default function ProfileScreen() {
           </View>
         </View>
         <View style={styles.section}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/subscribe')}>
             <Ionicons name="star-outline" size={22} color={Colors.primary} />
             <Text style={styles.menuText}>{t('profile.subscription')}</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
@@ -282,6 +283,11 @@ const styles = StyleSheet.create({
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   logoutItem: { borderBottomWidth: 0 },
   menuText: { flex: 1, fontSize: FontSize.md, color: Colors.text, marginLeft: Spacing.md },
+  proBadge: {
+    fontSize: FontSize.xs, fontWeight: '700', color: '#fff',
+    backgroundColor: Colors.primary, paddingHorizontal: 8, paddingVertical: 2,
+    borderRadius: 10, marginRight: Spacing.sm, overflow: 'hidden',
+  },
   appleButton: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     backgroundColor: '#000', paddingVertical: Spacing.md, borderRadius: BorderRadius.full,
