@@ -18,17 +18,17 @@ import { Platform } from 'react-native';
 // --- Config ---
 const DAILY_FREE_PICKS = 3;
 
-// Test Ad Unit IDs (replace with real ones later)
+// Real Ad Unit IDs (AdMob account: BeanGo 跑咖)
 export const AD_UNIT_IDS = {
   interstitial: Platform.select({
-    ios: 'ca-app-pub-3940256099942544/4411468910',
-    android: 'ca-app-pub-3940256099942544/1033173712',
-    default: 'ca-app-pub-3940256099942544/4411468910',
+    ios: 'ca-app-pub-7299866937396477/6951854171',
+    android: 'ca-app-pub-7299866937396477/6951854171',
+    default: 'ca-app-pub-7299866937396477/6951854171',
   }),
   banner: Platform.select({
-    ios: 'ca-app-pub-3940256099942544/2934735716',
-    android: 'ca-app-pub-3940256099942544/6300978111',
-    default: 'ca-app-pub-3940256099942544/2934735716',
+    ios: 'ca-app-pub-7299866937396477/1891099182',
+    android: 'ca-app-pub-7299866937396477/1891099182',
+    default: 'ca-app-pub-7299866937396477/1891099182',
   }),
 };
 
