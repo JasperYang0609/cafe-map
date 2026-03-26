@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.ansai.cafemap",
+      "bundleIdentifier": "com.ansai.beango",
       "config": {
         "googleMapsApiKey": "AIzaSyCtAEBCtlmo5zDXYj0ZS5FevJcP9be70I8"
       },
@@ -24,10 +24,11 @@
         "LSApplicationQueriesSchemes": [
           "comgooglemaps"
         ]
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
-      "package": "com.ansai.cafemap",
+      "package": "com.ansai.beango",
       "adaptiveIcon": {
         "backgroundColor": "#FFF8F0",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -55,9 +56,10 @@
           "locationWhenInUsePermission": "我們需要你的位置來顯示附近的咖啡廳"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-apple-authentication"
     ],
-    "scheme": "cafemap",
+    "scheme": "beango",
     "extra": {
       "router": {},
       "eas": {
