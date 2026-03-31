@@ -7,7 +7,7 @@ interface UseCafesReturn {
   cafes: Cafe[];
   loading: boolean;
   error: string | null;
-  fetchCafes: (lat: number, lng: number) => Promise<void>;
+  fetchCafes: (lat: number, lng: number, radiusKm?: number) => Promise<void>;
   getRandomCafe: () => Cafe | null;
 }
 
@@ -18,14 +18,15 @@ export function useCafes(): UseCafesReturn {
   const [userLat, setUserLat] = useState(0);
   const [userLng, setUserLng] = useState(0);
 
-  const fetchCafes = useCallback(async (lat: number, lng: number) => {
+  const fetchCafes = useCallback(async (lat: number, lng: number, radiusKm?: number) => {
     setLoading(true);
     setError(null);
     setUserLat(lat);
     setUserLng(lng);
 
     try {
-      const results = await getCafesWithCache(lat, lng);
+      const radiusMeters = radiusKm ? radiusKm * 1000 : undefined;
+      const results = await getCafesWithCache(lat, lng, radiusMeters);
 
       // Add distance to each cafe
       const withDistance = results.map((cafe) => ({

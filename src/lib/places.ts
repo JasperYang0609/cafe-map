@@ -5,14 +5,16 @@ const PLACES_BASE_URL = 'https://places.googleapis.com/v1/places:searchNearby';
 const PLACE_DETAILS_URL = 'https://places.googleapis.com/v1/places';
 const PLACE_PHOTO_URL = 'https://places.googleapis.com/v1';
 
+// Google Places API (New) maxResultCount cap is 20
+const MAX_RESULTS_PER_CALL = 20;
+
 /**
- * Search nearby cafes using Google Places API (New)
- * Returns basic info (place_id, name, location, rating)
+ * Single-circle search (max 20 results due to Google API limit)
  */
-export async function searchNearbyCafes(
+async function searchSingleCircle(
   latitude: number,
   longitude: number,
-  radius: number = PLACES_SEARCH_RADIUS
+  radius: number
 ): Promise<Cafe[]> {
   try {
     const response = await fetch(PLACES_BASE_URL, {
@@ -36,11 +38,11 @@ export async function searchNearbyCafes(
       },
       body: JSON.stringify({
         includedTypes: [PLACES_TYPE],
-        maxResultCount: 20,
+        maxResultCount: MAX_RESULTS_PER_CALL,
         locationRestriction: {
           circle: {
             center: { latitude, longitude },
-            radius,
+            radius: Math.min(radius, 50000), // Google max 50km
           },
         },
       }),
@@ -71,9 +73,93 @@ export async function searchNearbyCafes(
       price_level: place.priceLevel ? parsePriceLevel(place.priceLevel) : null,
     }));
   } catch (error) {
-    console.error('searchNearbyCafes error:', error);
+    console.error('searchSingleCircle error:', error);
     return [];
   }
+}
+
+/**
+ * Generate offset points around center to cover larger area
+ * Uses a hex-like pattern: center + 6 surrounding points
+ */
+function getSearchPoints(
+  latitude: number,
+  longitude: number,
+  radius: number
+): Array<{ lat: number; lng: number; r: number }> {
+  // For small radius (≤2km), single search is enough
+  if (radius <= 2000) {
+    return [{ lat: latitude, lng: longitude, r: radius }];
+  }
+
+  // For medium radius (≤5km), use center + 4 cardinal offsets
+  // Each sub-circle uses radius/2 to overlap and cover gaps
+  const subRadius = Math.ceil(radius * 0.6);
+  const offsetDist = radius * 0.5;
+
+  // Convert offset distance to degrees (approximate)
+  const latOffset = offsetDist / 111320;
+  const lngOffset = offsetDist / (111320 * Math.cos(latitude * Math.PI / 180));
+
+  if (radius <= 5000) {
+    return [
+      { lat: latitude, lng: longitude, r: subRadius },
+      { lat: latitude + latOffset, lng: longitude, r: subRadius },
+      { lat: latitude - latOffset, lng: longitude, r: subRadius },
+      { lat: latitude, lng: longitude + lngOffset, r: subRadius },
+      { lat: latitude, lng: longitude - lngOffset, r: subRadius },
+    ];
+  }
+
+  // For large radius (>5km), use center + 8 surrounding points
+  return [
+    { lat: latitude, lng: longitude, r: subRadius },
+    { lat: latitude + latOffset, lng: longitude, r: subRadius },
+    { lat: latitude - latOffset, lng: longitude, r: subRadius },
+    { lat: latitude, lng: longitude + lngOffset, r: subRadius },
+    { lat: latitude, lng: longitude - lngOffset, r: subRadius },
+    { lat: latitude + latOffset, lng: longitude + lngOffset, r: subRadius },
+    { lat: latitude + latOffset, lng: longitude - lngOffset, r: subRadius },
+    { lat: latitude - latOffset, lng: longitude + lngOffset, r: subRadius },
+    { lat: latitude - latOffset, lng: longitude - lngOffset, r: subRadius },
+  ];
+}
+
+/**
+ * Search nearby cafes using multi-circle strategy to overcome 20-result limit
+ * Small radius: 1 API call → up to 20 cafes
+ * Medium radius: 5 API calls → up to 100 cafes
+ * Large radius: 9 API calls → up to 180 cafes
+ * Results are deduplicated by place_id
+ */
+export async function searchNearbyCafes(
+  latitude: number,
+  longitude: number,
+  radius: number = PLACES_SEARCH_RADIUS
+): Promise<Cafe[]> {
+  const searchPoints = getSearchPoints(latitude, longitude, radius);
+
+  console.log(`[Places] Searching ${searchPoints.length} circles for radius ${radius}m`);
+
+  // Run all searches in parallel
+  const results = await Promise.all(
+    searchPoints.map(p => searchSingleCircle(p.lat, p.lng, p.r))
+  );
+
+  // Flatten and deduplicate by place_id
+  const cafeMap = new Map<string, Cafe>();
+  for (const cafes of results) {
+    for (const cafe of cafes) {
+      if (!cafeMap.has(cafe.id)) {
+        cafeMap.set(cafe.id, cafe);
+      }
+    }
+  }
+
+  const deduplicated = Array.from(cafeMap.values());
+  console.log(`[Places] Found ${deduplicated.length} unique cafes (from ${results.flat().length} total)`);
+
+  return deduplicated;
 }
 
 /**

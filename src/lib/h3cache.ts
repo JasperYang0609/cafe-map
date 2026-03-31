@@ -17,23 +17,34 @@ function getGridKey(latitude: number, longitude: number): string {
 
 /**
  * Get cafes for a location, using grid cache when available
+ * radius parameter enables multi-circle search for larger areas
  */
 export async function getCafesWithCache(
   latitude: number,
-  longitude: number
+  longitude: number,
+  radius?: number
 ): Promise<Cafe[]> {
   const gridKey = getGridKey(latitude, longitude);
 
-  // Check cache
+  // For small radius or default, try single-cell cache
+  if (!radius || radius <= 2000) {
+    const cached = await getCachedCafes(gridKey);
+    if (cached) {
+      console.log(`[Cache] HIT for ${gridKey}`);
+      return cached;
+    }
+  }
+
+  // For larger radius, check if we have enough cached cells to cover
+  // For now, check the center cell first
   const cached = await getCachedCafes(gridKey);
-  if (cached) {
-    console.log(`[Cache] HIT for ${gridKey}`);
+  if (cached && (!radius || radius <= 2000)) {
     return cached;
   }
 
-  // Cache miss → fetch from Google Places API
-  console.log(`[Cache] MISS for ${gridKey}, fetching from API...`);
-  const cafes = await searchNearbyCafes(latitude, longitude);
+  // Cache miss or large radius → fetch from Google Places API
+  console.log(`[Cache] MISS for ${gridKey}, fetching from API (radius: ${radius || 'default'})...`);
+  const cafes = await searchNearbyCafes(latitude, longitude, radius);
 
   // Save to cache without is_open (it's a point-in-time snapshot, becomes stale)
   const cafesForCache = cafes.map(({ is_open, ...rest }) => rest);

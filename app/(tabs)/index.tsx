@@ -77,9 +77,9 @@ export default function ExploreScreen() {
 
   useEffect(() => {
     if (!location.loading && !location.error) {
-      fetchCafes(location.latitude, location.longitude);
+      fetchCafes(location.latitude, location.longitude, filters.maxDistance);
     }
-  }, [location.loading, location.error, location.latitude, location.longitude]);
+  }, [location.loading, location.error, location.latitude, location.longitude, filters.maxDistance]);
 
   const handleSeedPress = async (seedId: number) => {
     if (isGrowing || cafesLoading) return;
