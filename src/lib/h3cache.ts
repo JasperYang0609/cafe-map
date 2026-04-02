@@ -1,6 +1,6 @@
 import { CACHE_TTL_DAYS } from '../constants/config';
 import { supabase } from './supabase';
-import { searchNearbyCafes } from './places';
+import { searchNearbyCafes, isCurrentlyOpen } from './places';
 import { Cafe } from '../types/cafe';
 
 /**
@@ -31,7 +31,11 @@ export async function getCafesWithCache(
     const cached = await getCachedCafes(gridKey);
     if (cached) {
       console.log(`[Cache] HIT for ${gridKey}`);
-      return cached;
+      // Recompute is_open from cached opening_hours (real-time calculation)
+      return cached.map(cafe => ({
+        ...cafe,
+        is_open: isCurrentlyOpen(cafe.opening_hours),
+      }));
     }
   }
 
@@ -39,14 +43,17 @@ export async function getCafesWithCache(
   // For now, check the center cell first
   const cached = await getCachedCafes(gridKey);
   if (cached && (!radius || radius <= 2000)) {
-    return cached;
+    return cached.map(cafe => ({
+      ...cafe,
+      is_open: isCurrentlyOpen(cafe.opening_hours),
+    }));
   }
 
   // Cache miss or large radius → fetch from Google Places API
   console.log(`[Cache] MISS for ${gridKey}, fetching from API (radius: ${radius || 'default'})...`);
   const cafes = await searchNearbyCafes(latitude, longitude, radius);
 
-  // Save to cache without is_open (it's a point-in-time snapshot, becomes stale)
+  // Save to cache: strip is_open (point-in-time snapshot) but KEEP opening_hours (cacheable schedule)
   const cafesForCache = cafes.map(({ is_open, ...rest }) => rest);
   saveCafeCache(gridKey, cafesForCache).catch(console.error);
 

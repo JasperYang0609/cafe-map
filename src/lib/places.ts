@@ -31,6 +31,7 @@ async function searchSingleCircle(
           'places.userRatingCount',
           'places.photos',
           'places.currentOpeningHours',
+          'places.regularOpeningHours',
           'places.priceLevel',
           'places.nationalPhoneNumber',
           'places.websiteUri',
@@ -70,6 +71,7 @@ async function searchSingleCircle(
       phone: place.nationalPhoneNumber || null,
       website: place.websiteUri || null,
       is_open: place.currentOpeningHours?.openNow ?? null,
+      opening_hours: parseOpeningPeriods(place.regularOpeningHours),
       price_level: place.priceLevel ? parsePriceLevel(place.priceLevel) : null,
     }));
   } catch (error) {
@@ -205,4 +207,75 @@ function parsePriceLevel(level: string): number {
     PRICE_LEVEL_VERY_EXPENSIVE: 4,
   };
   return levels[level] ?? 0;
+}
+
+/**
+ * Parse Google Places regularOpeningHours into cacheable periods
+ * Each period has open/close day (0=Sun) and time (HHMM)
+ */
+interface OpeningPeriod {
+  openDay: number;
+  openTime: string;
+  closeDay: number;
+  closeTime: string;
+}
+
+function parseOpeningPeriods(regularOpeningHours: any): OpeningPeriod[] | undefined {
+  if (!regularOpeningHours?.periods) return undefined;
+
+  return regularOpeningHours.periods.map((p: any) => ({
+    openDay: p.open?.day ?? 0,
+    openTime: `${String(p.open?.hour ?? 0).padStart(2, '0')}${String(p.open?.minute ?? 0).padStart(2, '0')}`,
+    closeDay: p.close?.day ?? p.open?.day ?? 0,
+    closeTime: p.close
+      ? `${String(p.close.hour ?? 0).padStart(2, '0')}${String(p.close.minute ?? 0).padStart(2, '0')}`
+      : '2359',
+  }));
+}
+
+/**
+ * Calculate if a cafe is currently open based on cached opening_hours periods
+ * Uses device local time (which matches Google's local business hours)
+ */
+export function isCurrentlyOpen(openingHours?: OpeningPeriod[]): boolean | null {
+  if (!openingHours || openingHours.length === 0) return null;
+
+  const now = new Date();
+  const currentDay = now.getDay(); // 0=Sun, 1=Mon, ...
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+
+  for (const period of openingHours) {
+    // Same-day period
+    if (period.openDay === period.closeDay && period.openDay === currentDay) {
+      if (currentTime >= period.openTime && currentTime < period.closeTime) {
+        return true;
+      }
+    }
+    // Cross-midnight period (e.g., open Fri 22:00 → close Sat 02:00)
+    else if (period.openDay !== period.closeDay) {
+      // Check if we're in the opening day after open time
+      if (currentDay === period.openDay && currentTime >= period.openTime) {
+        return true;
+      }
+      // Check if we're in the closing day before close time
+      if (currentDay === period.closeDay && currentTime < period.closeTime) {
+        return true;
+      }
+      // Handle wrapping (e.g., open day 6 close day 0 and we're on day 0)
+      if (period.closeDay < period.openDay) {
+        if (currentDay > period.openDay || currentDay < period.closeDay) {
+          return true;
+        }
+        if (currentDay === period.closeDay && currentTime < period.closeTime) {
+          return true;
+        }
+      }
+    }
+    // 24-hour (open 00:00 close 00:00 same day or period covers whole day)
+    if (period.openTime === '0000' && period.closeTime === '2359' && period.openDay === currentDay) {
+      return true;
+    }
+  }
+
+  return false;
 }

@@ -34,7 +34,8 @@
     "just_now": "방금",
     "minutes_ago": "%{count}분 전",
     "hours_ago": "%{count}시간 전",
-    "days_ago": "%{count}일 전"
+    "days_ago": "%{count}일 전",
+    "no_rated": "이 평점에 해당하는 기록이 없습니다"
   },
   "favorites": {
     "title": "즐겨찾기",

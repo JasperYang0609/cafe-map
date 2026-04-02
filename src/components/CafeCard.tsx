@@ -141,7 +141,7 @@ export default function CafeCard({
           <Text style={styles.reviewCount}>
             ({cafe.total_ratings})
           </Text>
-          {cafe.is_open !== null && (
+          {cafe.is_open != null && (
             <View style={[styles.openBadge, !cafe.is_open && styles.closedBadge]}>
               <Text style={[styles.openText, !cafe.is_open && styles.closedText]}>
                 {cafe.is_open ? '營業中' : '已打烊'}

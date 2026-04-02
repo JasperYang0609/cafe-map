@@ -34,7 +34,8 @@
     "just_now": "เมื่อกี้",
     "minutes_ago": "%{count} นาทีที่แล้ว",
     "hours_ago": "%{count} ชั่วโมงที่แล้ว",
-    "days_ago": "%{count} วันที่แล้ว"
+    "days_ago": "%{count} วันที่แล้ว",
+    "no_rated": "ไม่มีบันทึกที่ตรงกับคะแนนนี้"
   },
   "favorites": {
     "title": "รายการโปรด",

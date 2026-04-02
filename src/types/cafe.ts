@@ -1,3 +1,10 @@
+export interface OpeningPeriod {
+  openDay: number;
+  openTime: string;
+  closeDay: number;
+  closeTime: string;
+}
+
 export interface Cafe {
   id: string;
   place_id: string;
@@ -13,12 +20,12 @@ export interface Cafe {
   is_open?: boolean;
   price_level?: number;
   distance?: number;
-  opening_hours?: string[];
+  opening_hours?: OpeningPeriod[]; // cacheable periods from regularOpeningHours
   phone?: string;
   website?: string;
   gardenItemId?: string;
   gardenEmoji?: string;
-  heartRating?: number; // user's personal rating (0-3 hearts)
+  heartRating?: number; // user's personal rating (0-4 beans)
 }
 
 export interface CafeDetail extends Cafe {

@@ -34,7 +34,8 @@
     "just_now": "たった今",
     "minutes_ago": "%{count}分前",
     "hours_ago": "%{count}時間前",
-    "days_ago": "%{count}日前"
+    "days_ago": "%{count}日前",
+    "no_rated": "この評価に一致する記録はありません"
   },
   "favorites": {
     "title": "お気に入り",

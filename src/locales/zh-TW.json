@@ -34,7 +34,8 @@
     "just_now": "剛剛",
     "minutes_ago": "%{count} 分鐘前",
     "hours_ago": "%{count} 小時前",
-    "days_ago": "%{count} 天前"
+    "days_ago": "%{count} 天前",
+    "no_rated": "沒有符合此評分的紀錄"
   },
   "favorites": {
     "title": "我的收藏",

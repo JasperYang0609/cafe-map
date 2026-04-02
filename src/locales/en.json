@@ -34,7 +34,8 @@
     "just_now": "Just now",
     "minutes_ago": "%{count}m ago",
     "hours_ago": "%{count}h ago",
-    "days_ago": "%{count}d ago"
+    "days_ago": "%{count}d ago",
+    "no_rated": "No records match this rating"
   },
   "favorites": {
     "title": "Favorites",

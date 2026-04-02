@@ -1,6 +1,6 @@
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize } from '../../src/constants/theme';
 import CafeCard from '../../src/components/CafeCard';
@@ -12,8 +12,16 @@ import { useAuth } from '../../src/context/AuthContext';
 export default function HistoryScreen() {
   const { t } = useI18n();
   const { history, clearHistory } = useHistory();
-  const { addFavorite, isFavorited } = useFavorites();
+  const { addFavorite, isFavorited, getRating } = useFavorites();
   const { user } = useAuth();
+  const [beanFilter, setBeanFilter] = useState<number | null>(null);
+
+  const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
+  const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
+
+  const filteredHistory = beanFilter === null
+    ? history
+    : history.filter(h => (getRating(h.cafe.place_id) || 0) === beanFilter);
 
   const handleFavorite = (cafe: any) => {
     if (!user?.isSubscribed) {
@@ -71,23 +79,52 @@ export default function HistoryScreen() {
           <Text style={styles.emptyText}>{t('history.empty_text')}</Text>
         </View>
       ) : (
-        <FlatList
-          data={history}
-          keyExtractor={(item, index) => `${item.cafe.place_id}-${index}`}
-          renderItem={({ item }) => (
-            <View style={styles.cardContainer}>
-              <Text style={styles.dateText}>{formatDate(item.viewed_at)}</Text>
-              <CafeCard
-                cafe={item.cafe}
-                showFavoriteButton={true}
-                isFavorited={isFavorited(item.cafe.place_id)}
-                onFavorite={() => handleFavorite(item.cafe)}
-                onSubscriptionRequired={!user?.isSubscribed ? () => handleFavorite(item.cafe) : undefined}
-              />
+        <>
+          {/* Bean rating filter */}
+          <View style={styles.filterRow}>
+            <View style={styles.filterBeans}>
+              {[1, 2, 3, 4].map((level) => (
+                <TouchableOpacity
+                  key={level}
+                  onPress={() => setBeanFilter(beanFilter === level ? null : level)}
+                >
+                  <Image
+                    source={(beanFilter !== null && beanFilter >= level) ? beanImg : beanGrayImg}
+                    style={styles.filterBeanIcon}
+                  />
+                </TouchableOpacity>
+              ))}
             </View>
-          )}
-          contentContainerStyle={styles.list}
-        />
+            <Text style={styles.filterCount}>
+              × {beanFilter === null ? history.length : filteredHistory.length}
+            </Text>
+          </View>
+
+          <FlatList
+            data={filteredHistory}
+            keyExtractor={(item, index) => `${item.cafe.place_id}-${index}`}
+            renderItem={({ item }) => (
+              <View style={styles.cardContainer}>
+                <Text style={styles.dateText}>{formatDate(item.viewed_at)}</Text>
+                <CafeCard
+                  cafe={item.cafe}
+                  showFavoriteButton={true}
+                  isFavorited={isFavorited(item.cafe.place_id)}
+                  onFavorite={() => handleFavorite(item.cafe)}
+                  onSubscriptionRequired={!user?.isSubscribed ? () => handleFavorite(item.cafe) : undefined}
+                />
+              </View>
+            )}
+            contentContainerStyle={styles.list}
+            ListEmptyComponent={
+              <View style={styles.emptyFilter}>
+                <Text style={styles.emptyFilterText}>
+                  {t('history.no_rated') || '沒有符合此評分的紀錄'}
+                </Text>
+              </View>
+            }
+          />
+        </>
       )}
     </SafeAreaView>
     <BannerAdPlaceholder />
@@ -107,6 +144,25 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 64, marginBottom: Spacing.md },
   emptyTitle: { fontSize: FontSize.xl, fontWeight: '600', color: Colors.text, marginBottom: Spacing.sm },
   emptyText: { fontSize: FontSize.md, color: Colors.textSecondary, textAlign: 'center', lineHeight: 24 },
+  filterRow: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
+    paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
+  },
+  filterBeans: {
+    flexDirection: 'row', gap: 6,
+  },
+  filterBeanIcon: {
+    width: 28, height: 28, resizeMode: 'contain',
+  },
+  filterCount: {
+    fontSize: FontSize.lg, fontWeight: '700', color: Colors.text, marginLeft: 4,
+  },
+  emptyFilter: {
+    alignItems: 'center', paddingVertical: Spacing.xl,
+  },
+  emptyFilterText: {
+    fontSize: FontSize.md, color: Colors.textSecondary,
+  },
   list: { padding: Spacing.lg },
   cardContainer: { marginBottom: Spacing.lg },
   dateText: { fontSize: FontSize.xs, color: Colors.textSecondary, marginBottom: Spacing.xs },
