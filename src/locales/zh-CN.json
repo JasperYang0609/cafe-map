@@ -78,7 +78,12 @@
     "password_short_msg": "密码至少 6 个字符",
     "register_success": "注册成功 ☕",
     "register_success_msg": "请查看邮箱确认信后登录",
-    "error": "错误"
+    "error": "错误",
+    "terms": "服务条款",
+    "delete_account": "删除账号",
+    "delete_confirm": "确定要删除账号吗？此操作无法恢复，所有数据（收藏、搜索记录、订阅）将永久删除。",
+    "delete_success": "账号已删除",
+    "delete_success_msg": "您的账号和所有相关数据已永久删除。"
   },
   "filter": {
     "title": "筛选",

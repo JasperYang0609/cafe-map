@@ -83,7 +83,12 @@
     "password_short_msg": "비밀번호는 최소 6자 이상이어야 합니다",
     "register_success": "가입 완료 ☕",
     "register_success_msg": "이메일을 확인한 후 로그인해주세요",
-    "error": "오류"
+    "error": "오류",
+    "terms": "이용약관",
+    "delete_account": "계정 삭제",
+    "delete_confirm": "계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며 모든 데이터가 영구 삭제됩니다.",
+    "delete_success": "계정 삭제 완료",
+    "delete_success_msg": "계정과 모든 관련 데이터가 삭제되었습니다."
   },
   "filter": {
     "title": "필터",

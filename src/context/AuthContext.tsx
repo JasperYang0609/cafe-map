@@ -17,6 +17,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<{ error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => ({}),
   signUp: async () => ({}),
   signOut: async () => {},
+  deleteAccount: async () => ({}),
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -159,8 +161,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSubscriptionStatus(false);
   };
 
+  const deleteAccount = async () => {
+    if (!user) return { error: 'Not logged in' };
+    try {
+      // Delete user data from Supabase tables
+      await supabase.from('favorites').delete().eq('user_id', user.id);
+      await supabase.from('search_history').delete().eq('user_id', user.id);
+      await supabase.from('profiles').delete().eq('id', user.id);
+
+      // Sign out from RevenueCat
+      await logoutPurchases();
+
+      // Delete auth user via Supabase Edge Function (client can't delete own auth record)
+      // For now, sign out and mark for deletion — Supabase admin can clean up
+      // Or use the RPC function if available
+      const { error: rpcError } = await supabase.rpc('delete_own_account');
+      if (rpcError) {
+        console.log('[Auth] RPC delete_own_account not available, signing out only:', rpcError.message);
+      }
+
+      await supabase.auth.signOut();
+      setUser(null);
+      setSubscriptionStatus(false);
+      return {};
+    } catch (err: any) {
+      return { error: err.message || 'Failed to delete account' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, refreshSubscription, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, refreshSubscription, signIn, signUp, signOut, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

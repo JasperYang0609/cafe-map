@@ -182,8 +182,17 @@ export default function SubscribeScreen() {
           <Text style={styles.restoreBtnText}>{t('subscribe.restore')}</Text>
         </TouchableOpacity>
 
-        {/* Terms */}
+        {/* Terms & Privacy Links */}
         <Text style={styles.terms}>{t('subscribe.terms')}</Text>
+        <View style={styles.legalLinks}>
+          <TouchableOpacity onPress={() => router.push('/pages/privacy')}>
+            <Text style={styles.legalLink}>{t('profile.privacy')}</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSep}>·</Text>
+          <TouchableOpacity onPress={() => router.push('/pages/terms')}>
+            <Text style={styles.legalLink}>{t('profile.terms')}</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -235,7 +244,17 @@ const styles = StyleSheet.create({
   terms: {
     fontSize: FontSize.xs, color: Colors.textSecondary,
     textAlign: 'center', paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
+    paddingTop: Spacing.lg, paddingBottom: Spacing.sm,
+  },
+  legalLinks: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    paddingBottom: Spacing.lg, gap: 8,
+  },
+  legalLink: {
+    fontSize: FontSize.xs, color: Colors.primary, textDecorationLine: 'underline',
+  },
+  legalSep: {
+    fontSize: FontSize.xs, color: Colors.textSecondary,
   },
 
   // Already subscribed state

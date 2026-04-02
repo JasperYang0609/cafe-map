@@ -83,7 +83,12 @@
     "password_short_msg": "Password must be at least 6 characters",
     "register_success": "Registration Successful ☕",
     "register_success_msg": "Please check your email to confirm",
-    "error": "Error"
+    "error": "Error",
+    "terms": "Terms of Use",
+    "delete_account": "Delete Account",
+    "delete_confirm": "Are you sure? This cannot be undone. All data (favorites, history, subscription) will be permanently deleted.",
+    "delete_success": "Account Deleted",
+    "delete_success_msg": "Your account and all associated data have been permanently deleted."
   },
   "filter": {
     "title": "Filter",

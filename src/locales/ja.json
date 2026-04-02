@@ -83,7 +83,12 @@
     "password_short_msg": "パスワードは6文字以上必要です",
     "register_success": "登録完了 ☕",
     "register_success_msg": "メールで確認してからログインしてください",
-    "error": "エラー"
+    "error": "エラー",
+    "terms": "利用規約",
+    "delete_account": "アカウント削除",
+    "delete_confirm": "アカウントを削除しますか？この操作は取り消せません。すべてのデータが永久に削除されます。",
+    "delete_success": "アカウント削除完了",
+    "delete_success_msg": "アカウントとすべての関連データが削除されました。"
   },
   "filter": {
     "title": "フィルター",

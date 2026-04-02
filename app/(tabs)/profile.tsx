@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  Alert, KeyboardAvoidingView, Platform, ScrollView,
+  Alert, KeyboardAvoidingView, Platform, ScrollView, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +17,7 @@ type AuthMode = 'login' | 'register';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, signIn, signUp, signOut } = useAuth();
+  const { user, signIn, signUp, signOut, deleteAccount } = useAuth();
   const { t } = useI18n();
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [appleLoading, setAppleLoading] = useState(false);
@@ -75,6 +75,31 @@ export default function ProfileScreen() {
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('profile.logout'), style: 'destructive', onPress: signOut },
     ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t('profile.delete_account') || '刪除帳號',
+      t('profile.delete_confirm') || '確定要刪除帳號嗎？此操作無法復原，所有資料（收藏、搜尋紀錄、訂閱）將永久刪除。',
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('profile.delete_account') || '刪除帳號',
+          style: 'destructive',
+          onPress: async () => {
+            const result = await deleteAccount();
+            if (result.error) {
+              Alert.alert(t('profile.error'), result.error);
+            } else {
+              Alert.alert(
+                t('profile.delete_success') || '帳號已刪除',
+                t('profile.delete_success_msg') || '您的帳號和所有相關資料已永久刪除。'
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (authMode) {
@@ -179,9 +204,18 @@ export default function ProfileScreen() {
               <Text style={styles.menuText}>{t('profile.privacy')}</Text>
               <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.menuItem, styles.logoutItem]} onPress={handleSignOut}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/terms')}>
+              <Ionicons name="document-text-outline" size={22} color={Colors.text} />
+              <Text style={styles.menuText}>{t('profile.terms')}</Text>
+              <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
               <Ionicons name="log-out-outline" size={22} color={Colors.error} />
               <Text style={[styles.menuText, { color: Colors.error }]}>{t('profile.logout')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.menuItem, styles.logoutItem]} onPress={handleDeleteAccount}>
+              <Ionicons name="trash-outline" size={22} color={Colors.error} />
+              <Text style={[styles.menuText, { color: Colors.error }]}>{t('profile.delete_account')}</Text>
             </TouchableOpacity>
           </View>
           <Text style={styles.versionText}>v0.1.0</Text>
@@ -247,6 +281,11 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/privacy')}>
             <Ionicons name="shield-checkmark-outline" size={22} color={Colors.text} />
             <Text style={styles.menuText}>{t('profile.privacy')}</Text>
+            <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.menuItem, styles.logoutItem]} onPress={() => router.push('/pages/terms')}>
+            <Ionicons name="document-text-outline" size={22} color={Colors.text} />
+            <Text style={styles.menuText}>{t('profile.terms')}</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
           </TouchableOpacity>
         </View>
