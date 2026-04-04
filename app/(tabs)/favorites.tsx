@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking, Animated, ScrollView,
+  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking, Animated, ScrollView, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -8,6 +8,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useAuth } from '../../src/context/AuthContext';
+import { GARDEN_ITEMS, getRarityColor } from '../../src/lib/garden';
 import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
 import { useLocation } from '../../src/hooks/useLocation';
@@ -25,6 +26,20 @@ export default function FavoritesScreen() {
   const isSubscribed = getSubscriptionStatus();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [heartFilter, setHeartFilter] = useState<number | null>(null); // null=all, 0=no rating, 1-3=hearts
+  const [showRarityGuide, setShowRarityGuide] = useState(false);
+
+  // Collected emoji set for rarity guide
+  const collectedEmojis = new Set(favorites.map(f => f.gardenEmoji || '🌳'));
+
+  // Rarity order for sorting (legendary first)
+  const RARITY_ORDER: Record<string, number> = {
+    legendary: 0, epic: 1, rare: 2, uncommon: 3, common: 4,
+  };
+
+  // Rarity label map
+  const RARITY_LABELS: Record<string, string> = {
+    common: 'C', uncommon: 'N', rare: 'R', epic: 'SR', legendary: 'SSR',
+  };
 
   const filteredFavorites = heartFilter === null
     ? favorites
@@ -244,7 +259,7 @@ export default function FavoritesScreen() {
         )}
       </View>
 
-      {/* Emoji collection counts */}
+      {/* Emoji collection counts — sorted by rarity */}
       <View style={styles.emojiCountsBar}>
         {Object.entries(
           favorites.reduce((acc: Record<string, number>, f) => {
@@ -252,10 +267,69 @@ export default function FavoritesScreen() {
             acc[e] = (acc[e] || 0) + 1;
             return acc;
           }, {})
-        ).map(([emoji, count]) => (
-          <Text key={emoji} style={styles.emojiCount}>{emoji}×{count}</Text>
-        ))}
+        )
+          .sort(([emojiA], [emojiB]) => {
+            const itemA = GARDEN_ITEMS.find(g => g.emoji === emojiA);
+            const itemB = GARDEN_ITEMS.find(g => g.emoji === emojiB);
+            return (RARITY_ORDER[itemA?.rarity || 'common'] ?? 99)
+              - (RARITY_ORDER[itemB?.rarity || 'common'] ?? 99);
+          })
+          .map(([emoji, count]) => {
+            const item = GARDEN_ITEMS.find(g => g.emoji === emoji);
+            return (
+              <Text key={emoji} style={[styles.emojiCount, item && { color: getRarityColor(item.rarity) }]}>
+                {emoji}×{count}
+              </Text>
+            );
+          })}
+        <TouchableOpacity style={styles.rarityGuideBtn} onPress={() => setShowRarityGuide(true)}>
+          <Ionicons name="help-circle-outline" size={20} color={Colors.textSecondary} />
+        </TouchableOpacity>
       </View>
+
+      {/* Rarity Guide Modal */}
+      <Modal visible={showRarityGuide} transparent animationType="fade" onRequestClose={() => setShowRarityGuide(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowRarityGuide(false)}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>🌳 花園圖鑑</Text>
+              <TouchableOpacity onPress={() => setShowRarityGuide(false)}>
+                <Ionicons name="close" size={24} color={Colors.text} />
+              </TouchableOpacity>
+            </View>
+            {[...GARDEN_ITEMS]
+              .sort((a, b) => (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99))
+              .map((item) => {
+                const owned = collectedEmojis.has(item.emoji);
+                const count = favorites.filter(f => (f.gardenEmoji || '🌳') === item.emoji).length;
+                return (
+                  <View key={item.id} style={[styles.guideRow, !owned && styles.guideRowLocked]}>
+                    <Text style={[styles.guideEmoji, !owned && styles.guideEmojiLocked]}>
+                      {owned ? item.emoji : '❓'}
+                    </Text>
+                    <View style={styles.guideInfo}>
+                      <View style={styles.guideNameRow}>
+                        <Text style={[styles.guideBadge, { backgroundColor: getRarityColor(item.rarity) }]}>
+                          {RARITY_LABELS[item.rarity] || 'C'}
+                        </Text>
+                        <Text style={[styles.guideName, !owned && styles.guideNameLocked]}>
+                          {owned ? item.id.charAt(0).toUpperCase() + item.id.slice(1) : '???'}
+                        </Text>
+                      </View>
+                      <Text style={styles.guideRate}>
+                        {item.weight}% {owned ? `· ×${count}` : '· 未收集'}
+                      </Text>
+                    </View>
+                    {owned && <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />}
+                  </View>
+                );
+              })}
+            <Text style={styles.guideFooter}>
+              已收集 {collectedEmojis.size} / {GARDEN_ITEMS.length} 種
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -285,6 +359,41 @@ const styles = StyleSheet.create({
     gap: 8, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
   },
   emojiCount: { fontSize: FontSize.sm, color: Colors.text, fontWeight: '600' },
+  rarityGuideBtn: { marginLeft: 4, padding: 2 },
+
+  // Rarity Guide Modal
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center',
+  },
+  modalCard: {
+    backgroundColor: Colors.surface, borderRadius: BorderRadius.lg,
+    padding: Spacing.lg, width: '85%', maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  modalTitle: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.text },
+  guideRow: {
+    flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.sm,
+    borderBottomWidth: 1, borderBottomColor: Colors.border,
+  },
+  guideRowLocked: { opacity: 0.5 },
+  guideEmoji: { fontSize: 28, width: 40, textAlign: 'center' },
+  guideEmojiLocked: { fontSize: 22 },
+  guideInfo: { flex: 1, marginLeft: Spacing.sm },
+  guideNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  guideBadge: {
+    fontSize: 10, fontWeight: '800', color: '#fff',
+    paddingHorizontal: 6, paddingVertical: 1, borderRadius: 4, overflow: 'hidden',
+  },
+  guideName: { fontSize: FontSize.md, fontWeight: '600', color: Colors.text },
+  guideNameLocked: { color: Colors.textSecondary },
+  guideRate: { fontSize: FontSize.xs, color: Colors.textSecondary, marginTop: 2 },
+  guideFooter: {
+    textAlign: 'center', fontSize: FontSize.sm, color: Colors.textSecondary,
+    marginTop: Spacing.md, fontWeight: '600',
+  },
 
   mapContainer: {
     flex: 1, marginHorizontal: Spacing.lg, marginBottom: Spacing.lg,
