@@ -272,7 +272,8 @@ export default function FavoritesScreen() {
             const itemA = GARDEN_ITEMS.find(g => g.emoji === emojiA);
             const itemB = GARDEN_ITEMS.find(g => g.emoji === emojiB);
             return (RARITY_ORDER[itemA?.rarity || 'common'] ?? 99)
-              - (RARITY_ORDER[itemB?.rarity || 'common'] ?? 99);
+              - (RARITY_ORDER[itemB?.rarity || 'common'] ?? 99)
+              || (itemA?.weight ?? 99) - (itemB?.weight ?? 99);
           })
           .map(([emoji, count]) => {
             const item = GARDEN_ITEMS.find(g => g.emoji === emoji);
@@ -298,7 +299,7 @@ export default function FavoritesScreen() {
               </TouchableOpacity>
             </View>
             {[...GARDEN_ITEMS]
-              .sort((a, b) => (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99))
+              .sort((a, b) => (RARITY_ORDER[a.rarity] ?? 99) - (RARITY_ORDER[b.rarity] ?? 99) || a.weight - b.weight)
               .map((item) => {
                 const owned = collectedEmojis.has(item.emoji);
                 const count = favorites.filter(f => (f.gardenEmoji || '🌳') === item.emoji).length;
