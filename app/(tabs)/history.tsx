@@ -4,13 +4,16 @@ import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Alert } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize } from '../../src/constants/theme';
 import CafeCard from '../../src/components/CafeCard';
+import { useRouter } from 'expo-router';
 import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
 import { useAuth } from '../../src/context/AuthContext';
+import { showRewardedAd } from '../../src/lib/ads';
 
 export default function HistoryScreen() {
   const { t } = useI18n();
+  const router = useRouter();
   const { history, clearHistory } = useHistory();
   const { addFavorite, isFavorited, getRating } = useFavorites();
   const { user } = useAuth();
@@ -24,18 +27,28 @@ export default function HistoryScreen() {
     : history.filter(h => (getRating(h.cafe.place_id) || 0) === beanFilter);
 
   const handleFavorite = (cafe: any) => {
-    if (!user?.isSubscribed) {
-      Alert.alert(
-        t('subscription.required_title') || '需要訂閱',
-        t('subscription.required_msg') || '收藏功能需要訂閱才能使用，訂閱後即可收藏咖啡廳並在地圖上種樹 🌳',
-        [
-          { text: t('common.cancel') || '取消', style: 'cancel' },
-          { text: t('subscription.upgrade') || '了解訂閱', onPress: () => {} },
-        ]
-      );
+    if (user?.isSubscribed) {
+      addFavorite(cafe);
       return;
     }
-    addFavorite(cafe);
+
+    Alert.alert(
+      '收藏這間咖啡廳',
+      '免費用戶可觀看一則廣告後收藏，也可以直接升級 BeanGo Pro 享受無廣告收藏體驗。',
+      [
+        { text: t('common.cancel') || '取消', style: 'cancel' },
+        { text: t('subscription.upgrade') || '了解訂閱', onPress: () => router.push('/pages/subscribe') },
+        {
+          text: '看廣告後收藏',
+          onPress: async () => {
+            const watched = await showRewardedAd();
+            if (watched) {
+              await addFavorite(cafe);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleClear = () => {
@@ -111,7 +124,6 @@ export default function HistoryScreen() {
                   showFavoriteButton={true}
                   isFavorited={isFavorited(item.cafe.place_id)}
                   onFavorite={() => handleFavorite(item.cafe)}
-                  onSubscriptionRequired={!user?.isSubscribed ? () => handleFavorite(item.cafe) : undefined}
                 />
               </View>
             )}

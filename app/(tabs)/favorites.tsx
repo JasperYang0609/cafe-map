@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
@@ -24,6 +25,7 @@ export default function FavoritesScreen() {
   const location = useLocation();
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
+  const showAds = !isSubscribed;
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [heartFilter, setHeartFilter] = useState<number | null>(null); // null=all, 0=no rating, 1-3=hearts
   const [showRarityGuide, setShowRarityGuide] = useState(false);
@@ -113,6 +115,7 @@ export default function FavoritesScreen() {
   };
 
   return (
+    <View style={styles.screen}>
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('favorites.title')}</Text>
@@ -149,8 +152,8 @@ export default function FavoritesScreen() {
             latitudeDelta: latDelta,
             longitudeDelta: lngDelta,
           }}
-          scrollEnabled={isSubscribed}
-          zoomEnabled={isSubscribed}
+          scrollEnabled
+          zoomEnabled
           rotateEnabled={false}
           pitchEnabled={false}
           onPress={() => setSelectedCafe(null)}
@@ -160,10 +163,10 @@ export default function FavoritesScreen() {
               key={cafe.place_id}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
               onSelect={() => {
-                if (isSubscribed) { setSelectedCafe(cafe); triggerBounce(); }
+                setSelectedCafe(cafe); triggerBounce();
               }}
               onPress={() => {
-                if (isSubscribed) { setSelectedCafe(cafe); triggerBounce(); }
+                setSelectedCafe(cafe); triggerBounce();
               }}
               tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
             >
@@ -177,23 +180,8 @@ export default function FavoritesScreen() {
           ))}
         </MapView>
 
-        {/* Blur overlay for free users */}
-        {!isSubscribed && (
-          <View style={styles.blurOverlay}>
-            <View style={styles.lockCard}>
-              <Ionicons name="lock-closed" size={28} color={Colors.primary} />
-              <Text style={styles.lockTitle}>{t('favorites.forest_title')}</Text>
-              <Text style={styles.lockDesc}>{t('favorites.subscribe_hint')}</Text>
-              <TouchableOpacity style={styles.unlockButton}>
-                <Ionicons name="star" size={16} color={Colors.surface} />
-                <Text style={styles.unlockText}>{t('favorites.subscribe_button')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* Selected cafe card (subscribers only) */}
-        {selectedCafe && isSubscribed && (
+        {/* Selected cafe card */}
+        {selectedCafe && (
           <View style={styles.cafeCard}>
             <TouchableOpacity
               style={styles.cafeCardRow}
@@ -332,10 +320,13 @@ export default function FavoritesScreen() {
         </TouchableOpacity>
       </Modal>
     </SafeAreaView>
+    {showAds && <BannerAdPlaceholder />}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: Colors.background },
   container: { flex: 1, backgroundColor: Colors.background },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

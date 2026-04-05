@@ -25,11 +25,13 @@ import { useFavorites } from '../../src/context/FavoritesContext';
 import { useAuth } from '../../src/context/AuthContext';
 import GardenRollModal from '../../src/components/GardenRollModal';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function ExploreScreen() {
   const { t } = useI18n();
+  const router = useRouter();
   const location = useLocation();
   const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
   const { addToHistory } = useHistory();
@@ -54,8 +56,41 @@ export default function ExploreScreen() {
   const [resultCafe, setResultCafe] = useState<any>(null);
   const [isFirstSeed, setIsFirstSeed] = useState(true);
   const [adLoading, setAdLoading] = useState(false);
+  const [favoriteAdLoading, setFavoriteAdLoading] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
+
+  const handleFavoriteWithGate = async (cafe: any) => {
+    if (isFavorited(cafe.place_id)) return;
+
+    if (user?.isSubscribed) {
+      await addFavorite(cafe);
+      return;
+    }
+
+    Alert.alert(
+      '收藏這間咖啡廳',
+      '免費用戶可觀看一則廣告後收藏，也可以直接升級 BeanGo Pro 享受無廣告收藏體驗。',
+      [
+        { text: t('common.cancel') || '取消', style: 'cancel' },
+        { text: t('subscription.upgrade') || '了解訂閱', onPress: () => router.push('/pages/subscribe') },
+        {
+          text: '看廣告後收藏',
+          onPress: async () => {
+            setFavoriteAdLoading(true);
+            try {
+              const watched = await showRewardedAd();
+              if (watched) {
+                await addFavorite(cafe);
+              }
+            } finally {
+              setFavoriteAdLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const filteredCafes = cafes.filter((cafe) => {
     if (filters.minRating > 0 && cafe.rating < filters.minRating) return false;
@@ -214,20 +249,7 @@ export default function ExploreScreen() {
                   showFavoriteButton={true}
                   isFavorited={isFavorited(resultCafe.place_id)}
                   onFavorite={() => {
-                    if (!isFavorited(resultCafe.place_id)) {
-                      if (!user?.isSubscribed) {
-                        Alert.alert(
-                          t('subscription.required_title') || '需要訂閱',
-                          t('subscription.required_msg') || '收藏功能需要訂閱才能使用，訂閱後即可收藏咖啡廳並在地圖上種樹 🌳',
-                          [
-                            { text: t('common.cancel') || '取消', style: 'cancel' },
-                            { text: t('subscription.upgrade') || '了解訂閱', onPress: () => {} },
-                          ]
-                        );
-                        return;
-                      }
-                      addFavorite(resultCafe);
-                    }
+                    handleFavoriteWithGate(resultCafe);
                   }}
                 />
                 <TouchableOpacity style={styles.retryButton} onPress={handleReset} disabled={adLoading}>

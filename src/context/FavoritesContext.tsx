@@ -6,7 +6,7 @@ import { rollGardenItem } from '../lib/garden';
 
 interface FavoritesContextType {
   favorites: Cafe[];
-  addFavorite: (cafe: Cafe) => void;
+  addFavorite: (cafe: Cafe) => Promise<void>;
   removeFavorite: (placeId: string) => void;
   isFavorited: (placeId: string) => boolean;
   favCount: number;
@@ -19,7 +19,7 @@ interface FavoritesContextType {
 
 const FavoritesContext = createContext<FavoritesContextType>({
   favorites: [],
-  addFavorite: () => {},
+  addFavorite: async () => {},
   removeFavorite: () => {},
   isFavorited: () => false,
   favCount: 0,
