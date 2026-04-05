@@ -14,23 +14,39 @@
  */
 
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 // --- Config ---
 const DAILY_FREE_PICKS = 3;
+const IS_DEV = __DEV__ || Constants.executionEnvironment === 'storeClient';
 
-// Real Ad Unit IDs (AdMob account: BeanGo 跑咖)
-export const AD_UNIT_IDS = {
+const TEST_AD_UNIT_IDS = {
+  interstitial: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/4411468910',
+    android: 'ca-app-pub-3940256099942544/1033173712',
+    default: 'ca-app-pub-3940256099942544/1033173712',
+  }),
+  banner: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/2934735716',
+    android: 'ca-app-pub-3940256099942544/6300978111',
+    default: 'ca-app-pub-3940256099942544/6300978111',
+  }),
+};
+
+const PROD_AD_UNIT_IDS = {
   interstitial: Platform.select({
     ios: 'ca-app-pub-7299866937396477/6951854171',
-    android: 'ca-app-pub-7299866937396477/6951854171',
-    default: 'ca-app-pub-7299866937396477/6951854171',
+    android: 'ca-app-pub-7299866937396477/3433195775',
+    default: 'ca-app-pub-7299866937396477/3433195775',
   }),
   banner: Platform.select({
     ios: 'ca-app-pub-7299866937396477/1891099182',
-    android: 'ca-app-pub-7299866937396477/1891099182',
-    default: 'ca-app-pub-7299866937396477/1891099182',
+    android: 'ca-app-pub-7299866937396477/5356651534',
+    default: 'ca-app-pub-7299866937396477/5356651534',
   }),
 };
+
+export const AD_UNIT_IDS = IS_DEV ? TEST_AD_UNIT_IDS : PROD_AD_UNIT_IDS;
 
 // --- State ---
 let isSubscribed = false;
@@ -58,7 +74,7 @@ export async function initAds() {
     const ads = require('react-native-google-mobile-ads');
     const mobileAds = ads.default;
     await mobileAds().initialize();
-    console.log('[Ads] AdMob initialized');
+    console.log(`[Ads] AdMob initialized (${IS_DEV ? 'TEST ADS' : 'PROD ADS'})`);
     preloadInterstitial();
   } catch (e) {
     console.log('[Ads] AdMob not available (Expo Go?), using fallback');
@@ -70,7 +86,7 @@ export async function initAds() {
  */
 function preloadInterstitial() {
   try {
-    const { InterstitialAd, AdEventType, TestIds } = require('react-native-google-mobile-ads');
+    const { InterstitialAd, AdEventType } = require('react-native-google-mobile-ads');
     const adUnitId = AD_UNIT_IDS.interstitial;
     
     interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
