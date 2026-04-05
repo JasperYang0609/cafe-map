@@ -25,7 +25,8 @@ import { useFavorites } from '../../src/context/FavoritesContext';
 import { useAuth } from '../../src/context/AuthContext';
 import GardenRollModal from '../../src/components/GardenRollModal';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
-import { useRouter, useIsFocused } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
