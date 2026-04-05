@@ -24,7 +24,7 @@ const FEATURES = [
 
 export default function SubscribeScreen() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user, refreshSubscription } = useAuth();
   const [monthlyPkg, setMonthlyPkg] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -49,9 +49,19 @@ export default function SubscribeScreen() {
     setLoading(false);
   };
 
+  const getFallbackLocalizedPrice = (): string => {
+    if (locale.startsWith('en')) return '$0.99';
+    if (locale.startsWith('ja')) return '¥150';
+    if (locale.startsWith('ko')) return '₩1,500';
+    if (locale.startsWith('th')) return '฿35';
+    if (locale.startsWith('zh-CN')) return '¥7';
+    return 'NT$30';
+  };
+
   const getPriceText = (): string => {
     if (monthlyPkg?.product?.priceString) return monthlyPkg.product.priceString;
-    return 'NT$30';
+    if (monthlyPkg?.product?.localizedPriceString) return monthlyPkg.product.localizedPriceString;
+    return getFallbackLocalizedPrice();
   };
 
   const handlePurchase = async () => {
