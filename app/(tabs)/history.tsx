@@ -1,10 +1,11 @@
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontSize } from '../../src/constants/theme';
 import CafeCard from '../../src/components/CafeCard';
-import { useRouter } from 'expo-router';
+import GardenRollModal from '../../src/components/GardenRollModal';
+import { useRouter, useIsFocused } from 'expo-router';
 import { useHistory } from '../../src/context/HistoryContext';
 import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
@@ -14,10 +15,13 @@ import { showRewardedAd } from '../../src/lib/ads';
 export default function HistoryScreen() {
   const { t } = useI18n();
   const router = useRouter();
+  const isFocused = useIsFocused();
   const { history, clearHistory } = useHistory();
-  const { addFavorite, isFavorited, getRating } = useFavorites();
+  const { addFavorite, isFavorited, getRating, lastRolled, clearLastRolled } = useFavorites();
   const { user } = useAuth();
   const [beanFilter, setBeanFilter] = useState<number | null>(null);
+  const [showRollModal, setShowRollModal] = useState(false);
+  const [rollDisplay, setRollDisplay] = useState({ emoji: '', rarity: '' });
 
   const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
   const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
@@ -25,6 +29,14 @@ export default function HistoryScreen() {
   const filteredHistory = beanFilter === null
     ? history
     : history.filter(h => (getRating(h.cafe.place_id) || 0) === beanFilter);
+
+  useEffect(() => {
+    if (lastRolled && isFocused) {
+      setRollDisplay(lastRolled);
+      setShowRollModal(true);
+      clearLastRolled();
+    }
+  }, [lastRolled, isFocused]);
 
   const handleFavorite = (cafe: any) => {
     if (user?.isSubscribed) {
@@ -138,6 +150,12 @@ export default function HistoryScreen() {
           />
         </>
       )}
+      <GardenRollModal
+        visible={showRollModal}
+        emoji={rollDisplay.emoji}
+        rarity={rollDisplay.rarity}
+        onClose={() => setShowRollModal(false)}
+      />
     </SafeAreaView>
     <BannerAdPlaceholder />
     </View>

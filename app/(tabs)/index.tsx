@@ -25,13 +25,14 @@ import { useFavorites } from '../../src/context/FavoritesContext';
 import { useAuth } from '../../src/context/AuthContext';
 import GardenRollModal from '../../src/components/GardenRollModal';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
-import { useRouter } from 'expo-router';
+import { useRouter, useIsFocused } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function ExploreScreen() {
   const { t } = useI18n();
   const router = useRouter();
+  const isFocused = useIsFocused();
   const location = useLocation();
   const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
   const { addToHistory } = useHistory();
@@ -43,12 +44,12 @@ export default function ExploreScreen() {
 
   // Show garden roll result when favoriting
   useEffect(() => {
-    if (lastRolled) {
+    if (lastRolled && isFocused) {
       setRollDisplay(lastRolled);
       setShowRollModal(true);
       clearLastRolled();
     }
-  }, [lastRolled]);
+  }, [lastRolled, isFocused]);
 
   const [selectedSeed, setSelectedSeed] = useState<number | null>(null);
   const [isGrowing, setIsGrowing] = useState(false);
