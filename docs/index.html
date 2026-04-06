@@ -52,6 +52,34 @@
     .nav-cta:hover { transform: scale(1.05); }
 
     /* Hero */
+    .verify-banner {
+      display: none;
+      max-width: 820px;
+      margin: 100px auto 0;
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: #EAF8EC;
+      border: 1px solid #B9E2C0;
+      color: #1E5B2A;
+      text-align: left;
+    }
+    .verify-banner.show { display: block; }
+    .verify-banner.error {
+      background: #FFF1F0;
+      border-color: #F3B3AF;
+      color: #9F2D20;
+    }
+    .verify-banner h3 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .verify-banner p {
+      font-size: 14px;
+      color: inherit;
+      margin: 0;
+    }
+
     .hero {
       padding: 140px 24px 80px;
       text-align: center;
@@ -220,6 +248,11 @@
   </nav>
 
   <!-- Hero -->
+  <div id="verifyBanner" class="verify-banner" role="status" aria-live="polite">
+    <h3 id="verifyTitle">✅ Email 驗證成功</h3>
+    <p id="verifyDesc">你的 BeanGo 帳號已完成驗證，現在可以回到 App 直接登入。</p>
+  </div>
+
   <section class="hero">
     <div class="hero-badge" data-i18n="hero_badge">台灣跑咖仔必備</div>
     <h1 data-i18n-html="hero_title">種一顆咖啡豆<br>發現你的<span>命定咖啡廳</span></h1>
@@ -387,6 +420,8 @@
         cta_title: '準備好探索了嗎？', cta_desc: '下載 BeanGo，種一顆咖啡豆，讓命運帶你去喝咖啡。',
         cta_ios: '即將上架 App Store', cta_android: '即將上架 Google Play',
         footer_privacy: '隱私權政策', footer_terms: '服務條款', footer_contact: '聯絡我們',
+        verify_success_title: '✅ Email 驗證成功', verify_success_desc: '你的 BeanGo 帳號已完成驗證，現在可以回到 App 直接登入。',
+        verify_error_title: '⚠️ 驗證連結有問題', verify_error_desc: '這個驗證連結可能已過期或無效，請回到 BeanGo App 重新註冊或重新寄送驗證信。',
       },
       'en': {
         nav_features: 'Features', nav_how: 'How', nav_pricing: 'Pricing', nav_download: 'Download',
@@ -413,6 +448,8 @@
         cta_title: 'Ready to Explore?', cta_desc: 'Download BeanGo, plant a seed, and let fate take you to coffee.',
         cta_ios: 'Coming to App Store', cta_android: 'Coming to Google Play',
         footer_privacy: 'Privacy Policy', footer_terms: 'Terms of Use', footer_contact: 'Contact Us',
+        verify_success_title: '✅ Email verified', verify_success_desc: 'Your BeanGo account has been verified. You can now return to the app and sign in.',
+        verify_error_title: '⚠️ Verification link issue', verify_error_desc: 'This verification link may be expired or invalid. Please return to BeanGo and request a new verification email.',
       },
       'ja': {
         nav_features: '特徴', nav_how: '使い方', nav_pricing: 'プラン', nav_download: 'ダウンロード',
@@ -439,6 +476,8 @@
         cta_title: '探索の準備はOK？', cta_desc: 'BeanGoをダウンロードして、運命のカフェへ。',
         cta_ios: 'App Store 近日公開', cta_android: 'Google Play 近日公開',
         footer_privacy: 'プライバシーポリシー', footer_terms: '利用規約', footer_contact: 'お問い合わせ',
+        verify_success_title: '✅ メール認証が完了しました', verify_success_desc: 'BeanGo アカウントの認証が完了しました。アプリに戻ってログインできます。',
+        verify_error_title: '⚠️ 認証リンクに問題があります', verify_error_desc: 'この認証リンクは期限切れまたは無効の可能性があります。BeanGo に戻って認証メールを再送してください。',
       },
       'ko': {
         nav_features: '특징', nav_how: '사용법', nav_pricing: '플랜', nav_download: '다운로드',
@@ -465,6 +504,8 @@
         cta_title: '탐색 준비 됐나요?', cta_desc: 'BeanGo를 다운로드하고 운명의 카페로.',
         cta_ios: 'App Store 출시 예정', cta_android: 'Google Play 출시 예정',
         footer_privacy: '개인정보 처리방침', footer_terms: '이용약관', footer_contact: '문의하기',
+        verify_success_title: '✅ 이메일 인증 완료', verify_success_desc: 'BeanGo 계정 인증이 완료되었습니다. 이제 앱으로 돌아가 로그인할 수 있습니다.',
+        verify_error_title: '⚠️ 인증 링크 문제', verify_error_desc: '이 인증 링크는 만료되었거나 유효하지 않을 수 있습니다. BeanGo 앱으로 돌아가 인증 메일을 다시 요청하세요.',
       },
       'th': {
         nav_features: 'คุณสมบัติ', nav_how: 'วิธีใช้', nav_pricing: 'แพ็กเกจ', nav_download: 'ดาวน์โหลด',
@@ -491,6 +532,8 @@
         cta_title: 'พร้อมสำรวจหรือยัง?', cta_desc: 'ดาวน์โหลด BeanGo ปลูกเมล็ดกาแฟ แล้วปล่อยโชคชะตาพาไป',
         cta_ios: 'เร็วๆ นี้บน App Store', cta_android: 'เร็วๆ นี้บน Google Play',
         footer_privacy: 'นโยบายความเป็นส่วนตัว', footer_terms: 'ข้อกำหนดการใช้งาน', footer_contact: 'ติดต่อเรา',
+        verify_success_title: '✅ ยืนยันอีเมลสำเร็จ', verify_success_desc: 'บัญชี BeanGo ของคุณยืนยันเรียบร้อยแล้ว ตอนนี้กลับไปที่แอปและเข้าสู่ระบบได้เลย',
+        verify_error_title: '⚠️ ลิงก์ยืนยันมีปัญหา', verify_error_desc: 'ลิงก์ยืนยันนี้อาจหมดอายุหรือไม่ถูกต้อง กรุณากลับไปที่แอป BeanGo แล้วขออีเมลยืนยันใหม่',
       },
     };
 
@@ -504,7 +547,27 @@
         const key = el.getAttribute('data-i18n-html');
         if (t[key]) el.innerHTML = t[key];
       });
+      const banner = document.getElementById('verifyBanner');
+      const title = document.getElementById('verifyTitle');
+      const desc = document.getElementById('verifyDesc');
+      if (banner && banner.classList.contains('show')) {
+        const isError = banner.classList.contains('error');
+        if (title) title.textContent = t[isError ? 'verify_error_title' : 'verify_success_title'];
+        if (desc) desc.textContent = t[isError ? 'verify_error_desc' : 'verify_success_desc'];
+      }
       document.documentElement.lang = lang;
+    }
+
+    function handleVerificationBanner() {
+      const banner = document.getElementById('verifyBanner');
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash || '';
+      const hasAccessToken = params.has('access_token') || hash.includes('access_token=');
+      const hasError = params.has('error') || hash.includes('error=');
+      if (!banner || (!hasAccessToken && !hasError)) return;
+      banner.classList.add('show');
+      if (hasError) banner.classList.add('error');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Auto-detect language
@@ -512,6 +575,8 @@
     const detected = Object.keys(i18n).find(l => userLang.startsWith(l.split('-')[0])) || 'zh-TW';
     document.getElementById('langSelect').value = detected;
     if (detected !== 'zh-TW') setLang(detected);
+    handleVerificationBanner();
+    if (detected === 'zh-TW') setLang('zh-TW');
   </script>
 
 </body>
