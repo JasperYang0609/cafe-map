@@ -144,7 +144,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'https://jasperyang0609.github.io/cafe-map/',
+      },
+    });
     if (error) {
       if (error.message.includes('already registered')) {
         return { error: '此 Email 已註冊' };
