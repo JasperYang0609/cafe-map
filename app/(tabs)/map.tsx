@@ -146,7 +146,7 @@ export default function MapScreen() {
               // Only track view changes for selected favorites (scale animation)
               // Non-favorites use native pinColor (key change forces remount on select)
               tracksViewChanges={isFavorite && isSelected}
-              pinColor={!isFavorite ? (isSelected ? '#E53935' : '#6F4E37') : undefined}
+              pinColor={!isFavorite ? (isSelected ? '#E53935' : '#3E2723') : undefined}
             >
               {isFavorite ? (
                 <View style={[
