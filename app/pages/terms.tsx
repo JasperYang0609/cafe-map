@@ -51,7 +51,7 @@ export default function TermsScreen() {
 const CONTENT_ZH = {
   title: '服務條款',
   updated: '最後更新：2026 年 4 月',
-  contact: 'ansai（安賽）開發並營運 BeanGo 跑咖 App。\n如有任何問題，請聯繫：support@ansai.tw',
+  contact: 'ansai（安賽）開發並營運 BeanGo 跑咖 App。\n如有任何問題，請聯繫：annsai5869@gmail.com',
   sections: [
     {
       title: '1. 服務說明',
@@ -91,7 +91,7 @@ const CONTENT_ZH = {
 const CONTENT_CN = {
   title: '服务条款',
   updated: '最后更新：2026 年 4 月',
-  contact: 'ansai（安赛）开发并运营 BeanGo 跑咖 App。\n如有任何问题，请联系：support@ansai.tw',
+  contact: 'ansai（安赛）开发并运营 BeanGo 跑咖 App。\n如有任何问题，请联系：annsai5869@gmail.com',
   sections: [
     { title: '1. 服务说明', body: 'BeanGo 跑咖（以下称「本服务」）是由 ansai（安赛）提供的咖啡厅探索应用程序。本服务提供咖啡厅搜索、收藏、评分等功能。使用本服务即表示您同意遵守本条款。' },
     { title: '2. 账号与使用', body: '• 您必须年满 13 岁才能使用本服务\n• 您有责任保管账号安全，不得将账号借予他人使用\n• 您同意提供真实、准确的注册信息\n• 我们保留在违反条款时停用账号的权利' },
@@ -107,7 +107,7 @@ const CONTENT_CN = {
 const CONTENT_EN = {
   title: 'Terms of Use',
   updated: 'Last updated: April 2026',
-  contact: 'BeanGo is developed and operated by ansai.\nFor questions, contact: support@ansai.tw',
+  contact: 'BeanGo is developed and operated by ansai.\nFor questions, contact: annsai5869@gmail.com',
   sections: [
     { title: '1. Service Description', body: 'BeanGo ("the Service") is a cafe discovery app provided by ansai. The Service offers cafe search, favorites, and rating features. By using the Service, you agree to these terms.' },
     { title: '2. Account & Usage', body: '• You must be at least 13 years old to use the Service\n• You are responsible for your account security\n• You agree to provide accurate registration information\n• We reserve the right to suspend accounts that violate these terms' },
@@ -123,7 +123,7 @@ const CONTENT_EN = {
 const CONTENT_JA = {
   title: '利用規約',
   updated: '最終更新：2026年4月',
-  contact: 'BeanGo は ansai が開発・運営しています。\nお問い合わせ：support@ansai.tw',
+  contact: 'BeanGo は ansai が開発・運営しています。\nお問い合わせ：annsai5869@gmail.com',
   sections: [
     { title: '1. サービスの説明', body: 'BeanGo（以下「本サービス」）は、ansai が提供するカフェ探索アプリです。本サービスはカフェ検索、お気に入り、評価機能を提供します。本サービスのご利用により、本規約に同意したものとみなされます。' },
     { title: '2. アカウントと利用', body: '• 本サービスを利用するには13歳以上である必要があります\n• アカウントのセキュリティはお客様の責任です\n• 正確な登録情報を提供することに同意するものとします\n• 規約違反の場合、アカウントを停止する権利を留保します' },
@@ -139,7 +139,7 @@ const CONTENT_JA = {
 const CONTENT_KO = {
   title: '이용약관',
   updated: '마지막 업데이트: 2026년 4월',
-  contact: 'BeanGo는 ansai가 개발 및 운영합니다.\n문의: support@ansai.tw',
+  contact: 'BeanGo는 ansai가 개발 및 운영합니다.\n문의: annsai5869@gmail.com',
   sections: [
     { title: '1. 서비스 설명', body: 'BeanGo(이하 "서비스")는 ansai가 제공하는 카페 탐색 앱입니다. 본 서비스는 카페 검색, 즐겨찾기, 평가 기능을 제공합니다. 서비스를 사용함으로써 본 약관에 동의하는 것으로 간주됩니다.' },
     { title: '2. 계정 및 사용', body: '• 본 서비스를 이용하려면 만 13세 이상이어야 합니다\n• 계정 보안은 사용자의 책임입니다\n• 정확한 등록 정보를 제공하는 것에 동의합니다\n• 약관 위반 시 계정을 정지할 권리를 보유합니다' },
@@ -155,7 +155,7 @@ const CONTENT_KO = {
 const CONTENT_TH = {
   title: 'ข้อกำหนดการใช้งาน',
   updated: 'อัปเดตล่าสุด: เมษายน 2026',
-  contact: 'BeanGo พัฒนาและดำเนินการโดย ansai\nติดต่อ: support@ansai.tw',
+  contact: 'BeanGo พัฒนาและดำเนินการโดย ansai\nติดต่อ: annsai5869@gmail.com',
   sections: [
     { title: '1. คำอธิบายบริการ', body: 'BeanGo ("บริการ") เป็นแอปค้นหาร้านกาแฟที่ให้บริการโดย ansai บริการนี้มีฟีเจอร์ค้นหาร้านกาแฟ รายการโปรด และการให้คะแนน การใช้บริการถือว่าคุณยอมรับข้อกำหนดเหล่านี้' },
     { title: '2. บัญชีและการใช้งาน', body: '• คุณต้องมีอายุอย่างน้อย 13 ปีจึงจะใช้บริการได้\n• คุณรับผิดชอบต่อความปลอดภัยของบัญชีของคุณ\n• คุณตกลงให้ข้อมูลการลงทะเบียนที่ถูกต้อง\n• เราขอสงวนสิทธิ์ในการระงับบัญชีที่ละเมิดข้อกำหนด' },
