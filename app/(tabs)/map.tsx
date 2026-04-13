@@ -36,6 +36,8 @@ export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
   const router = useRouter();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
+  const [markersReady, setMarkersReady] = useState(false);
+  const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleOpenDetail = (cafe: Cafe) => {
     router.push({
@@ -64,6 +66,14 @@ export default function MapScreen() {
       fetchCafes(location.latitude, location.longitude);
     }
   }, [location.loading, location.error, location.latitude, location.longitude]);
+
+  // After cafes load, give markers time to render then disable tracksViewChanges
+  useEffect(() => {
+    if (cafes.length > 0 && !markersReady) {
+      const timer = setTimeout(() => setMarkersReady(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [cafes.length, markersReady]);
 
   const handleRecenter = () => {
     if (mapRef.current && !location.loading) {
@@ -113,7 +123,11 @@ export default function MapScreen() {
         }}
         showsUserLocation
         showsMyLocationButton={false}
-        onPress={() => setSelectedCafe(null)}
+        onPress={() => {
+          // Delay dismiss to avoid conflicting with marker onPress on Android
+          if (dismissTimeoutRef.current) clearTimeout(dismissTimeoutRef.current);
+          dismissTimeoutRef.current = setTimeout(() => setSelectedCafe(null), 100);
+        }}
       >
         {cafes.map((cafe) => {
           const favoriteEmoji = getFavEmoji(cafe.place_id);
@@ -129,9 +143,14 @@ export default function MapScreen() {
               }}
               onPress={(e) => {
                 e.stopPropagation();
+                // Cancel any pending map dismiss
+                if (dismissTimeoutRef.current) {
+                  clearTimeout(dismissTimeoutRef.current);
+                  dismissTimeoutRef.current = null;
+                }
                 setSelectedCafe(cafe);
               }}
-              tracksViewChanges={false}
+              tracksViewChanges={!markersReady}
               {...(!isFavorite && Platform.OS === 'ios'
                 ? {
                     pinColor: isSelected ? '#E53935' : '#6F4E37',

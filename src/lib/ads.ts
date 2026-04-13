@@ -49,8 +49,6 @@ let initStarted = false;
 let adsInitialized = false;
 let isShowingRewarded = false;
 let isLoadingRewarded = false;
-let lastAdAttemptAt = 0;
-let showListeners: Array<() => void> = [];
 
 function checkDailyReset() {
   const today = new Date().toDateString();
@@ -60,11 +58,13 @@ function checkDailyReset() {
   }
 }
 
-function clearRewardedRuntime() {
+function removePreloadListeners() {
   rewardedListeners.forEach((unsubscribe) => unsubscribe());
   rewardedListeners = [];
-  showListeners.forEach((unsubscribe) => unsubscribe());
-  showListeners = [];
+}
+
+function clearRewardedRuntime() {
+  removePreloadListeners();
   rewardedLoaded = false;
   rewardedAd = null;
   isShowingRewarded = false;
@@ -153,64 +153,66 @@ export function recordPick() {
 
 export async function showRewardedAd(): Promise<boolean> {
   if (isSubscribed) return true;
-
-  const now = Date.now();
-  if (isShowingRewarded || now - lastAdAttemptAt < 1800) return false;
-  lastAdAttemptAt = now;
+  if (isShowingRewarded) return false;
 
   if (!adsInitialized) {
     await initAds();
   }
 
   if (rewardedLoaded && rewardedAd) {
+    // CRITICAL: Remove preload-time listeners before showing.
+    // Otherwise the preload CLOSED listener fires alongside the show
+    // CLOSED listener and resets state before reward is captured.
+    removePreloadListeners();
+
+    const adRef = rewardedAd;
     return new Promise((resolve) => {
       try {
         const { RewardedAdEventType, AdEventType } = require('react-native-google-mobile-ads');
         isShowingRewarded = true;
         let didEarnReward = false;
         let resolved = false;
+        const localListeners: Array<() => void> = [];
 
         const cleanup = () => {
-          showListeners.forEach((unsub) => unsub());
-          showListeners = [];
+          localListeners.forEach((unsub) => unsub());
+          localListeners.length = 0;
         };
 
-        showListeners.push(
-          rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+        const doResolve = (value: boolean) => {
+          if (resolved) return;
+          resolved = true;
+          cleanup();
+          isShowingRewarded = false;
+          rewardedLoaded = false;
+          rewardedAd = null;
+          resolve(value);
+          // Preload next ad after resolve
+          setTimeout(preloadRewarded, 500);
+        };
+
+        localListeners.push(
+          adRef.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+            console.log('[Ads] Earned reward');
             didEarnReward = true;
           })
         );
 
-        showListeners.push(
-          rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
-            cleanup();
-            isShowingRewarded = false;
-            // Clear stale ad and preload next one immediately
-            rewardedLoaded = false;
-            rewardedAd = null;
-            if (!resolved) {
-              resolved = true;
-              resolve(didEarnReward);
-            }
-            setTimeout(preloadRewarded, 300);
+        localListeners.push(
+          adRef.addAdEventListener(AdEventType.CLOSED, () => {
+            console.log('[Ads] Ad closed, reward:', didEarnReward);
+            doResolve(didEarnReward);
           })
         );
 
-        showListeners.push(
-          rewardedAd.addAdEventListener(AdEventType.ERROR, () => {
-            cleanup();
-            isShowingRewarded = false;
-            rewardedLoaded = false;
-            rewardedAd = null;
-            if (!resolved) {
-              resolved = true;
-              resolve(false);
-            }
-            setTimeout(preloadRewarded, 5000);
+        localListeners.push(
+          adRef.addAdEventListener(AdEventType.ERROR, (err: any) => {
+            console.log('[Ads] Ad error during show:', err);
+            doResolve(false);
           })
         );
 
-        rewardedAd.show();
+        adRef.show();
       } catch (e) {
         console.log('[Ads] Failed to show rewarded ad:', e);
         isShowingRewarded = false;

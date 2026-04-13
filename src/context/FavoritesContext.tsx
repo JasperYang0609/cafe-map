@@ -121,16 +121,29 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const lastToggleRef = useRef<Record<string, number>>({});
+  const toggleCountRef = useRef<Record<string, number>>({});
 
   const addFavorite = useCallback(async (cafe: Cafe) => {
     if (!user) return;
     if (pendingFavoriteOpsRef.current.has(cafe.place_id)) return;
 
-    // Debounce: ignore if toggled within 500ms
+    // Debounce: ignore if toggled within 1s
     const now = Date.now();
     const lastToggle = lastToggleRef.current[cafe.place_id] || 0;
-    if (now - lastToggle < 500) return;
+    if (now - lastToggle < 1000) return;
     lastToggleRef.current[cafe.place_id] = now;
+
+    // Throttle: slow down after 15 rapid toggles (within 30s window)
+    const count = toggleCountRef.current[cafe.place_id] || 0;
+    toggleCountRef.current[cafe.place_id] = count + 1;
+    if (count > 15) {
+      console.log('[Favorites] Throttled rapid toggle for', cafe.place_id);
+      return;
+    }
+    // Reset counter every 30s
+    if (count === 0) {
+      setTimeout(() => { toggleCountRef.current[cafe.place_id] = 0; }, 30000);
+    }
 
     pendingFavoriteOpsRef.current.add(cafe.place_id);
 
@@ -174,11 +187,22 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     if (pendingFavoriteOpsRef.current.has(placeId)) return;
 
-    // Debounce: ignore if toggled within 500ms
+    // Debounce: ignore if toggled within 1s
     const now = Date.now();
     const lastToggle = lastToggleRef.current[placeId] || 0;
-    if (now - lastToggle < 500) return;
+    if (now - lastToggle < 1000) return;
     lastToggleRef.current[placeId] = now;
+
+    // Throttle: slow down after 15 rapid toggles
+    const count = toggleCountRef.current[placeId] || 0;
+    toggleCountRef.current[placeId] = count + 1;
+    if (count > 15) {
+      console.log('[Favorites] Throttled rapid toggle for', placeId);
+      return;
+    }
+    if (count === 0) {
+      setTimeout(() => { toggleCountRef.current[placeId] = 0; }, 30000);
+    }
 
     pendingFavoriteOpsRef.current.add(placeId);
 
