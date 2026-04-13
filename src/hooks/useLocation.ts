@@ -20,7 +20,14 @@ export function useLocation() {
   useEffect(() => {
     (async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        const permission = await Location.getForegroundPermissionsAsync();
+        let status = permission.status;
+
+        if (status === 'undetermined') {
+          const requested = await Location.requestForegroundPermissionsAsync();
+          status = requested.status;
+        }
+
         if (status !== 'granted') {
           setLocation((prev) => ({
             ...prev,
@@ -30,6 +37,18 @@ export function useLocation() {
           return;
         }
 
+        // Fast path: use last known position first for instant UI
+        const lastKnown = await Location.getLastKnownPositionAsync();
+        if (lastKnown) {
+          setLocation({
+            latitude: lastKnown.coords.latitude,
+            longitude: lastKnown.coords.longitude,
+            loading: false,
+            error: null,
+          });
+        }
+
+        // Then get accurate position in background
         const loc = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
         });

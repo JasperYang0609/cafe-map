@@ -17,7 +17,7 @@ export interface Cafe {
   photo_reference?: string;
   photo_references?: string[]; // multiple photos
   photo_url?: string;
-  is_open?: boolean;
+  is_open?: boolean | null;
   price_level?: number;
   distance?: number;
   opening_hours?: OpeningPeriod[]; // cacheable periods from regularOpeningHours
@@ -28,7 +28,7 @@ export interface Cafe {
   heartRating?: number; // user's personal rating (0-4 beans)
 }
 
-export interface CafeDetail extends Cafe {
+export interface CafeDetail extends Omit<Cafe, 'opening_hours'> {
   phone?: string;
   website?: string;
   opening_hours?: string[];

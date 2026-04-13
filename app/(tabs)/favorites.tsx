@@ -29,6 +29,7 @@ export default function FavoritesScreen() {
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const [heartFilter, setHeartFilter] = useState<number | null>(null); // null=all, 0=no rating, 1-3=hearts
   const [showRarityGuide, setShowRarityGuide] = useState(false);
+  const beanGoBrand = require('../../assets/beango-character.png');
 
   // Collected emoji set for rarity guide
   const collectedEmojis = new Set(favorites.map(f => f.gardenEmoji || '🌳'));
@@ -119,6 +120,11 @@ export default function FavoritesScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('favorites.title')}</Text>
+        <View style={styles.headerBrandGroup}>
+          <Image source={beanGoBrand} style={styles.headerBrandIcon} />
+          <Image source={beanGoBrand} style={styles.headerBrandIcon} />
+          <Image source={beanGoBrand} style={styles.headerBrandIcon} />
+        </View>
       </View>
 
       {/* Bean rating filter */}
@@ -168,7 +174,7 @@ export default function FavoritesScreen() {
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
+              tracksViewChanges={Platform.OS === 'android' || selectedCafe?.place_id === cafe.place_id}
             >
               <Animated.View style={[
                 styles.treeMarker,
@@ -333,6 +339,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl + 20, paddingBottom: Spacing.md,
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
+  headerBrandGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  headerBrandIcon: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain',
+  },
   filterRow: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
     paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
@@ -392,8 +408,13 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg, overflow: 'hidden',
   },
   map: { flex: 1 },
-  treeMarker: { alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  treeEmoji: { fontSize: 22 },
+  treeMarker: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  treeEmoji: { fontSize: 24 },
 
   // Blur
   blurOverlay: {

@@ -88,7 +88,18 @@
     "delete_account": "Delete Account",
     "delete_confirm": "Are you sure? This cannot be undone. All data (favorites, history, subscription) will be permanently deleted.",
     "delete_success": "Account Deleted",
-    "delete_success_msg": "Your account and all associated data have been permanently deleted."
+    "delete_success_msg": "Your account and all associated data have been permanently deleted.",
+    "forgot_password": "Forgot password?",
+    "enter_email_for_reset": "Please enter your email first",
+    "reset_sent": "Reset email sent",
+    "reset_sent_msg": "Check your email and follow the steps to reset your password.",
+    "reset_password_title": "Reset Password",
+    "reset_password_subtitle": "Enter your new login password",
+    "new_password": "New password",
+    "confirm_password": "Confirm new password",
+    "password_mismatch": "Passwords do not match",
+    "password_reset_success": "Password updated",
+    "password_reset_success_msg": "Please sign in to BeanGo with your new password."
   },
   "filter": {
     "title": "Filter",

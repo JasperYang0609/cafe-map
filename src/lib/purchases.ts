@@ -24,6 +24,15 @@ const ENTITLEMENT_ID = 'BeanGo Pro';
 
 let initialized = false;
 
+async function invalidatePurchasesCacheSafe() {
+  if (!purchasesAvailable || !initialized) return;
+  try {
+    await Purchases.invalidateCustomerInfoCache();
+  } catch (e) {
+    console.log('[Purchases] Cache invalidate skipped:', e);
+  }
+}
+
 /**
  * Initialize RevenueCat SDK
  * Call once at app startup after auth
@@ -49,8 +58,12 @@ export async function initPurchases(userId?: string): Promise<void> {
 export async function loginPurchases(userId: string): Promise<void> {
   if (!purchasesAvailable || !initialized) return;
   try {
-    await Purchases.logIn(userId);
-    console.log('[Purchases] Logged in:', userId);
+    const currentUserId = await Purchases.getAppUserID().catch(() => null);
+    if (currentUserId !== userId) {
+      await Purchases.logIn(userId);
+      console.log('[Purchases] Logged in:', userId);
+    }
+    await invalidatePurchasesCacheSafe();
   } catch (e) {
     console.error('[Purchases] Login failed:', e);
   }
@@ -63,6 +76,7 @@ export async function logoutPurchases(): Promise<void> {
   if (!purchasesAvailable || !initialized) return;
   try {
     await Purchases.logOut();
+    await invalidatePurchasesCacheSafe();
     console.log('[Purchases] Logged out');
   } catch (e) {
     console.error('[Purchases] Logout failed:', e);
@@ -76,6 +90,7 @@ export async function checkSubscription(): Promise<boolean> {
   if (!purchasesAvailable || !initialized) return false;
 
   try {
+    await invalidatePurchasesCacheSafe();
     const customerInfo = await Purchases.getCustomerInfo();
     const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
     return !!entitlement;
@@ -93,6 +108,11 @@ export async function getOfferings(): Promise<any[]> {
 
   try {
     const offerings = await Purchases.getOfferings();
+    console.log('[Purchases] Offerings loaded:', {
+      current: offerings.current?.identifier,
+      packageCount: offerings.current?.availablePackages?.length || 0,
+      all: Object.keys(offerings.all || {}),
+    });
     if (offerings.current && offerings.current.availablePackages.length > 0) {
       return offerings.current.availablePackages;
     }
@@ -101,6 +121,10 @@ export async function getOfferings(): Promise<any[]> {
     console.error('[Purchases] Get offerings failed:', e);
     return [];
   }
+}
+
+export function isPurchasesInitialized(): boolean {
+  return initialized;
 }
 
 /**

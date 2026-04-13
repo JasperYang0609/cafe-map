@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, Animated, TouchableOpacity } from 'react-native';
 import { Colors, FontSize, BorderRadius, Spacing } from '../constants/theme';
-import { getRarityColor } from '../lib/garden';
+import { getRarityColor, getRarityLabel } from '../lib/garden';
 
 interface Props {
   visible: boolean;
@@ -36,12 +36,7 @@ export default function GardenRollModal({ visible, emoji, rarity, onClose }: Pro
     }
   }, [visible]);
 
-  const rarityLabel = rarity === 'legendary' ? 'SSR'
-    : rarity === 'epic' ? 'SR'
-    : rarity === 'rare' ? 'R'
-    : rarity === 'uncommon' ? 'N'
-    : '';
-
+  const rarityLabel = getRarityLabel(rarity);
   const rarityColor = getRarityColor(rarity);
 
   return (

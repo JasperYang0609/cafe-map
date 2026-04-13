@@ -11,6 +11,7 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../../src/context/I18nContext';
@@ -23,6 +24,7 @@ export default function CafeDetailScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   // Parse cafe data from params
@@ -200,7 +202,7 @@ export default function CafeDetailScreen() {
       </ScrollView>
 
       {/* Bottom action bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, Spacing.md) + Spacing.sm }]}>
         <TouchableOpacity style={styles.navButton} onPress={handleNavigate}>
           <Ionicons name="navigate" size={20} color={Colors.surface} />
           <Text style={styles.navText}>{t('detail.navigate')}</Text>

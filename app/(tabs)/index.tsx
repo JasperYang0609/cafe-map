@@ -37,11 +37,12 @@ export default function ExploreScreen() {
   const location = useLocation();
   const { cafes, loading: cafesLoading, fetchCafes, getRandomCafe } = useCafes();
   const { addToHistory } = useHistory();
-  const { addFavorite, isFavorited, lastRolled, clearLastRolled } = useFavorites();
+  const { addFavorite, removeFavorite, isFavorited, lastRolled, clearLastRolled } = useFavorites();
   const { user } = useAuth();
 
   const [showRollModal, setShowRollModal] = useState(false);
   const [rollDisplay, setRollDisplay] = useState({ emoji: '', rarity: '' });
+  const beanGoBrand = require('../../assets/beango-character.png');
 
   // Show garden roll result when favoriting
   useEffect(() => {
@@ -63,7 +64,22 @@ export default function ExploreScreen() {
   const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
 
   const handleFavoriteWithGate = async (cafe: any) => {
-    if (isFavorited(cafe.place_id)) return;
+    if (isFavorited(cafe.place_id)) {
+      await removeFavorite(cafe.place_id);
+      return;
+    }
+
+    if (!user) {
+      Alert.alert(
+        '先登入才能收藏',
+        '登入後才能把這間咖啡廳加入你的收藏花園。',
+        [
+          { text: t('common.cancel') || '取消', style: 'cancel' },
+          { text: t('profile.login') || '登入', onPress: () => router.push('/(tabs)/profile') },
+        ]
+      );
+      return;
+    }
 
     if (user?.isSubscribed) {
       await addFavorite(cafe);
@@ -84,6 +100,8 @@ export default function ExploreScreen() {
               const watched = await showRewardedAd();
               if (watched) {
                 await addFavorite(cafe);
+              } else {
+                Alert.alert('廣告準備中', '廣告還在準備，請稍候再試一次。');
               }
             } finally {
               setFavoriteAdLoading(false);
@@ -126,7 +144,10 @@ export default function ExploreScreen() {
       setAdLoading(true);
       const watched = await showRewardedAd();
       setAdLoading(false);
-      if (!watched) return;
+      if (!watched) {
+        Alert.alert('廣告準備中', '廣告還在準備，請稍候再試一次。');
+        return;
+      }
     }
 
     recordPick();
@@ -206,7 +227,7 @@ export default function ExploreScreen() {
         <Text style={styles.subtitle}>{getSubtitle()}</Text>
       </View>
 
-      <View style={styles.seedArea}>
+      <View style={[styles.seedArea, showResult && styles.seedAreaResult]}>
         {adLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.primary} />
@@ -241,7 +262,7 @@ export default function ExploreScreen() {
             <Animated.View
               style={[styles.treeContainer, { opacity: fadeAnim, transform: [{ scale: treeScale }] }]}
             >
-              <Text style={styles.treeEmoji}>🌳</Text>
+              <Image source={beanGoBrand} style={styles.treeBrandIcon} />
             </Animated.View>
 
             {showResult && resultCafe && (
@@ -319,6 +340,7 @@ const styles = StyleSheet.create({
   },
   subtitle: { fontSize: FontSize.md, color: Colors.textSecondary, marginTop: Spacing.xs },
   seedArea: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: Spacing.lg },
+  seedAreaResult: { justifyContent: 'flex-start', paddingTop: Spacing.md },
   loadingContainer: { alignItems: 'center' },
   loadingText: { marginTop: Spacing.md, fontSize: FontSize.md, color: Colors.textSecondary },
   seedRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.lg, flexWrap: 'wrap', minHeight: 140 },
@@ -332,9 +354,13 @@ const styles = StyleSheet.create({
   seedLabel: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.sm },
   noCafeText: { width: '100%', textAlign: 'center', marginTop: Spacing.lg, fontSize: FontSize.md, color: Colors.textSecondary, lineHeight: 24 },
   growArea: { flex: 1, width: '100%' },
-  growAreaContent: { alignItems: 'center', paddingBottom: Spacing.md },
+  growAreaContent: { alignItems: 'center', paddingBottom: Spacing.xl * 2 },
   treeContainer: { marginBottom: Spacing.sm },
-  treeEmoji: { fontSize: 40 },
+  treeBrandIcon: {
+    width: 88,
+    height: 88,
+    resizeMode: 'contain',
+  },
   resultContainer: { width: width - Spacing.lg * 2 },
   retryButton: {
     flexDirection: 'row', alignSelf: 'center', alignItems: 'center', gap: Spacing.xs, paddingVertical: Spacing.md, marginTop: Spacing.sm,

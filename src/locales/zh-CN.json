@@ -83,7 +83,18 @@
     "delete_account": "删除账号",
     "delete_confirm": "确定要删除账号吗？此操作无法恢复，所有数据（收藏、搜索记录、订阅）将永久删除。",
     "delete_success": "账号已删除",
-    "delete_success_msg": "您的账号和所有相关数据已永久删除。"
+    "delete_success_msg": "您的账号和所有相关数据已永久删除。",
+    "forgot_password": "忘记密码？",
+    "enter_email_for_reset": "请先输入 Email",
+    "reset_sent": "重置邮件已寄出",
+    "reset_sent_msg": "请到你的 Email 收信，并依指示重置密码。",
+    "reset_password_title": "重置密码",
+    "reset_password_subtitle": "请输入新的登录密码",
+    "new_password": "新密码",
+    "confirm_password": "确认新密码",
+    "password_mismatch": "两次密码不一致",
+    "password_reset_success": "密码已更新",
+    "password_reset_success_msg": "请使用新密码登录 BeanGo。"
   },
   "filter": {
     "title": "筛选",

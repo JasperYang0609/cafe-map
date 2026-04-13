@@ -1,4 +1,3 @@
-import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,13 +11,14 @@ import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
 import { useAuth } from '../../src/context/AuthContext';
 import { showRewardedAd } from '../../src/lib/ads';
+import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 
 export default function HistoryScreen() {
   const { t } = useI18n();
   const router = useRouter();
   const isFocused = useIsFocused();
   const { history, clearHistory } = useHistory();
-  const { addFavorite, isFavorited, getRating, lastRolled, clearLastRolled } = useFavorites();
+  const { addFavorite, removeFavorite, isFavorited, getRating, lastRolled, clearLastRolled } = useFavorites();
   const { user } = useAuth();
   const [beanFilter, setBeanFilter] = useState<number | null>(null);
   const [showRollModal, setShowRollModal] = useState(false);
@@ -39,9 +39,26 @@ export default function HistoryScreen() {
     }
   }, [lastRolled, isFocused]);
 
-  const handleFavorite = (cafe: any) => {
+  const handleFavorite = async (cafe: any) => {
+    if (isFavorited(cafe.place_id)) {
+      await removeFavorite(cafe.place_id);
+      return;
+    }
+
+    if (!user) {
+      Alert.alert(
+        '先登入才能收藏',
+        '登入後才能把這間咖啡廳加入你的收藏花園。',
+        [
+          { text: t('common.cancel') || '取消', style: 'cancel' },
+          { text: t('profile.login') || '登入', onPress: () => router.push('/(tabs)/profile') },
+        ]
+      );
+      return;
+    }
+
     if (user?.isSubscribed) {
-      addFavorite(cafe);
+      await addFavorite(cafe);
       return;
     }
 
@@ -57,6 +74,8 @@ export default function HistoryScreen() {
             const watched = await showRewardedAd();
             if (watched) {
               await addFavorite(cafe);
+            } else {
+              Alert.alert('廣告準備中', '廣告還在準備，請稍候再試一次。');
             }
           },
         },
@@ -194,7 +213,7 @@ const styles = StyleSheet.create({
   emptyFilterText: {
     fontSize: FontSize.md, color: Colors.textSecondary,
   },
-  list: { padding: Spacing.lg },
+  list: { padding: Spacing.lg, paddingBottom: Spacing.md },
   cardContainer: { marginBottom: Spacing.lg },
   dateText: { fontSize: FontSize.xs, color: Colors.textSecondary, marginBottom: Spacing.xs },
 });

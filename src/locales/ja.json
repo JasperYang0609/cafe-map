@@ -88,7 +88,18 @@
     "delete_account": "アカウント削除",
     "delete_confirm": "アカウントを削除しますか？この操作は取り消せません。すべてのデータが永久に削除されます。",
     "delete_success": "アカウント削除完了",
-    "delete_success_msg": "アカウントとすべての関連データが削除されました。"
+    "delete_success_msg": "アカウントとすべての関連データが削除されました。",
+    "forgot_password": "パスワードをお忘れですか？",
+    "enter_email_for_reset": "先にメールアドレスを入力してください",
+    "reset_sent": "再設定メールを送信しました",
+    "reset_sent_msg": "メールを確認して、手順に沿ってパスワードを再設定してください。",
+    "reset_password_title": "パスワードを再設定",
+    "reset_password_subtitle": "新しいログインパスワードを入力してください",
+    "new_password": "新しいパスワード",
+    "confirm_password": "新しいパスワードを確認",
+    "password_mismatch": "パスワードが一致しません",
+    "password_reset_success": "パスワードを更新しました",
+    "password_reset_success_msg": "新しいパスワードで BeanGo にログインしてください。"
   },
   "filter": {
     "title": "フィルター",

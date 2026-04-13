@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import * as Linking from 'expo-linking';
 import { supabase } from '../lib/supabase';
-import { setSubscriptionStatus } from '../lib/ads';
+import { resetAdsState, setSubscriptionStatus } from '../lib/ads';
 import { initPurchases, loginPurchases, logoutPurchases, checkSubscription } from '../lib/purchases';
 
 interface User {
@@ -16,6 +17,7 @@ interface AuthContextType {
   refreshSubscription: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string) => Promise<{ error?: string }>;
+  resetPassword: (email: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error?: string }>;
 }
@@ -26,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   refreshSubscription: async () => {},
   signIn: async () => ({}),
   signUp: async () => ({}),
+  resetPassword: async () => ({}),
   signOut: async () => {},
   deleteAccount: async () => ({}),
 });
@@ -36,39 +39,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch profile and check subscription from both Supabase and RevenueCat
   const fetchProfile = async (userId: string, email: string, displayName?: string) => {
-    // Initialize RevenueCat and login
-    await initPurchases(userId);
-    await loginPurchases(userId);
+    setLoading(true);
 
-    // Check RevenueCat subscription first
-    let isSubscribed = await checkSubscription();
+    try {
+      // Initialize RevenueCat and login
+      await initPurchases(userId);
+      await loginPurchases(userId);
 
-    // Fallback: check Supabase profiles (for manual grants or webhook updates)
-    if (!isSubscribed) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_subscribed, subscription_expires_at')
-        .eq('id', userId)
-        .single();
+      // Check RevenueCat subscription first
+      let isSubscribed = await checkSubscription();
 
-      if (data?.is_subscribed) {
-        if (data.subscription_expires_at) {
-          isSubscribed = new Date(data.subscription_expires_at) > new Date();
-        } else {
-          isSubscribed = true;
+      // Fallback: check Supabase profiles (for manual grants or webhook updates)
+      if (!isSubscribed) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('is_subscribed, subscription_expires_at')
+          .eq('id', userId)
+          .single();
+
+        if (data?.is_subscribed) {
+          if (data.subscription_expires_at) {
+            isSubscribed = new Date(data.subscription_expires_at) > new Date();
+          } else {
+            isSubscribed = true;
+          }
         }
       }
+
+      // Sync to ads module
+      setSubscriptionStatus(isSubscribed);
+
+      setUser({
+        id: userId,
+        email,
+        displayName,
+        isSubscribed,
+      });
+    } finally {
+      setLoading(false);
     }
-
-    // Sync to ads module
-    setSubscriptionStatus(isSubscribed);
-
-    setUser({
-      id: userId,
-      email,
-      displayName,
-      isSubscribed,
-    });
   };
 
   // Refresh subscription status (call after purchase)
@@ -102,34 +111,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Initialize RevenueCat (anonymous mode for non-logged-in users)
     initPurchases();
 
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchProfile(
-          session.user.id,
-          session.user.email || '',
-          session.user.user_metadata?.full_name
-        );
-      }
-      setLoading(false);
-    });
+    let mounted = true;
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Check current session
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
       if (session?.user) {
-        fetchProfile(
+        await fetchProfile(
           session.user.id,
           session.user.email || '',
           session.user.user_metadata?.full_name
         );
       } else {
-        setUser(null);
-        setSubscriptionStatus(false);
-        logoutPurchases();
+        setLoading(false);
       }
+    })();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      void (async () => {
+        if (session?.user) {
+          await fetchProfile(
+            session.user.id,
+            session.user.email || '',
+            session.user.user_metadata?.full_name
+          );
+        } else {
+          setUser(null);
+          resetAdsState();
+          setSubscriptionStatus(false);
+          await logoutPurchases();
+          setLoading(false);
+        }
+      })();
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -157,6 +180,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return { error: error.message };
     }
+    return {};
+  };
+
+  const resetPassword = async (email: string) => {
+    const redirectTo = Linking.createURL('/pages/reset-password');
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+    if (error) {
+      if (error.message?.toLowerCase().includes('rate limit')) {
+        return { error: '寄送次數過快，請稍等幾分鐘後再試一次。' };
+      }
+      return { error: error.message };
+    }
+
     return {};
   };
 
@@ -196,7 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, refreshSubscription, signIn, signUp, signOut, deleteAccount }}>
+    <AuthContext.Provider value={{ user, loading, refreshSubscription, signIn, signUp, resetPassword, signOut, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

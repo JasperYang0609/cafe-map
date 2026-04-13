@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  Alert, KeyboardAvoidingView, Platform, ScrollView, Linking,
+  Alert, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +17,7 @@ type AuthMode = 'login' | 'register';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, signIn, signUp, signOut, deleteAccount } = useAuth();
+  const { user, signIn, signUp, resetPassword, signOut, deleteAccount, loading: authLoading } = useAuth();
   const { t } = useI18n();
   const [authMode, setAuthMode] = useState<AuthMode | null>(null);
   const [appleLoading, setAppleLoading] = useState(false);
@@ -43,6 +43,23 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetCooldown, setResetCooldown] = useState<number>(0);
+  const showAuthOverlay = appleLoading || googleLoading || (authLoading && !user);
+  const beanGoAvatar = require('../../assets/beango-character.png');
+
+  useEffect(() => {
+    if (user && authMode) {
+      setAuthMode(null);
+      setEmail('');
+      setPassword('');
+    }
+  }, [user, authMode]);
+
+  useEffect(() => {
+    if (resetCooldown <= 0) return;
+    const timer = setTimeout(() => setResetCooldown((prev: number) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resetCooldown]);
 
   const handleAuth = async () => {
     if (!email || !password) {
@@ -63,11 +80,30 @@ export default function ProfileScreen() {
     } else {
       if (authMode === 'register') {
         Alert.alert(t('profile.register_success'), t('profile.register_success_msg'));
+        setAuthMode(null);
       }
-      setAuthMode(null);
       setEmail('');
       setPassword('');
     }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      Alert.alert(t('profile.error'), t('profile.enter_email_for_reset') || '請先輸入 Email');
+      return;
+    }
+
+    const result = await resetPassword(email);
+    if (result.error) {
+      Alert.alert(t('profile.error'), result.error);
+      return;
+    }
+
+    setResetCooldown(60);
+    Alert.alert(
+      t('profile.reset_sent') || '重設信已寄出',
+      t('profile.reset_sent_msg') || '請到你的 Email 收信，依指示重設密碼。'
+    );
   };
 
   const handleSignOut = () => {
@@ -115,38 +151,6 @@ export default function ProfileScreen() {
           <Text style={styles.authSubtitle}>
             {authMode === 'login' ? t('profile.login_subtitle') : t('profile.register_subtitle')}
           </Text>
-          {isAppleAuthAvailable() && (
-            <TouchableOpacity
-              style={styles.appleButton}
-              onPress={handleAppleSignIn}
-              disabled={appleLoading}
-            >
-              <Ionicons name="logo-apple" size={20} color="#fff" />
-              <Text style={styles.appleButtonText}>
-                {appleLoading ? t('profile.processing') : 'Sign in with Apple'}
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {isGoogleAuthAvailable() && (
-            <TouchableOpacity
-              style={styles.googleButton}
-              onPress={handleGoogleSignIn}
-              disabled={googleLoading}
-            >
-              <Ionicons name="logo-google" size={20} color="#4285F4" />
-              <Text style={styles.googleButtonText}>
-                {googleLoading ? t('profile.processing') : 'Sign in with Google'}
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          <View style={styles.dividerRow}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
           <View style={styles.inputGroup}>
             <View style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={20} color={Colors.textSecondary} />
@@ -164,6 +168,12 @@ export default function ProfileScreen() {
               {loading ? t('profile.processing') : authMode === 'login' ? t('profile.login') : t('profile.register')}
             </Text>
           </TouchableOpacity>
+          {authMode === 'login' && (
+            <TouchableOpacity style={styles.forgotPasswordBtn} onPress={handleForgotPassword}>
+              <Text style={styles.forgotPasswordText}>{t('profile.forgot_password') || '忘記密碼？'}</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity style={styles.switchMode} onPress={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
             <Text style={styles.switchText}>
               {authMode === 'login' ? t('profile.no_account') : t('profile.has_account')}
@@ -172,6 +182,13 @@ export default function ProfileScreen() {
               </Text>
             </Text>
           </TouchableOpacity>
+
+          {showAuthOverlay && (
+            <View style={styles.authOverlay}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.authOverlayText}>{t('profile.processing')}</Text>
+            </View>
+          )}
         </KeyboardAvoidingView>
       </SafeAreaView>
     );
@@ -180,14 +197,14 @@ export default function ProfileScreen() {
   if (user) {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
             <Text style={styles.title}>{t('profile.title')}</Text>
             <LanguagePicker />
           </View>
           <View style={styles.guestCard}>
             <View style={styles.avatarCircle}>
-              <Ionicons name="person" size={40} color={Colors.primary} />
+              <Image source={beanGoAvatar} style={styles.avatarImage} />
             </View>
             <Text style={styles.guestTitle}>{user.email}</Text>
             <Text style={styles.guestText}>{t('profile.welcome')}</Text>
@@ -226,14 +243,14 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('profile.title')}</Text>
           <LanguagePicker />
         </View>
         <View style={styles.guestCard}>
           <View style={styles.avatarCircle}>
-            <Ionicons name="person" size={40} color={Colors.textSecondary} />
+            <Image source={beanGoAvatar} style={styles.avatarImage} />
           </View>
           <Text style={styles.guestTitle}>{t('profile.not_logged_in')}</Text>
           <Text style={styles.guestText}>{t('profile.guest_text')}</Text>
@@ -290,6 +307,13 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
         <Text style={styles.versionText}>v0.1.0</Text>
+
+        {showAuthOverlay && (
+          <View style={styles.authOverlay}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.authOverlayText}>{t('profile.processing')}</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -302,14 +326,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl + 20, paddingBottom: Spacing.md,
   },
   title: { fontSize: FontSize.xxl, fontWeight: '700', color: Colors.text },
-  versionText: { textAlign: 'center', fontSize: FontSize.xs, color: Colors.textSecondary, paddingVertical: Spacing.lg },
+  versionText: { textAlign: 'center', fontSize: FontSize.xs, color: Colors.textSecondary, paddingVertical: Spacing.sm },
   guestCard: {
     alignItems: 'center', padding: Spacing.xl, margin: Spacing.lg,
     backgroundColor: Colors.surface, borderRadius: BorderRadius.lg,
   },
   avatarCircle: {
-    width: 80, height: 80, borderRadius: 40, backgroundColor: Colors.border,
+    width: 116, height: 116, borderRadius: 58, backgroundColor: '#F6F0E8',
     justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.md,
+  },
+  avatarImage: {
+    width: 94,
+    height: 94,
+    resizeMode: 'contain',
   },
   guestTitle: { fontSize: FontSize.lg, fontWeight: '600', color: Colors.text },
   guestText: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.xs, marginBottom: Spacing.lg, textAlign: 'center' },
@@ -359,7 +388,33 @@ const styles = StyleSheet.create({
   authButton: { backgroundColor: Colors.primary, paddingVertical: Spacing.md, borderRadius: BorderRadius.full, alignItems: 'center', marginBottom: Spacing.lg },
   authButtonDisabled: { opacity: 0.6 },
   authButtonText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '700' },
+  forgotPasswordBtn: {
+    alignSelf: 'flex-end',
+    marginTop: -Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  forgotPasswordText: {
+    fontSize: FontSize.sm,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
   switchMode: { alignItems: 'center' },
   switchText: { fontSize: FontSize.sm, color: Colors.textSecondary },
   switchLink: { color: Colors.primary, fontWeight: '600' },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: Spacing.md,
+  },
+  authOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 248, 240, 0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  authOverlayText: {
+    fontSize: FontSize.md,
+    color: Colors.text,
+    fontWeight: '600',
+  },
 });

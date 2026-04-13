@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { InteractionManager } from 'react-native';
 import { Cafe } from '../types/cafe';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
@@ -32,10 +33,13 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
   // Load history from Supabase when user logs in
   useEffect(() => {
     if (user) {
-      loadHistory(user.id);
-    } else {
-      setHistory([]);
+      const task = InteractionManager.runAfterInteractions(() => {
+        loadHistory(user.id);
+      });
+      return () => task.cancel();
     }
+
+    setHistory([]);
   }, [user?.id]);
 
   const loadHistory = async (userId: string) => {

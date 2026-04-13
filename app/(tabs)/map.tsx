@@ -13,6 +13,7 @@ import {
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useLocation } from '../../src/hooks/useLocation';
 import { useCafes } from '../../src/hooks/useCafes';
@@ -23,7 +24,8 @@ import { useFavorites } from '../../src/context/FavoritesContext';
 
 export default function MapScreen() {
   const { t } = useI18n();
-  const { isFavorited, favorites } = useFavorites();
+  const isFocused = useIsFocused();
+  const { favorites } = useFavorites();
 
   const getFavEmoji = (placeId: string): string | null => {
     const fav = favorites.find(f => f.place_id === placeId);
@@ -113,43 +115,51 @@ export default function MapScreen() {
         showsMyLocationButton={false}
         onPress={() => setSelectedCafe(null)}
       >
-        {cafes.map((cafe) => (
-          <Marker
-            key={cafe.place_id}
-            coordinate={{
-              latitude: cafe.latitude,
-              longitude: cafe.longitude,
-            }}
-            onPress={(e) => {
-              e.stopPropagation();
-              setSelectedCafe(cafe);
-            }}
-            {...(Platform.OS === 'ios'
-              ? {
-                  pinColor: selectedCafe?.place_id === cafe.place_id
-                    ? '#E53935'
-                    : isFavorited(cafe.place_id)
-                    ? '#2D5A27'
-                    : '#6F4E37',
-                }
-              : {
-                  tracksViewChanges: true,
-                }
-            )}
-          >
-            {Platform.OS === 'android' && (
-              <View style={[
-                styles.markerDot,
-                selectedCafe?.place_id === cafe.place_id && styles.markerDotSelected,
-              ]}>
+        {cafes.map((cafe) => {
+          const favoriteEmoji = getFavEmoji(cafe.place_id);
+          const isSelected = selectedCafe?.place_id === cafe.place_id;
+          const isFavorite = !!favoriteEmoji;
+
+          return (
+            <Marker
+              key={cafe.place_id}
+              coordinate={{
+                latitude: cafe.latitude,
+                longitude: cafe.longitude,
+              }}
+              onPress={(e) => {
+                e.stopPropagation();
+                setSelectedCafe(cafe);
+              }}
+              tracksViewChanges={false}
+              {...(!isFavorite && Platform.OS === 'ios'
+                ? {
+                    pinColor: isSelected ? '#E53935' : '#6F4E37',
+                  }
+                : {}
+              )}
+            >
+              {isFavorite ? (
                 <View style={[
-                  styles.markerInner, isFavorited(cafe.place_id) && styles.markerInnerFavorited,
-                  selectedCafe?.place_id === cafe.place_id && styles.markerInnerSelected,
-                ]} />
-              </View>
-            )}
-          </Marker>
-        ))}
+                  styles.favoriteMarker,
+                  isSelected && styles.favoriteMarkerSelected,
+                ]}>
+                  <Text style={styles.favoriteMarkerEmoji}>{favoriteEmoji}</Text>
+                </View>
+              ) : Platform.OS === 'android' ? (
+                <View style={[
+                  styles.markerDot,
+                  isSelected && styles.markerDotSelected,
+                ]}>
+                  <View style={[
+                    styles.markerInner,
+                    isSelected && styles.markerInnerSelected,
+                  ]} />
+                </View>
+              ) : null}
+            </Marker>
+          );
+        })}
       </MapView>
 
       {/* Recenter button */}
@@ -274,15 +284,24 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Colors.surface,
   },
-  markerInnerFavorited: {
-    backgroundColor: '#2D5A27',
-  },
   markerInnerSelected: {
     width: 18,
     height: 18,
     borderRadius: 9,
     backgroundColor: '#E53935',
     borderWidth: 3,
+  },
+  favoriteMarker: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  favoriteMarkerSelected: {
+    transform: [{ scale: 1.15 }],
+  },
+  favoriteMarkerEmoji: {
+    fontSize: 24,
   },
   recenterButton: {
     position: 'absolute',

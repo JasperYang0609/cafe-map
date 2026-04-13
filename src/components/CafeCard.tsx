@@ -113,8 +113,7 @@ export default function CafeCard({
           </Text>
           {showFavoriteButton && (
             <TouchableOpacity onPress={() => {
-              if (isFavorited) return; // already favorited
-              if (onSubscriptionRequired) {
+              if (onSubscriptionRequired && !isFavorited) {
                 onSubscriptionRequired();
               } else if (onFavorite) {
                 onFavorite();

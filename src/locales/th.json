@@ -88,7 +88,18 @@
     "delete_account": "ลบบัญชี",
     "delete_confirm": "คุณแน่ใจหรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้ ข้อมูลทั้งหมดจะถูกลบอย่างถาวร",
     "delete_success": "ลบบัญชีแล้ว",
-    "delete_success_msg": "บัญชีและข้อมูลทั้งหมดถูกลบอย่างถาวรแล้ว"
+    "delete_success_msg": "บัญชีและข้อมูลทั้งหมดถูกลบอย่างถาวรแล้ว",
+    "forgot_password": "ลืมรหัสผ่าน?",
+    "enter_email_for_reset": "กรุณากรอกอีเมลก่อน",
+    "reset_sent": "ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว",
+    "reset_sent_msg": "กรุณาตรวจสอบอีเมลและทำตามขั้นตอนเพื่อรีเซ็ตรหัสผ่าน",
+    "reset_password_title": "รีเซ็ตรหัสผ่าน",
+    "reset_password_subtitle": "กรอกรหัสผ่านใหม่สำหรับเข้าสู่ระบบ",
+    "new_password": "รหัสผ่านใหม่",
+    "confirm_password": "ยืนยันรหัสผ่านใหม่",
+    "password_mismatch": "รหัสผ่านไม่ตรงกัน",
+    "password_reset_success": "อัปเดตรหัสผ่านแล้ว",
+    "password_reset_success_msg": "กรุณาเข้าสู่ BeanGo ด้วยรหัสผ่านใหม่"
   },
   "filter": {
     "title": "กรอง",

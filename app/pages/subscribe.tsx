@@ -11,7 +11,8 @@ import { useI18n } from '../../src/context/I18nContext';
 import { useAuth } from '../../src/context/AuthContext';
 import {
   getOfferings, purchasePackage, restorePurchases,
-  isPurchasesAvailable,
+  initPurchases, loginPurchases,
+  isPurchasesAvailable, isPurchasesInitialized,
 } from '../../src/lib/purchases';
 import { setSubscriptionStatus } from '../../src/lib/ads';
 
@@ -25,26 +26,51 @@ const FEATURES = [
 export default function SubscribeScreen() {
   const router = useRouter();
   const { t, locale } = useI18n();
-  const { user, refreshSubscription } = useAuth();
+  const { user, refreshSubscription, loading: authLoading } = useAuth();
   const [monthlyPkg, setMonthlyPkg] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+  const [syncingSubscription, setSyncingSubscription] = useState(true);
 
   useEffect(() => {
-    loadOfferings();
-  }, []);
+    if (!authLoading) {
+      bootstrapSubscriptionScreen();
+    }
+  }, [authLoading, user?.id]);
+
+  const bootstrapSubscriptionScreen = async () => {
+    setSyncingSubscription(true);
+    if (user) {
+      await refreshSubscription();
+    }
+    await loadOfferings();
+    setSyncingSubscription(false);
+  };
 
   const loadOfferings = async () => {
+    setLoading(true);
+
     if (!isPurchasesAvailable()) {
+      setMonthlyPkg(null);
       setLoading(false);
       return;
     }
+
+    if (!isPurchasesInitialized()) {
+      await initPurchases(user?.id);
+    }
+
+    if (user?.id) {
+      await loginPurchases(user.id);
+    }
+
     const pkgs = await getOfferings();
     const monthly = pkgs.find(p =>
       p.identifier?.toLowerCase().includes('monthly') ||
       p.packageType?.toLowerCase().includes('monthly') ||
       p.identifier === '$rc_monthly'
     );
+
     setMonthlyPkg(monthly || null);
     setLoading(false);
   };
@@ -105,6 +131,17 @@ export default function SubscribeScreen() {
       Alert.alert(t('subscribe.restore_fail'));
     }
   };
+
+  if (authLoading || syncingSubscription) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingState}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingStateText}>正在同步訂閱狀態⋯</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Already subscribed
   if (user?.isSubscribed) {
@@ -174,11 +211,17 @@ export default function SubscribeScreen() {
           </View>
         </View>
 
+        {!loading && !monthlyPkg && (
+          <TouchableOpacity style={styles.restoreBtn} onPress={loadOfferings}>
+            <Text style={styles.restoreBtnText}>{t('common.retry') || '重新載入'}</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Subscribe Button */}
         <TouchableOpacity
-          style={[styles.subscribeBtn, purchasing && styles.subscribeBtnDisabled]}
+          style={[styles.subscribeBtn, (purchasing || loading || !monthlyPkg) && styles.subscribeBtnDisabled]}
           onPress={handlePurchase}
-          disabled={purchasing || loading}
+          disabled={purchasing || loading || !monthlyPkg}
         >
           {purchasing ? (
             <ActivityIndicator color="#fff" />
@@ -265,6 +308,16 @@ const styles = StyleSheet.create({
   },
   legalSep: {
     fontSize: FontSize.xs, color: Colors.textSecondary,
+  },
+  loadingState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  loadingStateText: {
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
   },
 
   // Already subscribed state

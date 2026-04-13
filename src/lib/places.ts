@@ -94,36 +94,53 @@ function getSearchPoints(
     return [{ lat: latitude, lng: longitude, r: radius }];
   }
 
-  // For medium radius (≤5km), use center + 4 cardinal offsets
-  // Each sub-circle uses radius/2 to overlap and cover gaps
-  const subRadius = Math.ceil(radius * 0.6);
-  const offsetDist = radius * 0.5;
-
   // Convert offset distance to degrees (approximate)
-  const latOffset = offsetDist / 111320;
-  const lngOffset = offsetDist / (111320 * Math.cos(latitude * Math.PI / 180));
+  const latDeg = (m: number) => m / 111320;
+  const lngDeg = (m: number) => m / (111320 * Math.cos(latitude * Math.PI / 180));
 
-  if (radius <= 5000) {
+  // For medium radius (≤3km), use center + 4 cardinal offsets
+  if (radius <= 3000) {
+    const subRadius = Math.ceil(radius * 0.65);
+    const off = radius * 0.45;
     return [
       { lat: latitude, lng: longitude, r: subRadius },
-      { lat: latitude + latOffset, lng: longitude, r: subRadius },
-      { lat: latitude - latOffset, lng: longitude, r: subRadius },
-      { lat: latitude, lng: longitude + lngOffset, r: subRadius },
-      { lat: latitude, lng: longitude - lngOffset, r: subRadius },
+      { lat: latitude + latDeg(off), lng: longitude, r: subRadius },
+      { lat: latitude - latDeg(off), lng: longitude, r: subRadius },
+      { lat: latitude, lng: longitude + lngDeg(off), r: subRadius },
+      { lat: latitude, lng: longitude - lngDeg(off), r: subRadius },
     ];
   }
 
-  // For large radius (>5km), use center + 8 surrounding points
+  // For 5km, use center + 8 surrounding to cover full area
+  if (radius <= 5000) {
+    const subRadius = Math.ceil(radius * 0.55);
+    const off = radius * 0.45;
+    return [
+      { lat: latitude, lng: longitude, r: subRadius },
+      { lat: latitude + latDeg(off), lng: longitude, r: subRadius },
+      { lat: latitude - latDeg(off), lng: longitude, r: subRadius },
+      { lat: latitude, lng: longitude + lngDeg(off), r: subRadius },
+      { lat: latitude, lng: longitude - lngDeg(off), r: subRadius },
+      { lat: latitude + latDeg(off), lng: longitude + lngDeg(off), r: subRadius },
+      { lat: latitude + latDeg(off), lng: longitude - lngDeg(off), r: subRadius },
+      { lat: latitude - latDeg(off), lng: longitude + lngDeg(off), r: subRadius },
+      { lat: latitude - latDeg(off), lng: longitude - lngDeg(off), r: subRadius },
+    ];
+  }
+
+  // For large radius (>5km), use center + 8 surrounding points with wider spread
+  const subRadius = Math.ceil(radius * 0.55);
+  const off = radius * 0.5;
   return [
     { lat: latitude, lng: longitude, r: subRadius },
-    { lat: latitude + latOffset, lng: longitude, r: subRadius },
-    { lat: latitude - latOffset, lng: longitude, r: subRadius },
-    { lat: latitude, lng: longitude + lngOffset, r: subRadius },
-    { lat: latitude, lng: longitude - lngOffset, r: subRadius },
-    { lat: latitude + latOffset, lng: longitude + lngOffset, r: subRadius },
-    { lat: latitude + latOffset, lng: longitude - lngOffset, r: subRadius },
-    { lat: latitude - latOffset, lng: longitude + lngOffset, r: subRadius },
-    { lat: latitude - latOffset, lng: longitude - lngOffset, r: subRadius },
+    { lat: latitude + latDeg(off), lng: longitude, r: subRadius },
+    { lat: latitude - latDeg(off), lng: longitude, r: subRadius },
+    { lat: latitude, lng: longitude + lngDeg(off), r: subRadius },
+    { lat: latitude, lng: longitude - lngDeg(off), r: subRadius },
+    { lat: latitude + latDeg(off), lng: longitude + lngDeg(off), r: subRadius },
+    { lat: latitude + latDeg(off), lng: longitude - lngDeg(off), r: subRadius },
+    { lat: latitude - latDeg(off), lng: longitude + lngDeg(off), r: subRadius },
+    { lat: latitude - latDeg(off), lng: longitude - lngDeg(off), r: subRadius },
   ];
 }
 
