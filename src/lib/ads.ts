@@ -70,6 +70,7 @@ export async function initAds() {
     console.log(`[Ads] AdMob initialized (${IS_DEV ? 'TEST' : 'PROD'})`);
   } catch (e) {
     console.log('[Ads] AdMob not available:', e);
+    initStarted = false; // Allow retry on next call
   }
 }
 
@@ -107,6 +108,7 @@ export async function showRewardedAd(): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     let resolved = false;
     let earned = false;
+    let shown = false;
     const unsubs: Array<() => void> = [];
 
     const finish = (result: boolean) => {
@@ -153,11 +155,21 @@ export async function showRewardedAd(): Promise<boolean> {
         })
       );
 
+      // OPENED → track that ad was actually displayed to user
+      unsubs.push(
+        ad.addAdEventListener(AdEventType.OPENED, () => {
+          shown = true;
+          console.log('[Ads] Ad OPENED (displayed to user)');
+        })
+      );
+
       // CLOSED → resolve with reward status
+      // Fallback: if ad was shown but EARNED_REWARD didn't fire,
+      // grant reward — user shouldn't be penalized for SDK quirks
       unsubs.push(
         ad.addAdEventListener(AdEventType.CLOSED, () => {
-          console.log('[Ads] CLOSED, earned:', earned);
-          finish(earned);
+          console.log('[Ads] CLOSED, earned:', earned, 'shown:', shown);
+          finish(earned || shown);
         })
       );
 

@@ -174,7 +174,7 @@ export default function FavoritesScreen() {
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={Platform.OS === 'android' || selectedCafe?.place_id === cafe.place_id}
+              tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
             >
               <Animated.View style={[
                 styles.treeMarker,

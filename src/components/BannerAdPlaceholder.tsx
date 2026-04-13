@@ -1,70 +1,93 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors, FontSize } from '../constants/theme';
-import { AD_UNIT_IDS } from '../lib/ads';
+import { AD_UNIT_IDS, initAds } from '../lib/ads';
 import { useAuth } from '../context/AuthContext';
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 5000;
 
 /**
  * Banner ad component - shows Google AdMob banner for free users.
- * Falls back to nothing while loading so screens don't reserve blank space.
+ * Handles initialization, loading, and retry on failure.
  */
 export default function BannerAdPlaceholder() {
   const { user } = useAuth();
   const isSubscribed = !!user?.isSubscribed;
   const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [adKey, setAdKey] = useState(0);
+  const [failCount, setFailCount] = useState(0);
+  const mountedRef = useRef(true);
 
-  // Reset loaded/failed state when subscription status changes
-  React.useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-  }, [isSubscribed]);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
-  const banner = useMemo(() => {
-    if (isSubscribed) return null;
-
-    try {
-      const ads = require('react-native-google-mobile-ads');
-      const BannerAd = ads.BannerAd;
-      const BannerAdSize = ads.BannerAdSize;
-
-      if (BannerAd && BannerAdSize) {
-        return (
-          <View style={styles.bannerWrap}>
-            <BannerAd
-              unitId={AD_UNIT_IDS.banner!}
-              size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-              requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-              onAdLoaded={() => {
-                setLoaded(true);
-                setFailed(false);
-              }}
-              onAdFailedToLoad={() => {
-                setLoaded(false);
-                setFailed(true);
-              }}
-            />
-          </View>
-        );
-      }
-    } catch (e) {
-      return null;
+  // Initialize AdMob when banner needs to show
+  useEffect(() => {
+    if (!isSubscribed) {
+      initAds();
     }
-
-    return null;
+    // Reset state when subscription status changes
+    setLoaded(false);
+    setFailCount(0);
+    setAdKey(k => k + 1);
   }, [isSubscribed]);
+
+  // Retry after failure with delay
+  useEffect(() => {
+    if (failCount > 0 && failCount <= MAX_RETRIES) {
+      const timer = setTimeout(() => {
+        if (mountedRef.current) {
+          setAdKey(k => k + 1);
+        }
+      }, RETRY_DELAY);
+      return () => clearTimeout(timer);
+    }
+  }, [failCount]);
 
   if (isSubscribed) return null;
-  if (!banner) return null;
+
+  let bannerContent = null;
+  try {
+    const ads = require('react-native-google-mobile-ads');
+    const BannerAd = ads.BannerAd;
+    const BannerAdSize = ads.BannerAdSize;
+
+    if (BannerAd && BannerAdSize) {
+      bannerContent = (
+        <BannerAd
+          key={adKey}
+          unitId={AD_UNIT_IDS.banner!}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+          onAdLoaded={() => {
+            if (mountedRef.current) {
+              setLoaded(true);
+              setFailCount(0);
+            }
+          }}
+          onAdFailedToLoad={() => {
+            if (mountedRef.current) {
+              setLoaded(false);
+              setFailCount(c => c + 1);
+            }
+          }}
+        />
+      );
+    }
+  } catch (e) {
+    return null;
+  }
+
+  if (!bannerContent) return null;
 
   return (
     <View style={[styles.container, !loaded && styles.hidden]} pointerEvents={loaded ? 'auto' : 'none'}>
-      {banner}
-      {!loaded && failed ? (
-        <View style={styles.fallbackHint}>
-          <Text style={styles.text}>Ad</Text>
-        </View>
-      ) : null}
+      <View style={styles.bannerWrap}>
+        {bannerContent}
+      </View>
     </View>
   );
 }
@@ -84,15 +107,5 @@ const styles = StyleSheet.create({
     minHeight: 50,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  fallbackHint: {
-    position: 'absolute',
-    inset: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
   },
 });

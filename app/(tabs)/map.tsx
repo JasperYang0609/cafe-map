@@ -133,7 +133,7 @@ export default function MapScreen() {
 
           return (
             <Marker
-              key={cafe.place_id}
+              key={`${cafe.place_id}${!isFavorite && isSelected ? '-sel' : ''}`}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
@@ -143,9 +143,9 @@ export default function MapScreen() {
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              // Favorites: always track (few markers, need emoji render)
-              // Non-favorites: never track (use native pinColor, no custom View)
-              tracksViewChanges={isFavorite}
+              // Only track view changes for selected favorites (scale animation)
+              // Non-favorites use native pinColor (key change forces remount on select)
+              tracksViewChanges={isFavorite && isSelected}
               pinColor={!isFavorite ? (isSelected ? '#E53935' : '#6F4E37') : undefined}
             >
               {isFavorite ? (
