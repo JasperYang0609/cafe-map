@@ -36,8 +36,8 @@ export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
   const router = useRouter();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
-  const [markersReady, setMarkersReady] = useState(false);
-  const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [markersRendered, setMarkersRendered] = useState(false);
+  const markerPressedRef = useRef(false);
 
   const handleOpenDetail = (cafe: Cafe) => {
     router.push({
@@ -67,13 +67,13 @@ export default function MapScreen() {
     }
   }, [location.loading, location.error, location.latitude, location.longitude]);
 
-  // After cafes load, give markers time to render then disable tracksViewChanges
+  // After cafes load, give custom markers time to render then disable tracksViewChanges
   useEffect(() => {
-    if (cafes.length > 0 && !markersReady) {
-      const timer = setTimeout(() => setMarkersReady(true), 1500);
+    if (cafes.length > 0 && !markersRendered) {
+      const timer = setTimeout(() => setMarkersRendered(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, [cafes.length, markersReady]);
+  }, [cafes.length, markersRendered]);
 
   const handleRecenter = () => {
     if (mapRef.current && !location.loading) {
@@ -124,9 +124,14 @@ export default function MapScreen() {
         showsUserLocation
         showsMyLocationButton={false}
         onPress={() => {
-          // Delay dismiss to avoid conflicting with marker onPress on Android
-          if (dismissTimeoutRef.current) clearTimeout(dismissTimeoutRef.current);
-          dismissTimeoutRef.current = setTimeout(() => setSelectedCafe(null), 100);
+          // Only dismiss if no marker was pressed in this gesture
+          // Use a short delay so marker onPress can set the flag first
+          setTimeout(() => {
+            if (!markerPressedRef.current) {
+              setSelectedCafe(null);
+            }
+            markerPressedRef.current = false;
+          }, 150);
         }}
       >
         {cafes.map((cafe) => {
@@ -143,14 +148,13 @@ export default function MapScreen() {
               }}
               onPress={(e) => {
                 e.stopPropagation();
-                // Cancel any pending map dismiss
-                if (dismissTimeoutRef.current) {
-                  clearTimeout(dismissTimeoutRef.current);
-                  dismissTimeoutRef.current = null;
-                }
+                markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              tracksViewChanges={!markersReady}
+              tracksViewChanges={
+                // Need re-render when: initial load, or this marker is selected/deselected
+                !markersRendered || isSelected
+              }
               {...(!isFavorite && Platform.OS === 'ios'
                 ? {
                     pinColor: isSelected ? '#E53935' : '#6F4E37',
