@@ -126,3 +126,20 @@ docs/               — GitHub Pages 官網（index.html, privacy.html, terms.ht
 - **Claude Code**: 唯一 code writer，直接存取 repo
 - **OpenClaw/GPT**: 負責 Notion、備份、Discord 管理，不改 code
 - 共用 git repo + Notion，衝突靠角色分工防止
+
+## Backup relay addendum
+本 repo 已加入 **A 方案 relay 模式** 的備份監控上下文。
+- Claude 不直接發 Discord
+- Claude 只寫本地 handoff 檔
+- 最終由 OpenClaw 或人工 relay 到 Discord `每日備份監控優化`（`channel:1493072746702311474`）
+
+請優先讀：
+- `claude-packs/channel-backup-state-backlog-claude/CLAUDE.md`
+- `claude-packs/channel-backup-state-backlog-claude/references/design.md`
+- `claude-packs/channel-backup-state-backlog-claude/references/recovery.md`
+- `claude-packs/channel-backup-state-backlog-claude/references/reporting.md`
+
+本地 handoff 輸出路徑：
+- `handoff/backup-monitor/latest-summary.md`
+- `handoff/backup-monitor/latest-status.json`
+- `handoff/backup-monitor/latest-anomaly.md`（有異常時）

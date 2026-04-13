@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-04-13T21:30:00+08:00",
+  "mode": "daily-sync",
+  "status": "partial",
+  "targetThread": "channel:1493072746702311474",
+  "entriesProcessed": [
+    "早安圖",
+    "咖啡廳地圖/寫code"
+  ],
+  "deferredEntries": [
+    "beango-影片工作室"
+  ],
+  "notes": [
+    "首次全量備份（部分完成）",
+    "大型 backlog defer 給 backlog worker"
+  ]
+}
