@@ -36,7 +36,6 @@ export default function MapScreen() {
   const mapRef = useRef<MapView>(null);
   const router = useRouter();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
-  const [markersRendered, setMarkersRendered] = useState(false);
   const markerPressedRef = useRef(false);
 
   const handleOpenDetail = (cafe: Cafe) => {
@@ -67,13 +66,6 @@ export default function MapScreen() {
     }
   }, [location.loading, location.error, location.latitude, location.longitude]);
 
-  // After cafes load, give custom markers time to render then disable tracksViewChanges
-  useEffect(() => {
-    if (cafes.length > 0 && !markersRendered) {
-      const timer = setTimeout(() => setMarkersRendered(true), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [cafes.length, markersRendered]);
 
   const handleRecenter = () => {
     if (mapRef.current && !location.loading) {
@@ -151,16 +143,10 @@ export default function MapScreen() {
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              tracksViewChanges={
-                // Need re-render when: initial load, or this marker is selected/deselected
-                !markersRendered || isSelected
-              }
-              {...(!isFavorite && Platform.OS === 'ios'
-                ? {
-                    pinColor: isSelected ? '#E53935' : '#6F4E37',
-                  }
-                : {}
-              )}
+              // Favorites: always track (few markers, need emoji render)
+              // Non-favorites: never track (use native pinColor, no custom View)
+              tracksViewChanges={isFavorite}
+              pinColor={!isFavorite ? (isSelected ? '#E53935' : '#6F4E37') : undefined}
             >
               {isFavorite ? (
                 <View style={[
@@ -168,16 +154,6 @@ export default function MapScreen() {
                   isSelected && styles.favoriteMarkerSelected,
                 ]}>
                   <Text style={styles.favoriteMarkerEmoji}>{favoriteEmoji}</Text>
-                </View>
-              ) : Platform.OS === 'android' ? (
-                <View style={[
-                  styles.markerDot,
-                  isSelected && styles.markerDotSelected,
-                ]}>
-                  <View style={[
-                    styles.markerInner,
-                    isSelected && styles.markerInnerSelected,
-                  ]} />
                 </View>
               ) : null}
             </Marker>

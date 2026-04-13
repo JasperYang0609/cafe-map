@@ -1,12 +1,12 @@
 /**
- * Ad manager - Google AdMob integration (V17 rewrite)
+ * Ad manager - Google AdMob integration (V19 — on-demand architecture)
  *
- * Free users: 3 free picks per day, then watch a rewarded ad for each additional pick.
- * Subscribers: unlimited picks, no ads.
+ * ARCHITECTURE CHANGE: No more preloading.
+ * Each showRewardedAd() creates a fresh ad → loads → shows → captures reward.
+ * This eliminates ALL preload/show lifecycle conflicts that caused reward loss
+ * in V14/V16/V18.
  *
- * KEY DESIGN: preload phase adds ONLY a LOADED listener (+ ERROR for retry).
- * NO CLOSED listener during preload — this prevents the preload CLOSED handler
- * from interfering with the show-time reward capture.
+ * Tradeoff: user waits 2-5s while ad loads. Acceptable vs broken rewards.
  */
 
 import { Platform } from 'react-native';
@@ -48,14 +48,6 @@ let dailyPickCount = 0;
 let lastResetDate = new Date().toDateString();
 let initStarted = false;
 let adsInitialized = false;
-
-// Preload state
-let preloadedAd: any = null;
-let preloadReady = false;
-let preloadListeners: Array<() => void> = [];
-let isPreloading = false;
-
-// Show state
 let isShowing = false;
 
 function checkDailyReset() {
@@ -64,14 +56,6 @@ function checkDailyReset() {
     dailyPickCount = 0;
     lastResetDate = today;
   }
-}
-
-function clearPreload() {
-  preloadListeners.forEach((unsub) => unsub());
-  preloadListeners = [];
-  preloadedAd = null;
-  preloadReady = false;
-  isPreloading = false;
 }
 
 export async function initAds() {
@@ -83,54 +67,9 @@ export async function initAds() {
     const mobileAds = ads.default;
     await mobileAds().initialize();
     adsInitialized = true;
-    console.log(`[Ads] AdMob initialized (${IS_DEV ? 'TEST ADS' : 'PROD ADS'})`);
-    setTimeout(() => preloadRewarded(), 2000);
+    console.log(`[Ads] AdMob initialized (${IS_DEV ? 'TEST' : 'PROD'})`);
   } catch (e) {
-    console.log('[Ads] AdMob not available (Expo Go?), using fallback');
-  }
-}
-
-/**
- * Preload a rewarded ad. ONLY adds LOADED + ERROR listeners.
- * NO CLOSED listener — that's only added during show().
- */
-function preloadRewarded() {
-  if (isSubscribed || isShowing || preloadReady || isPreloading) return;
-
-  try {
-    const { RewardedAd, RewardedAdEventType, AdEventType } = require('react-native-google-mobile-ads');
-
-    clearPreload();
-    isPreloading = true;
-
-    const ad = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded!, {
-      requestNonPersonalizedAdsOnly: true,
-    });
-
-    preloadListeners.push(
-      ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
-        preloadReady = true;
-        isPreloading = false;
-        preloadedAd = ad;
-        console.log('[Ads] Rewarded ad preloaded');
-      })
-    );
-
-    preloadListeners.push(
-      ad.addAdEventListener(AdEventType.ERROR, (error: any) => {
-        preloadReady = false;
-        isPreloading = false;
-        preloadedAd = null;
-        console.log('[Ads] Preload error:', error?.message || error);
-        setTimeout(preloadRewarded, 30000);
-      })
-    );
-
-    ad.load();
-    console.log('[Ads] Preloading rewarded ad...');
-  } catch (e) {
-    isPreloading = false;
-    console.log('[Ads] Cannot preload:', e);
+    console.log('[Ads] AdMob not available:', e);
   }
 }
 
@@ -151,8 +90,8 @@ export function recordPick() {
 }
 
 /**
- * Show a preloaded rewarded ad.
- * Returns true if the user earned the reward.
+ * Create → Load → Show → Capture reward, all in one call.
+ * No preloading, no stale state, no listener conflicts.
  */
 export async function showRewardedAd(): Promise<boolean> {
   if (isSubscribed) return true;
@@ -161,50 +100,60 @@ export async function showRewardedAd(): Promise<boolean> {
   if (!adsInitialized) {
     await initAds();
   }
+  if (!adsInitialized) return false;
 
-  if (!preloadReady || !preloadedAd) {
-    if (!isPreloading) preloadRewarded();
-    console.log('[Ads] Ad not ready');
-    return false;
-  }
-
-  // Take ownership of the preloaded ad
-  const ad = preloadedAd;
-  preloadListeners.forEach((unsub) => unsub());
-  preloadListeners = [];
-  preloadedAd = null;
-  preloadReady = false;
-  isPreloading = false;
   isShowing = true;
 
   return new Promise<boolean>((resolve) => {
+    let resolved = false;
+    let earned = false;
+    const unsubs: Array<() => void> = [];
+
+    const finish = (result: boolean) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      unsubs.forEach((u) => { try { u(); } catch {} });
+      unsubs.length = 0;
+      isShowing = false;
+      resolve(result);
+    };
+
+    // 30s timeout for the entire load+show cycle
+    const timer = setTimeout(() => {
+      console.log('[Ads] Timeout — ad took too long');
+      finish(false);
+    }, 30000);
+
     try {
-      const { RewardedAdEventType, AdEventType } = require('react-native-google-mobile-ads');
-      let earned = false;
-      let done = false;
-      const unsubs: Array<() => void> = [];
+      const { RewardedAd, RewardedAdEventType, AdEventType } = require('react-native-google-mobile-ads');
 
-      const finish = (result: boolean) => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        unsubs.forEach((u) => u());
-        unsubs.length = 0;
-        isShowing = false;
-        resolve(result);
-        setTimeout(preloadRewarded, 500);
-      };
+      const ad = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded!, {
+        requestNonPersonalizedAdsOnly: true,
+      });
 
-      // Safety timeout
-      const timer = setTimeout(() => finish(false), 60000);
-
+      // LOADED → immediately show the ad
       unsubs.push(
-        ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, (reward: any) => {
-          earned = true;
-          console.log('[Ads] EARNED_REWARD:', reward?.type, reward?.amount);
+        ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
+          console.log('[Ads] Ad loaded, showing...');
+          try {
+            ad.show();
+          } catch (e) {
+            console.log('[Ads] Show failed:', e);
+            finish(false);
+          }
         })
       );
 
+      // EARNED_REWARD → mark reward
+      unsubs.push(
+        ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, (reward: any) => {
+          earned = true;
+          console.log('[Ads] ✅ EARNED_REWARD:', reward?.type, reward?.amount);
+        })
+      );
+
+      // CLOSED → resolve with reward status
       unsubs.push(
         ad.addAdEventListener(AdEventType.CLOSED, () => {
           console.log('[Ads] CLOSED, earned:', earned);
@@ -212,36 +161,31 @@ export async function showRewardedAd(): Promise<boolean> {
         })
       );
 
+      // ERROR → resolve false
       unsubs.push(
         ad.addAdEventListener(AdEventType.ERROR, (err: any) => {
-          console.log('[Ads] ERROR during show:', err?.message || err);
+          console.log('[Ads] ERROR:', err?.message || err);
           finish(false);
         })
       );
 
-      ad.show();
-      console.log('[Ads] Showing ad...');
+      // Start loading
+      console.log('[Ads] Creating and loading ad...');
+      ad.load();
+
     } catch (e) {
-      console.log('[Ads] Show failed:', e);
-      isShowing = false;
-      resolve(false);
-      setTimeout(preloadRewarded, 2000);
+      console.log('[Ads] Fatal error:', e);
+      finish(false);
     }
   });
 }
 
 export function setSubscriptionStatus(subscribed: boolean) {
   isSubscribed = subscribed;
-  if (subscribed) {
-    clearPreload();
-  } else if (adsInitialized && !isShowing) {
-    setTimeout(preloadRewarded, 500);
-  }
 }
 
 export function resetAdsState() {
   isSubscribed = false;
-  clearPreload();
   isShowing = false;
 }
 
