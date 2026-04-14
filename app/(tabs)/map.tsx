@@ -44,6 +44,20 @@ export default function MapScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Track recently deselected marker so it can refresh its bitmap (brown dot)
+  const [recentlyDeselectedId, setRecentlyDeselectedId] = useState<string | null>(null);
+  const prevSelectedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prevId = prevSelectedIdRef.current;
+    const currId = selectedCafe?.place_id || null;
+    if (prevId && prevId !== currId) {
+      setRecentlyDeselectedId(prevId);
+      const timer = setTimeout(() => setRecentlyDeselectedId(null), 300);
+      return () => clearTimeout(timer);
+    }
+    prevSelectedIdRef.current = currId;
+  }, [selectedCafe?.place_id]);
+
   const handleOpenDetail = (cafe: Cafe) => {
     router.push({
       pathname: '/cafe/[id]',
@@ -149,9 +163,8 @@ export default function MapScreen() {
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              // Simple dots are cheap to render, always track for non-favorites
-              // Emoji markers only track briefly on mount + when selected
-              tracksViewChanges={!isFavorite || !markersReady || isSelected}
+              // Only track: initial render (500ms) + selected + just-deselected
+              tracksViewChanges={!markersReady || isSelected || cafe.place_id === recentlyDeselectedId}
             >
               {isFavorite ? (
                 <View style={[
