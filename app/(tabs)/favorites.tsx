@@ -51,13 +51,14 @@ export default function FavoritesScreen() {
   const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
   const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
   const bounceAnim = useRef(new Animated.Value(0)).current;
-  // Allow tracksViewChanges briefly on mount so Android renders emoji bitmaps
+  // Allow tracksViewChanges briefly so Android renders emoji bitmaps
+  // Reset when favorites load or filter changes
   const [markersReady, setMarkersReady] = useState(false);
   useEffect(() => {
     setMarkersReady(false);
     const timer = setTimeout(() => setMarkersReady(true), 500);
     return () => clearTimeout(timer);
-  }, [heartFilter]);
+  }, [heartFilter, favorites.length]);
 
   const triggerBounce = () => {
     bounceAnim.setValue(0);
