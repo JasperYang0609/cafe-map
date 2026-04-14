@@ -12,7 +12,6 @@ import { useI18n } from '../../src/context/I18nContext';
 import LanguagePicker from '../../src/components/LanguagePicker';
 import { signInWithApple, isAppleAuthAvailable } from '../../src/lib/appleAuth';
 import { signInWithGoogle, isGoogleAuthAvailable } from '../../src/lib/googleAuth';
-import { signInWithFacebook } from '../../src/lib/facebookAuth';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -21,7 +20,6 @@ export default function ProfileScreen() {
   const [showHiddenLogin, setShowHiddenLogin] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [facebookLoading, setFacebookLoading] = useState(false);
   const hiddenTapRef = React.useRef(0);
   const hiddenTapTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,16 +43,7 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const showAuthOverlay = appleLoading || googleLoading || facebookLoading || (authLoading && !user);
-
-  const handleFacebookSignIn = async () => {
-    setFacebookLoading(true);
-    const result = await signInWithFacebook();
-    setFacebookLoading(false);
-    if (result.error && result.error !== 'CANCELLED') {
-      Alert.alert(t('profile.error'), result.error);
-    }
-  };
+  const showAuthOverlay = appleLoading || googleLoading || (authLoading && !user);
   const beanGoAvatar = require('../../assets/beango-character.png');
 
   useEffect(() => {
@@ -244,17 +233,6 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity
-            style={styles.facebookButton}
-            onPress={handleFacebookSignIn}
-            disabled={facebookLoading}
-          >
-            <Ionicons name="logo-facebook" size={20} color="#fff" />
-            <Text style={styles.facebookButtonText}>
-              {facebookLoading ? t('profile.processing') : 'Sign in with Facebook'}
-            </Text>
-          </TouchableOpacity>
-
         </View>
         <View style={styles.section}>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/subscribe')}>
@@ -333,12 +311,6 @@ const styles = StyleSheet.create({
     width: '100%', marginBottom: Spacing.md,
   },
   googleButtonText: { color: Colors.text, fontSize: FontSize.md, fontWeight: '600' },
-  facebookButton: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#1877F2', paddingVertical: Spacing.md, borderRadius: BorderRadius.full,
-    width: '100%', marginBottom: Spacing.md,
-  },
-  facebookButtonText: { color: '#fff', fontSize: FontSize.md, fontWeight: '600' },
   dividerRow: {
     flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginBottom: Spacing.lg,
   },
