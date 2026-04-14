@@ -206,7 +206,7 @@ export default function ExploreScreen() {
     if (location.loading) return t('explore.subtitle_loading');
     if (cafesLoading) return t('explore.subtitle_searching');
     const cafeCount = filteredCafes.length < cafes.length
-      ? t('explore.subtitle_filtered', { filtered: filteredCafes.length, total: cafes.length })
+      ? t('explore.subtitle_found', { count: filteredCafes.length })
       : t('explore.subtitle_found', { count: cafes.length });
 
     if (isSub) return cafeCount;
