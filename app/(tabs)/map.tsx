@@ -37,6 +37,12 @@ export default function MapScreen() {
   const router = useRouter();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const markerPressedRef = useRef(false);
+  // Allow tracksViewChanges briefly on mount so Android renders custom marker bitmaps
+  const [markersReady, setMarkersReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMarkersReady(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleOpenDetail = (cafe: Cafe) => {
     router.push({
@@ -143,7 +149,7 @@ export default function MapScreen() {
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              tracksViewChanges={false}
+              tracksViewChanges={!markersReady || isSelected}
             >
               {isFavorite ? (
                 <View style={[

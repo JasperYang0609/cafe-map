@@ -51,6 +51,12 @@ export default function FavoritesScreen() {
   const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
   const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
   const bounceAnim = useRef(new Animated.Value(0)).current;
+  // Allow tracksViewChanges briefly on mount so Android renders emoji bitmaps
+  const [markersReady, setMarkersReady] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMarkersReady(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const triggerBounce = () => {
     bounceAnim.setValue(0);
@@ -174,7 +180,7 @@ export default function FavoritesScreen() {
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={selectedCafe?.place_id === cafe.place_id}
+              tracksViewChanges={!markersReady || selectedCafe?.place_id === cafe.place_id}
             >
               <Animated.View style={[
                 styles.treeMarker,
