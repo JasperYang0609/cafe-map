@@ -54,9 +54,10 @@ export default function FavoritesScreen() {
   // Allow tracksViewChanges briefly on mount so Android renders emoji bitmaps
   const [markersReady, setMarkersReady] = useState(false);
   useEffect(() => {
+    setMarkersReady(false);
     const timer = setTimeout(() => setMarkersReady(true), 500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [heartFilter]);
 
   const triggerBounce = () => {
     bounceAnim.setValue(0);
