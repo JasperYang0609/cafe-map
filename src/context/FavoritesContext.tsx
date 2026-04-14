@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode, useRef } from 'react';
-import { InteractionManager } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { Cafe } from '../types/cafe';
 import { useAuth } from './AuthContext';
@@ -42,10 +41,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   // Load favorites from Supabase when user logs in
   useEffect(() => {
     if (user) {
-      const task = InteractionManager.runAfterInteractions(() => {
-        loadFavorites(user.id);
-      });
-      return () => task.cancel();
+      loadFavorites(user.id);
+      return;
     }
 
     cafeIdCacheRef.current = {};
