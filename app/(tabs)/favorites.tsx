@@ -190,12 +190,15 @@ export default function FavoritesScreen() {
               }}
               tracksViewChanges={!markersReady || selectedCafe?.place_id === cafe.place_id}
             >
-              <Animated.View style={[
-                styles.treeMarker,
-                selectedCafe?.place_id === cafe.place_id && { transform: [{ translateY: bounceAnim }] },
-              ]}>
-                <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
-              </Animated.View>
+              {selectedCafe?.place_id === cafe.place_id ? (
+                <Animated.View style={[styles.treeMarker, { transform: [{ translateY: bounceAnim }] }]}>
+                  <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+                </Animated.View>
+              ) : (
+                <View style={styles.treeMarker}>
+                  <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+                </View>
+              )}
             </Marker>
           ))}
         </MapView>
