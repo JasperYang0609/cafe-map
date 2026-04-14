@@ -37,12 +37,14 @@ export default function MapScreen() {
   const router = useRouter();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const markerPressedRef = useRef(false);
-  // Allow tracksViewChanges briefly on mount so Android renders custom marker bitmaps
+  // Allow tracksViewChanges briefly so Android renders custom marker bitmaps
+  // Reset when cafes load or favorites change
   const [markersReady, setMarkersReady] = useState(false);
   useEffect(() => {
+    setMarkersReady(false);
     const timer = setTimeout(() => setMarkersReady(true), 500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [cafes.length, favorites.length]);
 
   // Track recently deselected marker so it can refresh its bitmap (brown dot)
   const [recentlyDeselectedId, setRecentlyDeselectedId] = useState<string | null>(null);
