@@ -13,15 +13,15 @@ import LanguagePicker from '../../src/components/LanguagePicker';
 import { signInWithApple, isAppleAuthAvailable } from '../../src/lib/appleAuth';
 import { signInWithGoogle, isGoogleAuthAvailable } from '../../src/lib/googleAuth';
 
-type AuthMode = 'login' | 'register';
-
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, signIn, signUp, resetPassword, signOut, deleteAccount, loading: authLoading } = useAuth();
+  const { user, signIn, signOut, deleteAccount, loading: authLoading } = useAuth();
   const { t } = useI18n();
-  const [authMode, setAuthMode] = useState<AuthMode | null>(null);
+  const [showHiddenLogin, setShowHiddenLogin] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const hiddenTapRef = React.useRef(0);
+  const hiddenTapTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -43,67 +43,42 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resetCooldown, setResetCooldown] = useState<number>(0);
   const showAuthOverlay = appleLoading || googleLoading || (authLoading && !user);
   const beanGoAvatar = require('../../assets/beango-character.png');
 
   useEffect(() => {
-    if (user && authMode) {
-      setAuthMode(null);
+    if (user && showHiddenLogin) {
+      setShowHiddenLogin(false);
       setEmail('');
       setPassword('');
     }
-  }, [user, authMode]);
+  }, [user, showHiddenLogin]);
 
-  useEffect(() => {
-    if (resetCooldown <= 0) return;
-    const timer = setTimeout(() => setResetCooldown((prev: number) => prev - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [resetCooldown]);
+  // Hidden entry: tap version text 5 times to reveal email login (for App Store review)
+  const handleVersionTap = () => {
+    hiddenTapRef.current += 1;
+    if (hiddenTapTimerRef.current) clearTimeout(hiddenTapTimerRef.current);
+    hiddenTapTimerRef.current = setTimeout(() => { hiddenTapRef.current = 0; }, 3000);
+    if (hiddenTapRef.current >= 5) {
+      hiddenTapRef.current = 0;
+      setShowHiddenLogin(true);
+    }
+  };
 
-  const handleAuth = async () => {
+  const handleHiddenLogin = async () => {
     if (!email || !password) {
       Alert.alert(t('profile.fill_all'), t('profile.fill_all_msg'));
       return;
     }
-    if (password.length < 6) {
-      Alert.alert(t('profile.password_short'), t('profile.password_short_msg'));
-      return;
-    }
     setLoading(true);
-    const result = authMode === 'login'
-      ? await signIn(email, password)
-      : await signUp(email, password);
+    const result = await signIn(email, password);
     setLoading(false);
     if (result.error) {
       Alert.alert(t('profile.error'), result.error);
     } else {
-      if (authMode === 'register') {
-        Alert.alert(t('profile.register_success'), t('profile.register_success_msg'));
-        setAuthMode(null);
-      }
       setEmail('');
       setPassword('');
     }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      Alert.alert(t('profile.error'), t('profile.enter_email_for_reset') || '請先輸入 Email');
-      return;
-    }
-
-    const result = await resetPassword(email);
-    if (result.error) {
-      Alert.alert(t('profile.error'), result.error);
-      return;
-    }
-
-    setResetCooldown(60);
-    Alert.alert(
-      t('profile.reset_sent') || '重設信已寄出',
-      t('profile.reset_sent_msg') || '請到你的 Email 收信，依指示重設密碼。'
-    );
   };
 
   const handleSignOut = () => {
@@ -138,19 +113,16 @@ export default function ProfileScreen() {
     );
   };
 
-  if (authMode) {
+  // Hidden email login for App Store review
+  if (showHiddenLogin) {
     return (
       <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.authContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={() => setAuthMode(null)}>
+          <TouchableOpacity style={styles.backButton} onPress={() => setShowHiddenLogin(false)}>
             <Ionicons name="arrow-back" size={24} color={Colors.text} />
           </TouchableOpacity>
-          <Text style={styles.authTitle}>
-            {authMode === 'login' ? t('profile.login_title') : t('profile.register_title')}
-          </Text>
-          <Text style={styles.authSubtitle}>
-            {authMode === 'login' ? t('profile.login_subtitle') : t('profile.register_subtitle')}
-          </Text>
+          <Text style={styles.authTitle}>{t('profile.login_title')}</Text>
+          <Text style={styles.authSubtitle}>{t('profile.login_subtitle')}</Text>
           <View style={styles.inputGroup}>
             <View style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={20} color={Colors.textSecondary} />
@@ -163,32 +135,11 @@ export default function ProfileScreen() {
                 value={password} onChangeText={setPassword} secureTextEntry />
             </View>
           </View>
-          <TouchableOpacity style={[styles.authButton, loading && styles.authButtonDisabled]} onPress={handleAuth} disabled={loading}>
+          <TouchableOpacity style={[styles.authButton, loading && styles.authButtonDisabled]} onPress={handleHiddenLogin} disabled={loading}>
             <Text style={styles.authButtonText}>
-              {loading ? t('profile.processing') : authMode === 'login' ? t('profile.login') : t('profile.register')}
+              {loading ? t('profile.processing') : t('profile.login')}
             </Text>
           </TouchableOpacity>
-          {authMode === 'login' && (
-            <TouchableOpacity style={styles.forgotPasswordBtn} onPress={handleForgotPassword}>
-              <Text style={styles.forgotPasswordText}>{t('profile.forgot_password') || '忘記密碼？'}</Text>
-            </TouchableOpacity>
-          )}
-
-          <TouchableOpacity style={styles.switchMode} onPress={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>
-            <Text style={styles.switchText}>
-              {authMode === 'login' ? t('profile.no_account') : t('profile.has_account')}
-              <Text style={styles.switchLink}>
-                {authMode === 'login' ? t('profile.register_now') : t('profile.login_now')}
-              </Text>
-            </Text>
-          </TouchableOpacity>
-
-          {showAuthOverlay && (
-            <View style={styles.authOverlay}>
-              <ActivityIndicator size="large" color={Colors.primary} />
-              <Text style={styles.authOverlayText}>{t('profile.processing')}</Text>
-            </View>
-          )}
         </KeyboardAvoidingView>
       </SafeAreaView>
     );
@@ -235,7 +186,9 @@ export default function ProfileScreen() {
               <Text style={[styles.menuText, { color: Colors.error }]}>{t('profile.delete_account')}</Text>
             </TouchableOpacity>
           </View>
+          <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
           <Text style={styles.versionText}>v0.1.0</Text>
+        </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     );
@@ -280,14 +233,6 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           )}
 
-          <View style={styles.authButtons}>
-            <TouchableOpacity style={styles.loginBtn} onPress={() => setAuthMode('login')}>
-              <Text style={styles.loginBtnText}>{t('profile.login')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.registerBtn} onPress={() => setAuthMode('register')}>
-              <Text style={styles.registerBtnText}>{t('profile.register')}</Text>
-            </TouchableOpacity>
-          </View>
         </View>
         <View style={styles.section}>
           <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/pages/subscribe')}>
@@ -306,7 +251,9 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.versionText}>v0.1.0</Text>
+        <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
+          <Text style={styles.versionText}>v0.1.0</Text>
+        </TouchableOpacity>
 
         {showAuthOverlay && (
           <View style={styles.authOverlay}>
@@ -342,11 +289,6 @@ const styles = StyleSheet.create({
   },
   guestTitle: { fontSize: FontSize.lg, fontWeight: '600', color: Colors.text },
   guestText: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: Spacing.xs, marginBottom: Spacing.lg, textAlign: 'center' },
-  authButtons: { flexDirection: 'row', gap: Spacing.md, width: '100%' },
-  loginBtn: { flex: 1, backgroundColor: Colors.primary, paddingVertical: Spacing.sm + 4, borderRadius: BorderRadius.full, alignItems: 'center' },
-  loginBtnText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '600' },
-  registerBtn: { flex: 1, borderWidth: 1.5, borderColor: Colors.primary, paddingVertical: Spacing.sm + 4, borderRadius: BorderRadius.full, alignItems: 'center' },
-  registerBtnText: { color: Colors.primary, fontSize: FontSize.md, fontWeight: '600' },
   section: { margin: Spacing.lg, backgroundColor: Colors.surface, borderRadius: BorderRadius.lg, overflow: 'hidden' },
   menuItem: { flexDirection: 'row', alignItems: 'center', padding: Spacing.lg, borderBottomWidth: 1, borderBottomColor: Colors.border },
   logoutItem: { borderBottomWidth: 0 },
@@ -388,19 +330,6 @@ const styles = StyleSheet.create({
   authButton: { backgroundColor: Colors.primary, paddingVertical: Spacing.md, borderRadius: BorderRadius.full, alignItems: 'center', marginBottom: Spacing.lg },
   authButtonDisabled: { opacity: 0.6 },
   authButtonText: { color: Colors.surface, fontSize: FontSize.md, fontWeight: '700' },
-  forgotPasswordBtn: {
-    alignSelf: 'flex-end',
-    marginTop: -Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  forgotPasswordText: {
-    fontSize: FontSize.sm,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  switchMode: { alignItems: 'center' },
-  switchText: { fontSize: FontSize.sm, color: Colors.textSecondary },
-  switchLink: { color: Colors.primary, fontWeight: '600' },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: Spacing.md,

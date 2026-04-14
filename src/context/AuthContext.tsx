@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import * as Linking from 'expo-linking';
 import { supabase } from '../lib/supabase';
 import { resetAdsState, setSubscriptionStatus } from '../lib/ads';
 import { initPurchases, loginPurchases, logoutPurchases, checkSubscription } from '../lib/purchases';
@@ -16,8 +15,6 @@ interface AuthContextType {
   loading: boolean;
   refreshSubscription: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
-  signUp: (email: string, password: string) => Promise<{ error?: string }>;
-  resetPassword: (email: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error?: string }>;
 }
@@ -27,8 +24,6 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   refreshSubscription: async () => {},
   signIn: async () => ({}),
-  signUp: async () => ({}),
-  resetPassword: async () => ({}),
   signOut: async () => {},
   deleteAccount: async () => ({}),
 });
@@ -166,37 +161,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   };
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: 'https://jasperyang0609.github.io/cafe-map/',
-      },
-    });
-    if (error) {
-      if (error.message.includes('already registered')) {
-        return { error: '此 Email 已註冊' };
-      }
-      return { error: error.message };
-    }
-    return {};
-  };
-
-  const resetPassword = async (email: string) => {
-    const redirectTo = Linking.createURL('/pages/reset-password');
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
-
-    if (error) {
-      if (error.message?.toLowerCase().includes('rate limit')) {
-        return { error: '寄送次數過快，請稍等幾分鐘後再試一次。' };
-      }
-      return { error: error.message };
-    }
-
-    return {};
-  };
-
   const signOut = async () => {
     await logoutPurchases();
     await supabase.auth.signOut();
@@ -233,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, refreshSubscription, signIn, signUp, resetPassword, signOut, deleteAccount }}>
+    <AuthContext.Provider value={{ user, loading, refreshSubscription, signIn, signOut, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
