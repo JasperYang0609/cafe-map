@@ -139,7 +139,7 @@ export default function MapScreen() {
 
           return (
             <Marker
-              key={`${cafe.place_id}${isSelected ? '-sel' : ''}`}
+              key={cafe.place_id}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
@@ -149,7 +149,9 @@ export default function MapScreen() {
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              tracksViewChanges={!markersReady || isSelected}
+              // Simple dots are cheap to render, always track for non-favorites
+              // Emoji markers only track briefly on mount + when selected
+              tracksViewChanges={!isFavorite || !markersReady || isSelected}
             >
               {isFavorite ? (
                 <View style={[
@@ -159,10 +161,7 @@ export default function MapScreen() {
                   <Text style={styles.favoriteMarkerEmoji}>{favoriteEmoji}</Text>
                 </View>
               ) : (
-                <View style={[styles.customPin, isSelected && styles.customPinSelected]}>
-                  <View style={[styles.customPinHead, isSelected && styles.customPinHeadSelected]} />
-                  <View style={[styles.customPinTail, isSelected && styles.customPinTailSelected]} />
-                </View>
+                <View style={[styles.dotMarker, isSelected && styles.dotMarkerSelected]} />
               )}
             </Marker>
           );
@@ -298,46 +297,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#E53935',
     borderWidth: 3,
   },
-  customPin: {
-    alignItems: 'center',
-    width: 24,
-    height: 32,
-  },
-  customPinSelected: {
-    width: 28,
-    height: 36,
-  },
-  customPinHead: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  dotMarker: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: '#3E2723',
     borderWidth: 2,
     borderColor: '#fff',
   },
-  customPinHeadSelected: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  dotMarkerSelected: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: '#E53935',
     borderWidth: 2.5,
-  },
-  customPinTail: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 10,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: '#3E2723',
-    marginTop: -2,
-  },
-  customPinTailSelected: {
-    borderLeftWidth: 7,
-    borderRightWidth: 7,
-    borderTopWidth: 12,
-    borderTopColor: '#E53935',
   },
   favoriteMarker: {
     width: 36,
