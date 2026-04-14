@@ -135,6 +135,12 @@ export default function FavoritesScreen() {
 
       {/* Bean rating filter */}
       <View style={styles.filterRow}>
+        <TouchableOpacity
+          style={[styles.allButton, heartFilter === null && styles.allButtonActive]}
+          onPress={() => setHeartFilter(null)}
+        >
+          <Text style={[styles.allButtonText, heartFilter === null && styles.allButtonTextActive]}>ALL</Text>
+        </TouchableOpacity>
         <View style={styles.filterBeans}>
           {[1, 2, 3, 4].map((level) => (
             <TouchableOpacity
@@ -358,6 +364,19 @@ const styles = StyleSheet.create({
   filterRow: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
     paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
+  },
+  allButton: {
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12,
+    borderWidth: 1.5, borderColor: Colors.border,
+  },
+  allButtonActive: {
+    backgroundColor: Colors.primary, borderColor: Colors.primary,
+  },
+  allButtonText: {
+    fontSize: FontSize.xs, fontWeight: '700', color: Colors.textSecondary,
+  },
+  allButtonTextActive: {
+    color: '#fff',
   },
   filterBeans: {
     flexDirection: 'row', gap: 6,
