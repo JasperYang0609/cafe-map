@@ -50,12 +50,12 @@ export default function MapScreen() {
   useEffect(() => {
     const prevId = prevSelectedIdRef.current;
     const currId = selectedCafe?.place_id || null;
+    prevSelectedIdRef.current = currId; // Always update before return
     if (prevId && prevId !== currId) {
       setRecentlyDeselectedId(prevId);
       const timer = setTimeout(() => setRecentlyDeselectedId(null), 300);
       return () => clearTimeout(timer);
     }
-    prevSelectedIdRef.current = currId;
   }, [selectedCafe?.place_id]);
 
   const handleOpenDetail = (cafe: Cafe) => {
