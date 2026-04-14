@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
@@ -187,7 +188,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
-          <Text style={styles.versionText}>v0.1.0</Text>
+          <Text style={styles.versionText}>v{Constants.expoConfig?.version || '0.1.0'} (Build {Constants.expoConfig?.android?.versionCode || Constants.expoConfig?.ios?.buildNumber || '?'})</Text>
         </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -252,7 +253,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
         <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
-          <Text style={styles.versionText}>v0.1.0</Text>
+          <Text style={styles.versionText}>v{Constants.expoConfig?.version || '0.1.0'} (Build {Constants.expoConfig?.android?.versionCode || Constants.expoConfig?.ios?.buildNumber || '?'})</Text>
         </TouchableOpacity>
 
         {showAuthOverlay && (
