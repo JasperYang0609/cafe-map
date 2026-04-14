@@ -133,7 +133,7 @@ export default function MapScreen() {
 
           return (
             <Marker
-              key={`${cafe.place_id}${!isFavorite && isSelected ? '-sel' : ''}`}
+              key={`${cafe.place_id}${isSelected ? '-sel' : ''}`}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
@@ -143,10 +143,7 @@ export default function MapScreen() {
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              // Only track view changes for selected favorites (scale animation)
-              // Non-favorites use native pinColor (key change forces remount on select)
-              tracksViewChanges={isFavorite && isSelected}
-              pinColor={!isFavorite ? (isSelected ? '#E53935' : '#3E2723') : undefined}
+              tracksViewChanges={false}
             >
               {isFavorite ? (
                 <View style={[
@@ -155,7 +152,12 @@ export default function MapScreen() {
                 ]}>
                   <Text style={styles.favoriteMarkerEmoji}>{favoriteEmoji}</Text>
                 </View>
-              ) : null}
+              ) : (
+                <View style={[styles.customPin, isSelected && styles.customPinSelected]}>
+                  <View style={[styles.customPinHead, isSelected && styles.customPinHeadSelected]} />
+                  <View style={[styles.customPinTail, isSelected && styles.customPinTailSelected]} />
+                </View>
+              )}
             </Marker>
           );
         })}
@@ -289,6 +291,47 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: '#E53935',
     borderWidth: 3,
+  },
+  customPin: {
+    alignItems: 'center',
+    width: 24,
+    height: 32,
+  },
+  customPinSelected: {
+    width: 28,
+    height: 36,
+  },
+  customPinHead: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#3E2723',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  customPinHeadSelected: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E53935',
+    borderWidth: 2.5,
+  },
+  customPinTail: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: '#3E2723',
+    marginTop: -2,
+  },
+  customPinTailSelected: {
+    borderLeftWidth: 7,
+    borderRightWidth: 7,
+    borderTopWidth: 12,
+    borderTopColor: '#E53935',
   },
   favoriteMarker: {
     width: 36,
