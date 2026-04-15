@@ -40,8 +40,8 @@
   "favorites": {
     "title": "즐겨찾기",
     "login_title": "로그인하여 즐겨찾기 저장",
-    "login_text": "로그인하고 구독하면\n좋아하는 카페를 저장할 수 있습니다",
-    "login_button": "로그인 / 회원가입",
+    "login_text": "로그인하면\n좋아하는 카페를 저장할 수 있습니다",
+    "login_button": "로그인",
     "forest_title": "나만의 커피 숲을 키워보세요",
     "forest_text": "카페를 저장할 때마다\n지도에 나무가 자랍니다\n더 많이 방문할수록 숲이 우거집니다 🌿",
     "subscribe_button": "플랜 보기",

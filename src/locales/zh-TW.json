@@ -40,8 +40,8 @@
   "favorites": {
     "title": "我的收藏",
     "login_title": "登入後即可收藏",
-    "login_text": "登入帳號並訂閱後\n就能收藏喜愛的咖啡廳",
-    "login_button": "登入 / 註冊",
+    "login_text": "登入帳號後\n就能收藏喜愛的咖啡廳",
+    "login_button": "登入",
     "forest_title": "培養你的專屬咖啡森林",
     "forest_text": "每收藏一家咖啡廳\n地圖上就會長出一棵樹\n去越多店，森林越茂密 🌿",
     "subscribe_button": "了解訂閱方案",

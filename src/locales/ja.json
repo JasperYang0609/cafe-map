@@ -40,8 +40,8 @@
   "favorites": {
     "title": "お気に入り",
     "login_title": "ログインしてお気に入りを保存",
-    "login_text": "ログインして購読すると\nお気に入りのカフェを保存できます",
-    "login_button": "ログイン / 登録",
+    "login_text": "ログインすると\nお気に入りのカフェを保存できます",
+    "login_button": "ログイン",
     "forest_title": "あなただけのコーヒーの森を育てよう",
     "forest_text": "カフェをお気に入りに追加するたびに\n地図に木が育ちます\nたくさん行くほど森が茂ります 🌿",
     "subscribe_button": "プランを見る",

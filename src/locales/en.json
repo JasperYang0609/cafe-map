@@ -40,8 +40,8 @@
   "favorites": {
     "title": "Favorites",
     "login_title": "Login to Save Favorites",
-    "login_text": "Sign in and subscribe\nto save your favorite cafes",
-    "login_button": "Login / Register",
+    "login_text": "Sign in\nto save your favorite cafes",
+    "login_button": "Login",
     "forest_title": "Grow Your Coffee Forest",
     "forest_text": "Every cafe you save\ngrows a tree on the map\nMore visits, greener forest 🌿",
     "subscribe_button": "View Plans",
