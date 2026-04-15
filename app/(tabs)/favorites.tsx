@@ -57,9 +57,9 @@ export default function FavoritesScreen() {
   const [markersReady, setMarkersReady] = useState(false);
   useEffect(() => {
     setMarkersReady(false);
-    const timer = setTimeout(() => setMarkersReady(true), 500);
+    const timer = setTimeout(() => setMarkersReady(true), 300);
     return () => clearTimeout(timer);
-  }, [heartFilter, favorites.length > 0, user?.id]);
+  }, [heartFilter, favorites.length, user?.id]);
 
   // Track recently deselected marker so it can refresh its bitmap
   const [recentlyDeselectedId, setRecentlyDeselectedId] = useState<string | null>(null);
