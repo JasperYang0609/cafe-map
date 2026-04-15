@@ -11,6 +11,7 @@
 
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DAILY_FREE_PICKS = 3;
 const IS_DEV = __DEV__ || Constants.executionEnvironment === 'storeClient';
@@ -49,14 +50,54 @@ let lastResetDate = new Date().toDateString();
 let initStarted = false;
 let adsInitialized = false;
 let isShowing = false;
+let pickCountLoaded = false;
+
+const PICK_COUNT_KEY = '@beango_daily_pick_count';
+const PICK_DATE_KEY = '@beango_daily_pick_date';
+
+async function loadPickCount() {
+  if (pickCountLoaded) return;
+  try {
+    const [countStr, dateStr] = await Promise.all([
+      AsyncStorage.getItem(PICK_COUNT_KEY),
+      AsyncStorage.getItem(PICK_DATE_KEY),
+    ]);
+    const today = new Date().toDateString();
+    if (dateStr === today && countStr) {
+      dailyPickCount = parseInt(countStr, 10) || 0;
+      lastResetDate = today;
+    } else {
+      dailyPickCount = 0;
+      lastResetDate = today;
+    }
+  } catch (e) {
+    console.log('[Ads] Failed to load pick count:', e);
+  }
+  pickCountLoaded = true;
+}
+
+async function savePickCount() {
+  try {
+    await Promise.all([
+      AsyncStorage.setItem(PICK_COUNT_KEY, String(dailyPickCount)),
+      AsyncStorage.setItem(PICK_DATE_KEY, lastResetDate),
+    ]);
+  } catch (e) {
+    console.log('[Ads] Failed to save pick count:', e);
+  }
+}
 
 function checkDailyReset() {
   const today = new Date().toDateString();
   if (today !== lastResetDate) {
     dailyPickCount = 0;
     lastResetDate = today;
+    savePickCount();
   }
 }
+
+// Load persisted count on module init
+loadPickCount();
 
 export async function initAds() {
   if (initStarted || adsInitialized || isSubscribed) return;
@@ -88,6 +129,7 @@ export function needsAd(): boolean {
 export function recordPick() {
   checkDailyReset();
   dailyPickCount++;
+  savePickCount();
 }
 
 /**
