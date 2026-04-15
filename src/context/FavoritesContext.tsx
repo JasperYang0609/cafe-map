@@ -256,11 +256,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       lastRolled,
       clearLastRolled: () => setLastRolled(null),
       setRating: async (placeId: string, rating: number) => {
+        const prevRating = ratings[placeId] || 0;
         setRatings(prev => ({ ...prev, [placeId]: rating }));
         setFavorites(prev => prev.map(f =>
           f.place_id === placeId ? { ...f, heartRating: rating } : f
         ));
-        // Also persist to search_history
         if (user) {
           try {
             const { data: cafeData } = await supabase
@@ -276,7 +276,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
                 .eq('cafe_id', cafeData.id);
             }
           } catch (err) {
-            console.log('[Favorites] Rating sync error:', err);
+            console.log('[Favorites] Rating sync error, rolling back:', err);
+            setRatings(prev => ({ ...prev, [placeId]: prevRating }));
+            setFavorites(prev => prev.map(f =>
+              f.place_id === placeId ? { ...f, heartRating: prevRating } : f
+            ));
           }
         }
       },

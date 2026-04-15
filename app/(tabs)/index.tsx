@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -56,7 +56,7 @@ export default function ExploreScreen() {
   const [selectedSeed, setSelectedSeed] = useState<number | null>(null);
   const [isGrowing, setIsGrowing] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [resultCafe, setResultCafe] = useState<any>(null);
+  const [resultCafe, setResultCafe] = useState<import('../../src/types/cafe').Cafe | null>(null);
   const [isFirstSeed, setIsFirstSeed] = useState(true);
   const [adLoading, setAdLoading] = useState(false);
   const [favoriteAdLoading, setFavoriteAdLoading] = useState(false);
@@ -71,11 +71,11 @@ export default function ExploreScreen() {
 
     if (!user) {
       Alert.alert(
-        '先登入才能收藏',
-        '登入後才能把這間咖啡廳加入你的收藏花園。',
+        t('favorites.login_required_title'),
+        t('favorites.login_required_msg'),
         [
-          { text: t('common.cancel') || '取消', style: 'cancel' },
-          { text: t('profile.login') || '登入', onPress: () => router.push('/(tabs)/profile') },
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('profile.login'), onPress: () => router.push('/(tabs)/profile') },
         ]
       );
       return;
@@ -87,13 +87,13 @@ export default function ExploreScreen() {
     }
 
     Alert.alert(
-      '收藏這間咖啡廳',
-      '免費用戶可觀看一則廣告後收藏，也可以直接升級 BeanGo Pro 享受無廣告收藏體驗。',
+      t('favorites.add_title'),
+      t('favorites.add_free_msg'),
       [
-        { text: t('common.cancel') || '取消', style: 'cancel' },
-        { text: t('subscription.upgrade') || '了解訂閱', onPress: () => router.push('/pages/subscribe') },
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('subscription.upgrade'), onPress: () => router.push('/pages/subscribe') },
         {
-          text: '看廣告後收藏',
+          text: t('favorites.watch_ad_to_fav'),
           onPress: async () => {
             setFavoriteAdLoading(true);
             try {
@@ -101,7 +101,7 @@ export default function ExploreScreen() {
               if (watched) {
                 await addFavorite(cafe);
               } else {
-                Alert.alert('廣告準備中', '廣告還在準備，請稍候再試一次。');
+                Alert.alert(t('ad.not_ready_title'), t('ad.not_ready_msg'));
               }
             } finally {
               setFavoriteAdLoading(false);
@@ -112,12 +112,12 @@ export default function ExploreScreen() {
     );
   };
 
-  const filteredCafes = cafes.filter((cafe) => {
+  const filteredCafes = useMemo(() => cafes.filter((cafe) => {
     if (filters.minRating > 0 && cafe.rating < filters.minRating) return false;
     if (filters.openNow && cafe.is_open !== true) return false;
     if (cafe.distance && cafe.distance > filters.maxDistance * 1000) return false;
     return true;
-  });
+  }), [cafes, filters]);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -145,7 +145,7 @@ export default function ExploreScreen() {
       const watched = await showRewardedAd();
       setAdLoading(false);
       if (!watched) {
-        Alert.alert('廣告準備中', '廣告還在準備，請稍候再試一次。');
+        Alert.alert(t('ad.not_ready_title'), t('ad.not_ready_msg'));
         return;
       }
     }

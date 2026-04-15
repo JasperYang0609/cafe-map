@@ -336,7 +336,7 @@ export default function FavoritesScreen() {
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowRarityGuide(false)}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>🌳 花園圖鑑</Text>
+              <Text style={styles.modalTitle}>{t('favorites.guide_title')}</Text>
               <TouchableOpacity onPress={() => setShowRarityGuide(false)}>
                 <Ionicons name="close" size={24} color={Colors.text} />
               </TouchableOpacity>
@@ -365,7 +365,7 @@ export default function FavoritesScreen() {
                         </Text>
                       </View>
                       <Text style={styles.guideRate}>
-                        {item.weight}% {owned ? `· ×${count}` : '· 未收集'}
+                        {item.weight}% {owned ? `· ×${count}` : `· ${t('favorites.not_collected')}`}
                       </Text>
                     </View>
                     {owned && <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />}
@@ -373,7 +373,7 @@ export default function FavoritesScreen() {
                 );
               })}
             <Text style={styles.guideFooter}>
-              已收集 {collectedEmojis.size} / {GARDEN_ITEMS.length} 種
+              {t('favorites.collected_count', { collected: collectedEmojis.size, total: GARDEN_ITEMS.length })}
             </Text>
           </View>
         </TouchableOpacity>
