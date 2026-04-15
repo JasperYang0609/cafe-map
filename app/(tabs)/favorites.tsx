@@ -477,13 +477,20 @@ const styles = StyleSheet.create({
   },
   map: { flex: 1 },
   treeMarker: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 17,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 3,
   },
-  treeEmoji: { fontSize: 24 },
-  treeEmojiImage: { width: 28, height: 28, resizeMode: 'contain' as const },
+  treeEmoji: { fontSize: 20 },
+  treeEmojiImage: { width: 24, height: 24, resizeMode: 'contain' as const },
 
   // Blur
   blurOverlay: {
