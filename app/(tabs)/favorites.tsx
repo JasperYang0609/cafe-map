@@ -311,10 +311,18 @@ export default function FavoritesScreen() {
           })
           .map(([emoji, count]) => {
             const item = GARDEN_ITEMS.find(g => g.emoji === emoji);
+            const emojiImg = getGardenEmojiImage(emoji);
             return (
-              <Text key={emoji} style={[styles.emojiCount, item && { color: getRarityColor(item.rarity) }]}>
-                {emoji}×{count}
-              </Text>
+              <View key={emoji} style={styles.emojiCountItem}>
+                {emojiImg ? (
+                  <Image source={emojiImg} style={styles.emojiCountImage} />
+                ) : (
+                  <Text>{emoji}</Text>
+                )}
+                <Text style={[styles.emojiCount, item && { color: getRarityColor(item.rarity) }]}>
+                  ×{count}
+                </Text>
+              </View>
             );
           })}
         <TouchableOpacity style={styles.rarityGuideBtn} onPress={() => setShowRarityGuide(true)}>
@@ -339,9 +347,13 @@ export default function FavoritesScreen() {
                 const count = favorites.filter(f => (f.gardenEmoji || '🌳') === item.emoji).length;
                 return (
                   <View key={item.id} style={[styles.guideRow, !owned && styles.guideRowLocked]}>
-                    <Text style={[styles.guideEmoji, !owned && styles.guideEmojiLocked]}>
-                      {owned ? item.emoji : '❓'}
-                    </Text>
+                    {owned && getGardenEmojiImage(item.emoji) ? (
+                      <Image source={getGardenEmojiImage(item.emoji)!} style={styles.guideEmojiImage} />
+                    ) : (
+                      <Text style={[styles.guideEmoji, !owned && styles.guideEmojiLocked]}>
+                        {owned ? item.emoji : '❓'}
+                      </Text>
+                    )}
                     <View style={styles.guideInfo}>
                       <View style={styles.guideNameRow}>
                         <Text style={[styles.guideBadge, { backgroundColor: getRarityColor(item.rarity) }]}>
@@ -419,6 +431,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center',
     gap: 8, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg,
   },
+  emojiCountItem: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  emojiCountImage: { width: 18, height: 18, resizeMode: 'contain' as const },
   emojiCount: { fontSize: FontSize.sm, color: Colors.text, fontWeight: '600' },
   rarityGuideBtn: { marginLeft: 4, padding: 2 },
 
@@ -441,6 +455,7 @@ const styles = StyleSheet.create({
   },
   guideRowLocked: { opacity: 0.5 },
   guideEmoji: { fontSize: 28, width: 40, textAlign: 'center' },
+  guideEmojiImage: { width: 32, height: 32, resizeMode: 'contain' as const, marginHorizontal: 4 },
   guideEmojiLocked: { fontSize: 22 },
   guideInfo: { flex: 1, marginLeft: Spacing.sm },
   guideNameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
