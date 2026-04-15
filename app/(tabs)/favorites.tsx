@@ -6,6 +6,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+
+function SelfTrackingMarker({ children, ...props }: any) {
+  const [tracked, setTracked] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setTracked(false), 150);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <Marker {...props} tracksViewChanges={tracked}>
+      {children}
+    </Marker>
+  );
+}
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../src/constants/theme';
 import { useAuth } from '../../src/context/AuthContext';
@@ -172,7 +185,7 @@ export default function FavoritesScreen() {
           onPress={() => setSelectedCafe(null)}
         >
           {filteredFavorites.map((cafe) => (
-            <Marker
+            <SelfTrackingMarker
               key={`${cafe.place_id}${selectedCafe?.place_id === cafe.place_id ? '-s' : ''}`}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
               onSelect={() => {
@@ -200,7 +213,7 @@ export default function FavoritesScreen() {
                   )}
                 </View>
               )}
-            </Marker>
+            </SelfTrackingMarker>
           ))}
         </MapView>
 

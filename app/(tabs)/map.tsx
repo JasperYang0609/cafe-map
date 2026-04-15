@@ -1,5 +1,5 @@
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,23 @@ import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
 import { useAuth } from '../../src/context/AuthContext';
 import { getGardenEmojiImage } from '../../src/lib/gardenImages';
+
+/**
+ * Marker that tracks view changes briefly on mount, then stops.
+ * Solves Android blank bitmap issue without continuous tracking overhead.
+ */
+function SelfTrackingMarker({ children, ...props }: any) {
+  const [tracked, setTracked] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setTracked(false), 150);
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <Marker {...props} tracksViewChanges={tracked}>
+      {children}
+    </Marker>
+  );
+}
 
 export default function MapScreen() {
   const { t } = useI18n();
@@ -133,18 +150,17 @@ export default function MapScreen() {
           const isFavorite = !!favoriteEmoji;
 
           return (
-            <Marker
+            <SelfTrackingMarker
               key={`${cafe.place_id}${isFavorite ? '-fav' : ''}${isSelected ? '-s' : ''}`}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
               }}
-              onPress={(e) => {
+              onPress={(e: any) => {
                 e.stopPropagation();
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              tracksViewChanges={false}
             >
               {isFavorite ? (
                 <View style={[
@@ -160,7 +176,7 @@ export default function MapScreen() {
               ) : (
                 <View style={[styles.dotMarker, isSelected && styles.dotMarkerSelected]} />
               )}
-            </Marker>
+            </SelfTrackingMarker>
           );
         })}
       </MapView>
