@@ -52,28 +52,6 @@ export default function FavoritesScreen() {
   const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
   const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
   const bounceAnim = useRef(new Animated.Value(0)).current;
-  // Allow tracksViewChanges briefly so Android renders emoji bitmaps
-  // Reset when favorites load or filter changes
-  const [markersReady, setMarkersReady] = useState(false);
-  useEffect(() => {
-    setMarkersReady(false);
-    const timer = setTimeout(() => setMarkersReady(true), 300);
-    return () => clearTimeout(timer);
-  }, [heartFilter, favorites.length, user?.id]);
-
-  // Track recently deselected marker so it can refresh its bitmap
-  const [recentlyDeselectedId, setRecentlyDeselectedId] = useState<string | null>(null);
-  const prevSelectedIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    const prevId = prevSelectedIdRef.current;
-    const currId = selectedCafe?.place_id || null;
-    prevSelectedIdRef.current = currId;
-    if (prevId && prevId !== currId) {
-      setRecentlyDeselectedId(prevId);
-      const timer = setTimeout(() => setRecentlyDeselectedId(null), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedCafe?.place_id]);
 
   const triggerBounce = () => {
     bounceAnim.setValue(0);
@@ -179,7 +157,6 @@ export default function FavoritesScreen() {
       {/* Forest Map */}
       <View style={styles.mapContainer}>
         <MapView
-          key={`fav-map-${user?.id || 'guest'}-${favorites.length}`}
           style={styles.map}
           provider={PROVIDER_GOOGLE}
           initialRegion={{
@@ -204,7 +181,7 @@ export default function FavoritesScreen() {
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={!markersReady || selectedCafe?.place_id === cafe.place_id || cafe.place_id === recentlyDeselectedId}
+              tracksViewChanges={true}
             >
               {selectedCafe?.place_id === cafe.place_id ? (
                 <Animated.View style={[styles.treeMarker, { transform: [{ translateY: bounceAnim }] }]}>

@@ -39,29 +39,6 @@ export default function MapScreen() {
   const router = useRouter();
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
   const markerPressedRef = useRef(false);
-  // Allow tracksViewChanges briefly so Android renders custom marker bitmaps
-  // Reset when cafes load or favorites change
-  const [markersReady, setMarkersReady] = useState(false);
-  useEffect(() => {
-    setMarkersReady(false);
-    const timer = setTimeout(() => setMarkersReady(true), 300);
-    return () => clearTimeout(timer);
-  }, [cafes.length, favorites.length, user?.id]);
-
-  // Track recently deselected marker so it can refresh its bitmap (brown dot)
-  const [recentlyDeselectedId, setRecentlyDeselectedId] = useState<string | null>(null);
-  const prevSelectedIdRef = useRef<string | null>(null);
-  useEffect(() => {
-    const prevId = prevSelectedIdRef.current;
-    const currId = selectedCafe?.place_id || null;
-    prevSelectedIdRef.current = currId; // Always update before return
-    if (prevId && prevId !== currId) {
-      setRecentlyDeselectedId(prevId);
-      const timer = setTimeout(() => setRecentlyDeselectedId(null), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedCafe?.place_id]);
-
   const handleOpenDetail = (cafe: Cafe) => {
     router.push({
       pathname: '/cafe/[id]',
@@ -128,7 +105,6 @@ export default function MapScreen() {
     <View style={{flex:1}}>
     <View style={styles.container}>
       <MapView
-        key={`map-${user?.id || 'guest'}`}
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
@@ -169,7 +145,7 @@ export default function MapScreen() {
                 setSelectedCafe(cafe);
               }}
               // Only track: initial render (500ms) + selected + just-deselected
-              tracksViewChanges={!markersReady || isSelected || cafe.place_id === recentlyDeselectedId}
+              tracksViewChanges={true}
             >
               {isFavorite ? (
                 <View style={[
