@@ -335,27 +335,20 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
   },
   favoriteMarker: {
-    width: 34,
-    height: 34,
+    width: 36,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    borderRadius: 17,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 3,
   },
   favoriteMarkerSelected: {
     transform: [{ scale: 1.15 }],
   },
   favoriteMarkerEmoji: {
-    fontSize: 20,
+    fontSize: 24,
   },
   favoriteMarkerImage: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
     resizeMode: 'contain',
   },
   recenterButton: {
