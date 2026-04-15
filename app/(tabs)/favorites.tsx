@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
@@ -33,6 +34,7 @@ import { Cafe } from '../../src/types/cafe';
 
 export default function FavoritesScreen() {
   const router = useRouter();
+  const isFocused = useIsFocused();
   const { user } = useAuth();
   const { t } = useI18n();
   const { favorites, removeFavorite, favCount, setRating, getRating, loading: favLoading } = useFavorites();
@@ -41,9 +43,19 @@ export default function FavoritesScreen() {
   const isSubscribed = getSubscriptionStatus();
   const showAds = !isSubscribed;
   const [selectedCafe, setSelectedCafe] = useState<Cafe | null>(null);
-  const [heartFilter, setHeartFilter] = useState<number | null>(null); // null=all, 0=no rating, 1-3=hearts
+  const [heartFilter, setHeartFilter] = useState<number | null>(null);
   const [showRarityGuide, setShowRarityGuide] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const beanGoBrand = require('../../assets/beango-character.png');
+
+  // Reset map when tab is focused — ensures markers re-mount with fresh tracking
+  useEffect(() => {
+    if (isFocused) {
+      setMapReady(false);
+      const timer = setTimeout(() => setMapReady(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isFocused]);
 
   // Collected emoji set for rarity guide
   const collectedEmojis = new Set(favorites.map(f => f.gardenEmoji || '🌳'));
@@ -183,6 +195,11 @@ export default function FavoritesScreen() {
 
       {/* Forest Map */}
       <View style={styles.mapContainer}>
+        {!mapReady ? (
+          <View style={styles.mapLoading}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        ) : (
         <MapView
           style={styles.map}
           provider={PROVIDER_GOOGLE}
@@ -230,6 +247,7 @@ export default function FavoritesScreen() {
             </SelfTrackingMarker>
           ))}
         </MapView>
+        )}
 
         {/* Selected cafe card */}
         {selectedCafe && (
@@ -481,6 +499,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg, overflow: 'hidden',
   },
   map: { flex: 1 },
+  mapLoading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   treeMarker: {
     width: 36,
     height: 36,
