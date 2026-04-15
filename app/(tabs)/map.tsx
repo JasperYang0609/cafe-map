@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Linking,
-    Platform,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
@@ -291,35 +290,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
   },
-  markerDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(111, 78, 55, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  markerDotSelected: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(229, 57, 53, 0.2)',
-  },
-  markerInner: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: Colors.primary,
-    borderWidth: 2,
-    borderColor: Colors.surface,
-  },
-  markerInnerSelected: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#E53935',
-    borderWidth: 3,
-  },
   dotMarker: {
     width: 16,
     height: 16,
@@ -483,35 +453,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: Colors.primary, paddingVertical: Spacing.sm + 2, borderRadius: BorderRadius.sm,
   },
-  navButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.sm + 2,
-    borderRadius: BorderRadius.sm,
-  },
   navText: {
     color: Colors.surface,
     fontSize: FontSize.md,
-    fontWeight: '600',
-  },
-  favButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    paddingVertical: Spacing.sm + 2,
-    borderRadius: BorderRadius.sm,
-  },
-  favText: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
     fontWeight: '600',
   },
   errorBanner: {
