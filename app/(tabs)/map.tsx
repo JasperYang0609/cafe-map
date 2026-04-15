@@ -4,6 +4,7 @@ import {
   View,
   Text,
   Image,
+  Image,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
@@ -21,6 +22,7 @@ import { getPhotoUrl } from '../../src/lib/places';
 import { Cafe } from '../../src/types/cafe';
 import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
+import { getGardenEmojiImage } from '../../src/lib/gardenImages';
 
 export default function MapScreen() {
   const { t } = useI18n();
@@ -173,7 +175,11 @@ export default function MapScreen() {
                   styles.favoriteMarker,
                   isSelected && styles.favoriteMarkerSelected,
                 ]}>
-                  <Text style={styles.favoriteMarkerEmoji}>{favoriteEmoji}</Text>
+                  {getGardenEmojiImage(favoriteEmoji!) ? (
+                    <Image source={getGardenEmojiImage(favoriteEmoji!)!} style={styles.favoriteMarkerImage} />
+                  ) : (
+                    <Text style={styles.favoriteMarkerEmoji}>{favoriteEmoji}</Text>
+                  )}
                 </View>
               ) : (
                 <View style={[styles.dotMarker, isSelected && styles.dotMarkerSelected]} />
@@ -338,6 +344,11 @@ const styles = StyleSheet.create({
   },
   favoriteMarkerEmoji: {
     fontSize: 24,
+  },
+  favoriteMarkerImage: {
+    width: 28,
+    height: 28,
+    resizeMode: 'contain',
   },
   recenterButton: {
     position: 'absolute',

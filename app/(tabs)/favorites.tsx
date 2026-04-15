@@ -14,6 +14,7 @@ import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
 import { useLocation } from '../../src/hooks/useLocation';
 import { getSubscriptionStatus } from '../../src/lib/ads';
+import { getGardenEmojiImage } from '../../src/lib/gardenImages';
 import { getPhotoUrl } from '../../src/lib/places';
 import { Cafe } from '../../src/types/cafe';
 
@@ -206,11 +207,19 @@ export default function FavoritesScreen() {
             >
               {selectedCafe?.place_id === cafe.place_id ? (
                 <Animated.View style={[styles.treeMarker, { transform: [{ translateY: bounceAnim }] }]}>
-                  <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+                  {getGardenEmojiImage(cafe.gardenEmoji || '🌳') ? (
+                    <Image source={getGardenEmojiImage(cafe.gardenEmoji || '🌳')!} style={styles.treeEmojiImage} />
+                  ) : (
+                    <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+                  )}
                 </Animated.View>
               ) : (
                 <View style={styles.treeMarker}>
-                  <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+                  {getGardenEmojiImage(cafe.gardenEmoji || '🌳') ? (
+                    <Image source={getGardenEmojiImage(cafe.gardenEmoji || '🌳')!} style={styles.treeEmojiImage} />
+                  ) : (
+                    <Text style={styles.treeEmoji}>{cafe.gardenEmoji || '🌳'}</Text>
+                  )}
                 </View>
               )}
             </Marker>
@@ -459,6 +468,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   treeEmoji: { fontSize: 24 },
+  treeEmojiImage: { width: 28, height: 28, resizeMode: 'contain' as const },
 
   // Blur
   blurOverlay: {
