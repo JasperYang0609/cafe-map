@@ -158,7 +158,7 @@ export default function MapScreen() {
 
           return (
             <Marker
-              key={cafe.place_id}
+              key={`${cafe.place_id}${isFavorite ? '-fav' : ''}`}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
