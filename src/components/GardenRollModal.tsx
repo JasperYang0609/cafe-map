@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Modal, Animated, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Modal, Animated, TouchableOpacity } from 'react-native';
 import { Colors, FontSize, BorderRadius, Spacing } from '../constants/theme';
 import { getRarityColor, getRarityLabel } from '../lib/garden';
+import { getGardenEmojiImage } from '../lib/gardenImages';
 
 interface Props {
   visible: boolean;
@@ -43,7 +44,11 @@ export default function GardenRollModal({ visible, emoji, rarity, onClose }: Pro
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
-          <Text style={styles.emoji}>{emoji}</Text>
+          {getGardenEmojiImage(emoji) ? (
+            <Image source={getGardenEmojiImage(emoji)!} style={styles.emojiImage} />
+          ) : (
+            <Text style={styles.emoji}>{emoji}</Text>
+          )}
           {rarityLabel ? (
             <Animated.Text style={[styles.rarity, { color: rarityColor, opacity: bounceAnim }]}>
               {rarityLabel}
@@ -79,6 +84,11 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 72,
+  },
+  emojiImage: {
+    width: 72,
+    height: 72,
+    resizeMode: 'contain',
   },
   rarity: {
     fontSize: FontSize.sm,
