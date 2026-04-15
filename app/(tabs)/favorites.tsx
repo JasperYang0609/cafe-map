@@ -173,7 +173,7 @@ export default function FavoritesScreen() {
         >
           {filteredFavorites.map((cafe) => (
             <Marker
-              key={cafe.place_id}
+              key={`${cafe.place_id}${selectedCafe?.place_id === cafe.place_id ? '-s' : ''}`}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
               onSelect={() => {
                 setSelectedCafe(cafe); triggerBounce();
@@ -181,7 +181,7 @@ export default function FavoritesScreen() {
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={true}
+              tracksViewChanges={false}
             >
               {selectedCafe?.place_id === cafe.place_id ? (
                 <Animated.View style={[styles.treeMarker, { transform: [{ translateY: bounceAnim }] }]}>

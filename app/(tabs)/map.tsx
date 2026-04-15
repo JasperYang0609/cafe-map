@@ -134,7 +134,7 @@ export default function MapScreen() {
 
           return (
             <Marker
-              key={`${cafe.place_id}${isFavorite ? '-fav' : ''}`}
+              key={`${cafe.place_id}${isFavorite ? '-fav' : ''}${isSelected ? '-s' : ''}`}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
@@ -144,8 +144,7 @@ export default function MapScreen() {
                 markerPressedRef.current = true;
                 setSelectedCafe(cafe);
               }}
-              // Only track: initial render (500ms) + selected + just-deselected
-              tracksViewChanges={true}
+              tracksViewChanges={false}
             >
               {isFavorite ? (
                 <View style={[
