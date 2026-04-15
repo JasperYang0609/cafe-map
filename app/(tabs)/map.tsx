@@ -19,9 +19,6 @@ import { useCafes } from '../../src/hooks/useCafes';
 import { getPhotoUrl } from '../../src/lib/places';
 import { Cafe } from '../../src/types/cafe';
 import { useI18n } from '../../src/context/I18nContext';
-import { useFavorites } from '../../src/context/FavoritesContext';
-import { useAuth } from '../../src/context/AuthContext';
-import { getGardenEmojiImage } from '../../src/lib/gardenImages';
 
 /**
  * Marker that tracks view changes briefly on mount, then stops.
@@ -43,13 +40,7 @@ function SelfTrackingMarker({ children, ...props }: any) {
 export default function MapScreen() {
   const { t } = useI18n();
   const isFocused = useIsFocused();
-  const { favorites } = useFavorites();
-  const { user } = useAuth();
 
-  const getFavEmoji = (placeId: string): string | null => {
-    const fav = favorites.find(f => f.place_id === placeId);
-    return fav?.gardenEmoji || null;
-  };
   const location = useLocation();
   const { cafes, loading, fetchCafes } = useCafes();
   const mapRef = useRef<MapView>(null);
@@ -145,13 +136,11 @@ export default function MapScreen() {
         }}
       >
         {cafes.map((cafe) => {
-          const favoriteEmoji = getFavEmoji(cafe.place_id);
           const isSelected = selectedCafe?.place_id === cafe.place_id;
-          const isFavorite = !!favoriteEmoji;
 
           return (
             <SelfTrackingMarker
-              key={`${cafe.place_id}${isFavorite ? '-fav' : ''}${isSelected ? '-s' : ''}`}
+              key={`${cafe.place_id}${isSelected ? '-s' : ''}`}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
@@ -162,20 +151,7 @@ export default function MapScreen() {
                 setSelectedCafe(cafe);
               }}
             >
-              {isFavorite ? (
-                <View style={[
-                  styles.favoriteMarker,
-                  isSelected && styles.favoriteMarkerSelected,
-                ]}>
-                  {getGardenEmojiImage(favoriteEmoji!) ? (
-                    <Image source={getGardenEmojiImage(favoriteEmoji!)!} style={styles.favoriteMarkerImage} />
-                  ) : (
-                    <Text style={styles.favoriteMarkerEmoji}>{favoriteEmoji}</Text>
-                  )}
-                </View>
-              ) : (
-                <View style={[styles.dotMarker, isSelected && styles.dotMarkerSelected]} />
-              )}
+              <View style={[styles.dotMarker, isSelected && styles.dotMarkerSelected]} />
             </SelfTrackingMarker>
           );
         })}
@@ -295,23 +271,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#E53935',
     borderWidth: 2.5,
-  },
-  favoriteMarker: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  favoriteMarkerSelected: {
-    transform: [{ scale: 1.15 }],
-  },
-  favoriteMarkerEmoji: {
-    fontSize: 24,
-  },
-  favoriteMarkerImage: {
-    width: 28,
-    height: 28,
-    resizeMode: 'contain',
   },
   recenterButton: {
     position: 'absolute',

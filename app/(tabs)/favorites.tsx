@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking, Animated, ScrollView, Modal,
+  View, Text, Image, StyleSheet, TouchableOpacity, Platform, Linking, Animated, ScrollView, Modal, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -10,7 +10,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 function SelfTrackingMarker({ children, ...props }: any) {
   const [tracked, setTracked] = useState(true);
   useEffect(() => {
-    const timer = setTimeout(() => setTracked(false), 150);
+    const timer = setTimeout(() => setTracked(false), 500);
     return () => clearTimeout(timer);
   }, []);
   return (
@@ -35,7 +35,7 @@ export default function FavoritesScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
-  const { favorites, removeFavorite, favCount, setRating, getRating } = useFavorites();
+  const { favorites, removeFavorite, favCount, setRating, getRating, loading: favLoading } = useFavorites();
   const location = useLocation();
   const isLoggedIn = !!user;
   const isSubscribed = getSubscriptionStatus();
@@ -90,6 +90,20 @@ export default function FavoritesScreen() {
           <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/(tabs)/profile')}>
             <Text style={styles.loginText}>{t('favorites.login_button')}</Text>
           </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Loading favorites from Supabase
+  if (favLoading && favorites.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{t('favorites.title')}</Text>
+        </View>
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       </SafeAreaView>
     );
