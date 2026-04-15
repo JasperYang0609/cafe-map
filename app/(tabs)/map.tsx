@@ -21,12 +21,14 @@ import { getPhotoUrl } from '../../src/lib/places';
 import { Cafe } from '../../src/types/cafe';
 import { useI18n } from '../../src/context/I18nContext';
 import { useFavorites } from '../../src/context/FavoritesContext';
+import { useAuth } from '../../src/context/AuthContext';
 import { getGardenEmojiImage } from '../../src/lib/gardenImages';
 
 export default function MapScreen() {
   const { t } = useI18n();
   const isFocused = useIsFocused();
   const { favorites } = useFavorites();
+  const { user } = useAuth();
 
   const getFavEmoji = (placeId: string): string | null => {
     const fav = favorites.find(f => f.place_id === placeId);
@@ -45,7 +47,7 @@ export default function MapScreen() {
     setMarkersReady(false);
     const timer = setTimeout(() => setMarkersReady(true), 500);
     return () => clearTimeout(timer);
-  }, [cafes.length, favorites.length]);
+  }, [cafes.length, favorites.length, user?.id]);
 
   // Track recently deselected marker so it can refresh its bitmap (brown dot)
   const [recentlyDeselectedId, setRecentlyDeselectedId] = useState<string | null>(null);
