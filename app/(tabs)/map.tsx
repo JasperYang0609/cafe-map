@@ -129,6 +129,7 @@ export default function MapScreen() {
     <View style={{flex:1}}>
     <View style={styles.container}>
       <MapView
+        key={`map-${user?.id || 'guest'}`}
         ref={mapRef}
         style={styles.map}
         provider={PROVIDER_GOOGLE}

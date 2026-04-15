@@ -179,6 +179,7 @@ export default function FavoritesScreen() {
       {/* Forest Map */}
       <View style={styles.mapContainer}>
         <MapView
+          key={`fav-map-${user?.id || 'guest'}-${favorites.length}`}
           style={styles.map}
           provider={PROVIDER_GOOGLE}
           initialRegion={{
