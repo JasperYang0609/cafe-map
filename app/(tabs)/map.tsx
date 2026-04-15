@@ -47,7 +47,7 @@ export default function MapScreen() {
     setMarkersReady(false);
     const timer = setTimeout(() => setMarkersReady(true), 500);
     return () => clearTimeout(timer);
-  }, [cafes.length, favorites.length, user?.id]);
+  }, [cafes.length, favorites.length > 0, user?.id]);
 
   // Track recently deselected marker so it can refresh its bitmap (brown dot)
   const [recentlyDeselectedId, setRecentlyDeselectedId] = useState<string | null>(null);
