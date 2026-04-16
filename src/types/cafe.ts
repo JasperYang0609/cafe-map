@@ -26,6 +26,10 @@ export interface Cafe {
   gardenItemId?: string;
   gardenEmoji?: string;
   heartRating?: number; // user's personal rating (0-4 beans)
+  // V40: cafe identity fields from Google Places API
+  types?: string[];
+  primaryType?: string;
+  businessStatus?: string;
 }
 
 export interface CafeDetail extends Omit<Cafe, 'opening_hours'> {

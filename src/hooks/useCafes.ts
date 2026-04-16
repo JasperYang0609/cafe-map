@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { getCafesWithCache } from '../lib/h3cache';
-import { calculateDistance } from '../lib/places';
+import { enrichWithDistance } from '../lib/cafeDiscovery';
 import { Cafe } from '../types/cafe';
 
 interface UseCafesReturn {
@@ -15,29 +15,22 @@ export function useCafes(): UseCafesReturn {
   const [cafes, setCafes] = useState<Cafe[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [userLat, setUserLat] = useState(0);
-  const [userLng, setUserLng] = useState(0);
 
   const fetchCafes = useCallback(async (lat: number, lng: number, radiusKm?: number) => {
     setLoading(true);
     setError(null);
-    setUserLat(lat);
-    setUserLng(lng);
 
     try {
-      const radiusMeters = radiusKm ? radiusKm * 1000 : undefined;
+      const radiusMeters = radiusKm ? radiusKm * 1000 : 5000;
       const results = await getCafesWithCache(lat, lng, radiusMeters);
 
-      // Add distance to each cafe
-      const withDistance = results.map((cafe) => ({
-        ...cafe,
-        distance: calculateDistance(lat, lng, cafe.latitude, cafe.longitude),
-      }));
+      // Add distance and recompute is_open
+      const enriched = enrichWithDistance(results, lat, lng);
 
       // Sort by distance
-      withDistance.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+      enriched.sort((a, b) => (a.distance || 0) - (b.distance || 0));
 
-      setCafes(withDistance);
+      setCafes(enriched);
     } catch (err: any) {
       setError(err.message || '搜尋咖啡廳時發生錯誤');
     } finally {

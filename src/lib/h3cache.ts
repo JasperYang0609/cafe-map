@@ -1,59 +1,45 @@
-import { CACHE_TTL_DAYS } from '../constants/config';
+import { RULES_VERSION, CACHE_TTL_DAYS } from '../constants/cafeDiscoveryRules';
 import { supabase } from './supabase';
-import { searchNearbyCafes, isCurrentlyOpen } from './places';
+import { isCurrentlyOpen } from './places';
+import { buildCandidatePool, enrichWithDistance } from './cafeDiscovery';
 import { Cafe } from '../types/cafe';
 
 /**
- * Simple grid-based cache (replaces h3-js which doesn't work in RN)
- * Rounds lat/lng to ~500m grid cells
+ * Simple grid-based cache with rules versioning.
+ * Cache key includes RULES_VERSION to auto-invalidate when rules change.
  */
 function getGridKey(latitude: number, longitude: number): string {
-  // Round to 3 decimal places ≈ ~111m precision
-  // Use 2.5 decimal places ≈ ~500m grid cells
   const latKey = (Math.round(latitude * 200) / 200).toFixed(3);
   const lngKey = (Math.round(longitude * 200) / 200).toFixed(3);
-  return `${latKey},${lngKey}`;
+  return `${RULES_VERSION}:${latKey},${lngKey}`;
 }
 
 /**
- * Get cafes for a location, using grid cache when available
- * radius parameter enables multi-circle search for larger areas
+ * Get cafes using V40 discovery pipeline with cache.
+ * Uses buildCandidatePool for high-recall search + identity classification.
  */
 export async function getCafesWithCache(
   latitude: number,
   longitude: number,
-  radius?: number
+  radius: number = 5000
 ): Promise<Cafe[]> {
   const gridKey = getGridKey(latitude, longitude);
 
-  // For small radius or default, try single-cell cache
-  if (!radius || radius <= 2000) {
-    const cached = await getCachedCafes(gridKey);
-    if (cached) {
-      console.log(`[Cache] HIT for ${gridKey}`);
-      // Recompute is_open from cached opening_hours (real-time calculation)
-      return cached.map(cafe => ({
-        ...cafe,
-        is_open: isCurrentlyOpen(cafe.opening_hours),
-      }));
-    }
-  }
-
-  // For larger radius, check if we have enough cached cells to cover
-  // For now, check the center cell first
+  // Try cache first
   const cached = await getCachedCafes(gridKey);
-  if (cached && (!radius || radius <= 2000)) {
+  if (cached) {
+    console.log(`[Cache] HIT for ${gridKey} (${cached.length} cafes)`);
     return cached.map(cafe => ({
       ...cafe,
       is_open: isCurrentlyOpen(cafe.opening_hours),
     }));
   }
 
-  // Cache miss or large radius → fetch from Google Places API
-  console.log(`[Cache] MISS for ${gridKey}, fetching from API (radius: ${radius || 'default'})...`);
-  const cafes = await searchNearbyCafes(latitude, longitude, radius);
+  // Cache miss → run V40 discovery pipeline
+  console.log(`[Cache] MISS for ${gridKey}, running discovery pipeline...`);
+  const cafes = await buildCandidatePool(latitude, longitude, radius);
 
-  // Save to cache: strip is_open (point-in-time snapshot) but KEEP opening_hours (cacheable schedule)
+  // Save to cache (strip is_open since it's point-in-time)
   const cafesForCache = cafes.map(({ is_open, ...rest }) => rest);
   saveCafeCache(gridKey, cafesForCache).catch(console.error);
 
@@ -98,7 +84,7 @@ async function saveCafeCache(gridKey: string, cafes: Cafe[]): Promise<void> {
   if (error) {
     console.error('[Cache] Save error:', error);
   } else {
-    console.log(`[Cache] Saved ${cafes.length} cafes for ${gridKey}`);
+    console.log(`[Cache] Saved ${cafes.length} eligible cafes for ${gridKey}`);
   }
 }
 
