@@ -109,7 +109,6 @@ function AppShell() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="cafe/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="pages/privacy" options={{ headerShown: false }} />
-        <Stack.Screen name="pages/reset-password" options={{ headerShown: false }} />
       </Stack>
       <StartupOverlay />
     </>
