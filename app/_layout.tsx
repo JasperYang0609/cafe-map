@@ -23,9 +23,12 @@ function StartupOverlay() {
       try {
         const current = await Location.getForegroundPermissionsAsync();
 
-        if (current.status === 'undetermined') {
-          await Location.requestForegroundPermissionsAsync();
+        if (current.status === 'granted') {
+          // Permission already granted — warm up location cache
+          await Location.getLastKnownPositionAsync();
         }
+        // If not granted, don't request here — let useLocation handle it
+        // to avoid race condition with double permission requests
       } catch (error) {
         console.log('[Startup] Location warmup skipped:', error);
       } finally {
