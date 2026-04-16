@@ -23,7 +23,8 @@ export function useLocation() {
         const permission = await Location.getForegroundPermissionsAsync();
         let status = permission.status;
 
-        if (status === 'undetermined') {
+        // Always request if not granted (covers undetermined AND denied)
+        if (status !== 'granted') {
           const requested = await Location.requestForegroundPermissionsAsync();
           status = requested.status;
         }
