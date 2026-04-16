@@ -12,6 +12,7 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { requestTrackingPermissionsAsync } from 'expo-tracking-transparency';
 
 const DAILY_FREE_PICKS = 3;
 const IS_DEV = __DEV__ || Constants.executionEnvironment === 'storeClient';
@@ -104,6 +105,16 @@ export async function initAds() {
   initStarted = true;
 
   try {
+    // iOS: 先請求 ATT 追蹤權限，再初始化廣告 SDK
+    if (Platform.OS === 'ios') {
+      try {
+        const { status } = await requestTrackingPermissionsAsync();
+        console.log(`[Ads] ATT status: ${status}`);
+      } catch (e) {
+        console.log('[Ads] ATT request skipped:', e);
+      }
+    }
+
     const ads = require('react-native-google-mobile-ads');
     const mobileAds = ads.default;
     await mobileAds().initialize();
