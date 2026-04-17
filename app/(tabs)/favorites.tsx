@@ -8,12 +8,13 @@ import { useIsFocused } from '@react-navigation/native';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-function SelfTrackingMarker({ children, ...props }: any) {
+function SelfTrackingMarker({ children, trackTrigger, ...props }: any) {
   const [tracked, setTracked] = useState(true);
   useEffect(() => {
+    setTracked(true);
     const timer = setTimeout(() => setTracked(false), 500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [trackTrigger]);
   return (
     <Marker {...props} tracksViewChanges={tracked}>
       {children}
@@ -91,49 +92,58 @@ export default function FavoritesScreen() {
   // Not logged in
   if (!isLoggedIn) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('favorites.title')}</Text>
-        </View>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>🌱</Text>
-          <Text style={styles.emptyTitle}>{t('favorites.login_title')}</Text>
-          <Text style={styles.emptyText}>{t('favorites.login_text')}</Text>
-          <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/(tabs)/profile')}>
-            <Text style={styles.loginText}>{t('favorites.login_button')}</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <View style={styles.screen}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('favorites.title')}</Text>
+          </View>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🌱</Text>
+            <Text style={styles.emptyTitle}>{t('favorites.login_title')}</Text>
+            <Text style={styles.emptyText}>{t('favorites.login_text')}</Text>
+            <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/(tabs)/profile')}>
+              <Text style={styles.loginText}>{t('favorites.login_button')}</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+        {showAds && <BannerAdPlaceholder />}
+      </View>
     );
   }
 
   // Loading favorites from Supabase
   if (favLoading && favorites.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('favorites.title')}</Text>
-        </View>
-        <View style={styles.emptyState}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      </SafeAreaView>
+      <View style={styles.screen}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('favorites.title')}</Text>
+          </View>
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        </SafeAreaView>
+        {showAds && <BannerAdPlaceholder />}
+      </View>
     );
   }
 
   // No favorites
   if (favorites.length === 0) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('favorites.title')}</Text>
-        </View>
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyEmoji}>🌱</Text>
-          <Text style={styles.emptyTitle}>{t('favorites.empty_title')}</Text>
-          <Text style={styles.emptyText}>{t('favorites.empty_text')}</Text>
-        </View>
-      </SafeAreaView>
+      <View style={styles.screen}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('favorites.title')}</Text>
+          </View>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>🌱</Text>
+            <Text style={styles.emptyTitle}>{t('favorites.empty_title')}</Text>
+            <Text style={styles.emptyText}>{t('favorites.empty_text')}</Text>
+          </View>
+        </SafeAreaView>
+        {showAds && <BannerAdPlaceholder />}
+      </View>
     );
   }
 
@@ -217,7 +227,8 @@ export default function FavoritesScreen() {
         >
           {filteredFavorites.map((cafe) => (
             <SelfTrackingMarker
-              key={`${cafe.place_id}${selectedCafe?.place_id === cafe.place_id ? '-s' : ''}`}
+              key={cafe.place_id}
+              trackTrigger={selectedCafe?.place_id === cafe.place_id ? 1 : 0}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
               onSelect={() => {
                 setSelectedCafe(cafe); triggerBounce();
@@ -225,7 +236,6 @@ export default function FavoritesScreen() {
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={false}
             >
               {selectedCafe?.place_id === cafe.place_id ? (
                 <Animated.View style={[styles.treeMarker, { transform: [{ translateY: bounceAnim }] }]}>

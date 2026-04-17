@@ -188,7 +188,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
           <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
-          <Text style={styles.versionText}>v{Constants.expoConfig?.version || '0.1.0'} (Build {Constants.expoConfig?.android?.versionCode || Constants.expoConfig?.ios?.buildNumber || '?'})</Text>
+          <Text style={styles.versionText}>v{Constants.expoConfig?.version || '1.0.0'} (Build {Platform.OS === 'ios' ? (Constants.expoConfig?.ios?.buildNumber || '?') : (Constants.expoConfig?.android?.versionCode || '?')})</Text>
         </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -253,7 +253,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
         <TouchableOpacity activeOpacity={1} onPress={handleVersionTap}>
-          <Text style={styles.versionText}>v{Constants.expoConfig?.version || '0.1.0'} (Build {Constants.expoConfig?.android?.versionCode || Constants.expoConfig?.ios?.buildNumber || '?'})</Text>
+          <Text style={styles.versionText}>v{Constants.expoConfig?.version || '1.0.0'} (Build {Platform.OS === 'ios' ? (Constants.expoConfig?.ios?.buildNumber || '?') : (Constants.expoConfig?.android?.versionCode || '?')})</Text>
         </TouchableOpacity>
 
         {showAuthOverlay && (

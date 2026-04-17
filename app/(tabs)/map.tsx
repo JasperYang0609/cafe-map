@@ -22,14 +22,17 @@ import { useI18n } from '../../src/context/I18nContext';
 
 /**
  * Marker that tracks view changes briefly on mount, then stops.
- * Solves Android blank bitmap issue without continuous tracking overhead.
+ * `trackTrigger` re-enables tracking for ~150ms when its value changes,
+ * so selection-state visual changes can be flushed to the bitmap without
+ * remounting the marker (which on iOS causes ghost / duplicate markers).
  */
-function SelfTrackingMarker({ children, ...props }: any) {
+function SelfTrackingMarker({ children, trackTrigger, ...props }: any) {
   const [tracked, setTracked] = useState(true);
   useEffect(() => {
+    setTracked(true);
     const timer = setTimeout(() => setTracked(false), 150);
     return () => clearTimeout(timer);
-  }, []);
+  }, [trackTrigger]);
   return (
     <Marker {...props} tracksViewChanges={tracked}>
       {children}
@@ -140,7 +143,8 @@ export default function MapScreen() {
 
           return (
             <SelfTrackingMarker
-              key={`${cafe.place_id}${isSelected ? '-s' : ''}`}
+              key={cafe.place_id}
+              trackTrigger={isSelected ? 1 : 0}
               coordinate={{
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,

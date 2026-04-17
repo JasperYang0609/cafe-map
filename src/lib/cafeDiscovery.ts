@@ -61,7 +61,7 @@ function parsePlaceResult(place: any): Cafe {
     website: place.websiteUri || null,
     is_open: place.currentOpeningHours?.openNow ?? null,
     opening_hours: parseOpeningPeriods(place.regularOpeningHours),
-    price_level: place.priceLevel ? parsePriceLevel(place.priceLevel) : null,
+    price_level: place.priceLevel ? parsePriceLevel(place.priceLevel) : undefined,
     // V40 identity fields
     types: place.types || [],
     primaryType: place.primaryType || '',

@@ -1,12 +1,11 @@
 /**
- * Ad manager - Google AdMob integration (V19 — on-demand architecture)
+ * Ad manager - Google AdMob integration.
  *
- * ARCHITECTURE CHANGE: No more preloading.
- * Each showRewardedAd() creates a fresh ad → loads → shows → captures reward.
- * This eliminates ALL preload/show lifecycle conflicts that caused reward loss
- * in V14/V16/V18.
+ * On-demand rewarded architecture: no preload; each showRewardedAd()
+ * creates → loads → shows → captures reward in one flow.
  *
- * Tradeoff: user waits 2-5s while ad loads. Acceptable vs broken rewards.
+ * iOS: ATT prompt before AdMob init. NPA flag derived from ATT result.
+ * Shared initPromise prevents concurrent init races across banner + rewarded.
  */
 
 import { Platform } from 'react-native';
@@ -47,10 +46,11 @@ export const AD_UNIT_IDS = IS_DEV ? TEST_AD_UNIT_IDS : PROD_AD_UNIT_IDS;
 let isSubscribed = false;
 let dailyPickCount = 0;
 let lastResetDate = new Date().toDateString();
-let initStarted = false;
+let initPromise: Promise<boolean> | null = null;
 let adsInitialized = false;
 let isShowing = false;
 let pickCountLoaded = false;
+let attGranted = false;
 
 const PICK_COUNT_KEY = '@beango_daily_pick_count';
 const PICK_DATE_KEY = '@beango_daily_pick_date';
@@ -99,20 +99,50 @@ function checkDailyReset() {
 // Load persisted count on module init
 loadPickCount();
 
-export async function initAds() {
-  if (initStarted || adsInitialized || isSubscribed) return;
-  initStarted = true;
-
+async function requestATT(): Promise<boolean> {
+  if (Platform.OS !== 'ios') return true;
   try {
-    const ads = require('react-native-google-mobile-ads');
-    const mobileAds = ads.default;
-    await mobileAds().initialize();
-    adsInitialized = true;
-    console.log(`[Ads] AdMob initialized (${IS_DEV ? 'TEST' : 'PROD'})`);
+    const tt = require('expo-tracking-transparency');
+    const current = await tt.getTrackingPermissionsAsync();
+    if (current.status === 'undetermined') {
+      const result = await tt.requestTrackingPermissionsAsync();
+      console.log('[Ads] ATT requested →', result.status);
+      return result.status === 'granted';
+    }
+    console.log('[Ads] ATT already', current.status);
+    return current.status === 'granted';
   } catch (e) {
-    console.log('[Ads] AdMob not available:', e);
-    initStarted = false; // Allow retry on next call
+    console.log('[Ads] ATT unavailable:', e);
+    return false;
   }
+}
+
+export function initAds(): Promise<boolean> {
+  if (adsInitialized) return Promise.resolve(true);
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      attGranted = await requestATT();
+      const ads = require('react-native-google-mobile-ads');
+      const mobileAds = ads.default;
+      await mobileAds().initialize();
+      adsInitialized = true;
+      console.log(`[Ads] AdMob initialized (${IS_DEV ? 'TEST' : 'PROD'}) ATT=${attGranted ? 'granted' : 'denied'}`);
+      return true;
+    } catch (e) {
+      console.log('[Ads] AdMob init failed:', e);
+      initPromise = null; // allow retry
+      return false;
+    }
+  })();
+  return initPromise;
+}
+
+export function getAdRequestOptions() {
+  return {
+    requestNonPersonalizedAdsOnly: !attGranted,
+  };
 }
 
 export function getFreePicks(): number {
@@ -140,10 +170,8 @@ export async function showRewardedAd(): Promise<boolean> {
   if (isSubscribed) return true;
   if (isShowing) return false;
 
-  if (!adsInitialized) {
-    await initAds();
-  }
-  if (!adsInitialized) return false;
+  const ok = await initAds();
+  if (!ok || !adsInitialized) return false;
 
   isShowing = true;
 
@@ -172,9 +200,7 @@ export async function showRewardedAd(): Promise<boolean> {
     try {
       const { RewardedAd, RewardedAdEventType, AdEventType } = require('react-native-google-mobile-ads');
 
-      const ad = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded!, {
-        requestNonPersonalizedAdsOnly: true,
-      });
+      const ad = RewardedAd.createForAdRequest(AD_UNIT_IDS.rewarded!, getAdRequestOptions());
 
       // LOADED → immediately show the ad
       unsubs.push(
@@ -215,10 +241,10 @@ export async function showRewardedAd(): Promise<boolean> {
         })
       );
 
-      // ERROR → resolve false
+      // ERROR → resolve false (with full diagnostics)
       unsubs.push(
         ad.addAdEventListener(AdEventType.ERROR, (err: any) => {
-          console.log('[Ads] ERROR:', err?.message || err);
+          console.log('[Ads] ERROR code=', err?.code, 'message=', err?.message, 'raw=', err);
           finish(false);
         })
       );

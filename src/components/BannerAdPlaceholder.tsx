@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, FontSize } from '../constants/theme';
-import { AD_UNIT_IDS, initAds } from '../lib/ads';
+import { View, StyleSheet } from 'react-native';
+import { Colors } from '../constants/theme';
+import { AD_UNIT_IDS, initAds, getAdRequestOptions } from '../lib/ads';
 import { useAuth } from '../context/AuthContext';
 
 const MAX_RETRIES = 3;
@@ -9,11 +9,13 @@ const RETRY_DELAY = 5000;
 
 /**
  * Banner ad component - shows Google AdMob banner for free users.
- * Handles initialization, loading, and retry on failure.
+ * Waits for AdMob init (which gates on iOS ATT) before mounting BannerAd
+ * so the very first banner request carries the correct ATT-derived NPA flag.
  */
 export default function BannerAdPlaceholder() {
   const { user } = useAuth();
   const isSubscribed = !!user?.isSubscribed;
+  const [initReady, setInitReady] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [adKey, setAdKey] = useState(0);
   const [failCount, setFailCount] = useState(0);
@@ -24,15 +26,23 @@ export default function BannerAdPlaceholder() {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Initialize AdMob when banner needs to show
+  // Wait for AdMob init (incl. ATT on iOS) before mounting the banner.
   useEffect(() => {
-    if (!isSubscribed) {
-      initAds();
-    }
-    // Reset state when subscription status changes
+    if (isSubscribed) return;
+    setInitReady(false);
     setLoaded(false);
     setFailCount(0);
-    setAdKey(k => k + 1);
+    let cancelled = false;
+    initAds().then((ok) => {
+      if (cancelled || !mountedRef.current) return;
+      if (ok) {
+        setInitReady(true);
+        setAdKey((k) => k + 1);
+      } else {
+        console.log('[Banner] init failed; banner will not render');
+      }
+    });
+    return () => { cancelled = true; };
   }, [isSubscribed]);
 
   // Retry after failure with delay
@@ -40,14 +50,15 @@ export default function BannerAdPlaceholder() {
     if (failCount > 0 && failCount <= MAX_RETRIES) {
       const timer = setTimeout(() => {
         if (mountedRef.current) {
-          setAdKey(k => k + 1);
+          console.log(`[Banner] retry attempt ${failCount}/${MAX_RETRIES}`);
+          setAdKey((k) => k + 1);
         }
       }, RETRY_DELAY);
       return () => clearTimeout(timer);
     }
   }, [failCount]);
 
-  if (isSubscribed) return null;
+  if (isSubscribed || !initReady) return null;
 
   let bannerContent = null;
   try {
@@ -61,23 +72,25 @@ export default function BannerAdPlaceholder() {
           key={adKey}
           unitId={AD_UNIT_IDS.banner!}
           size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+          requestOptions={getAdRequestOptions()}
           onAdLoaded={() => {
             if (mountedRef.current) {
               setLoaded(true);
               setFailCount(0);
             }
           }}
-          onAdFailedToLoad={() => {
+          onAdFailedToLoad={(err: any) => {
+            console.log('[Banner] failed to load code=', err?.code, 'message=', err?.message);
             if (mountedRef.current) {
               setLoaded(false);
-              setFailCount(c => c + 1);
+              setFailCount((c) => c + 1);
             }
           }}
         />
       );
     }
   } catch (e) {
+    console.log('[Banner] module unavailable:', e);
     return null;
   }
 
