@@ -8,12 +8,13 @@ import { useIsFocused } from '@react-navigation/native';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-function SelfTrackingMarker({ children, ...props }: any) {
+function SelfTrackingMarker({ children, trackTrigger, ...props }: any) {
   const [tracked, setTracked] = useState(true);
   useEffect(() => {
+    setTracked(true);
     const timer = setTimeout(() => setTracked(false), 500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [trackTrigger]);
   return (
     <Marker {...props} tracksViewChanges={tracked}>
       {children}
@@ -217,7 +218,8 @@ export default function FavoritesScreen() {
         >
           {filteredFavorites.map((cafe) => (
             <SelfTrackingMarker
-              key={`${cafe.place_id}${selectedCafe?.place_id === cafe.place_id ? '-s' : ''}`}
+              key={cafe.place_id}
+              trackTrigger={selectedCafe?.place_id === cafe.place_id ? 1 : 0}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
               onSelect={() => {
                 setSelectedCafe(cafe); triggerBounce();
@@ -225,7 +227,6 @@ export default function FavoritesScreen() {
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={false}
             >
               {selectedCafe?.place_id === cafe.place_id ? (
                 <Animated.View style={[styles.treeMarker, { transform: [{ translateY: bounceAnim }] }]}>
