@@ -140,8 +140,10 @@ export function initAds(): Promise<boolean> {
 }
 
 export function getAdRequestOptions() {
+  // Android: always non-personalized until Google UMP consent flow is added.
+  // iOS: derive from ATT — granted → personalized, denied → non-personalized.
   return {
-    requestNonPersonalizedAdsOnly: !attGranted,
+    requestNonPersonalizedAdsOnly: Platform.OS === 'android' ? true : !attGranted,
   };
 }
 
