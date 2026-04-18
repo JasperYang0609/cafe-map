@@ -8,14 +8,17 @@ import { useIsFocused } from '@react-navigation/native';
 import BannerAdPlaceholder from '../../src/components/BannerAdPlaceholder';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
-function SelfTrackingMarker({ children, ...props }: any) {
+function SelfTrackingMarker({ children, selected, ...props }: any) {
   const [tracked, setTracked] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => setTracked(false), 500);
     return () => clearTimeout(timer);
   }, []);
+  // iOS Google Maps snapshots the marker when tracksViewChanges=false;
+  // keep the selected marker live so its bounce animation renders instead
+  // of leaving a frozen ghost frame on the map.
   return (
-    <Marker {...props} tracksViewChanges={tracked}>
+    <Marker {...props} tracksViewChanges={selected || tracked}>
       {children}
     </Marker>
   );
@@ -219,13 +222,13 @@ export default function FavoritesScreen() {
             <SelfTrackingMarker
               key={`${cafe.place_id}${selectedCafe?.place_id === cafe.place_id ? '-s' : ''}`}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
+              selected={selectedCafe?.place_id === cafe.place_id}
               onSelect={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
               onPress={() => {
                 setSelectedCafe(cafe); triggerBounce();
               }}
-              tracksViewChanges={false}
             >
               {selectedCafe?.place_id === cafe.place_id ? (
                 <Animated.View style={[styles.treeMarker, { transform: [{ translateY: bounceAnim }] }]}>
