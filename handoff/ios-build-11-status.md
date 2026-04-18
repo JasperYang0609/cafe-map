@@ -3,6 +3,8 @@
 **日期**：2026-04-18
 **狀態**：iOS 1.0.0 (11) 已上 TestFlight 內測中；Android V40 Play Store 現行版本不受影響。
 
+**重要結論（2026-04-18 下午更新）**：iOS TestFlight 階段廣告 0 fill 是**正常現象**，不是 code bug。必須等 App 公開上架 App Store 才會有廣告 fill。因此專案重心**暫時轉向 Places API 成本優化**，等成本控制好、功能穩定再送審。
+
 ---
 
 ## Git 狀態
@@ -87,6 +89,53 @@ Build 10 本地 build 出來但沒上傳（被 build 11 直接蓋過）。
 ### 未完成
 - [ ] Build 7 / 8 實際 diff 無法從 repo 完整還原，不追了
 - [ ] EAS 雲端 build 額度 2026-04-13 已用完，目前只跑本機 build
+
+---
+
+## 2026-04-18 下午更新 — AdMob 排查結論
+
+### 排查過程
+試圖解釋 build 11 banner + rewarded ad 都跳不出來。走過：
+1. 核對 AdMob iOS App ID `ca-app-pub-7299866937396477~1013131787` → 正確
+2. 核對 iOS + Android ad unit 格式：
+   - iOS `BeanGo Banner` = `1891099182`（橫幅 ✓）
+   - iOS `BeanGo Interstitial` = `6951854171`（**插頁式**，但 code 當 rewarded 用）
+   - Android `BeanGo Banner Android` = `5356651534`（橫幅 ✓）
+   - Android `BeanGo Interstitial Android` = `3433195775`（**插頁式**，但 code 當 rewarded 用）
+3. 發現 `ads.ts` 的 `finish(earned || shown)` fallback 讓「RewardedAd SDK 接 Interstitial unit」能運作
+4. Android V40 封測使用者實測「插頁式正常」→ 確認 hack 能動
+5. iOS 看 7 天數據：96 requests / 0 exposure / 0% match rate → 0 fill
+6. 使用者嘗試在 AdMob 連 iOS App 到 App Store → 搜不到（因為還沒公開上架）
+
+### 真正原因
+- **iOS TestFlight 階段 0 fill 是 AdMob 對新 App 的保守策略**
+- 沒 App Store listing = 沒評分 / 排名 / 用戶量信號 → AdMob 保留 ad inventory 不投
+- 跟 code 寫得對不對無關
+- Android V40 能拿到廣告是因為 Play Internal Testing 跑一陣子有信號累積
+
+### 結論
+**iOS 廣告問題在公開上架前幾乎無解。強制修 AdMob 設定沒意義。**
+
+### 新策略（pivot）
+優先順序重排：
+1. **Places API 成本優化**（NT$3,200/9 人/天太燒）— 參考 Notion「💰 BeanGo Places API 成本優化指南」的 Phase 1-2（移除 Text Search + 優化遞迴分圈），可省 80%
+2. build 11 其他非廣告功能驗證（ATT 跳 dialog、marker、版本標籤）
+3. 送 App Store 審查
+4. 通過審查 + 公開上架後，AdMob 24-48h warm up 廣告自然有 fill
+
+### Android AdMob 修正事項（不急）
+詳見 Notion「💰 BeanGo Places API 成本優化指南」的附錄「Android AdMob 待修正事項」— 下一輪 Android 大改版時一起做：
+- 新建真正的 Rewarded ad unit
+- Code `PROD_AD_UNIT_IDS` 換 ID + 加 interstitial slot
+- 處理「要確認的應用程式」ghost 記錄
+- 連 Play Store
+- app-ads.txt 公開驗證
+- （選做）UMP 同意流程
+
+### iOS AdMob 修正事項（等上架後）
+- 等公開上架 → AdMob 自動偵測 + warm up
+- 如果 warm up 後仍 0 fill，再考慮新建 Rewarded ad unit（跟 Android 同步做）
+- 短期 code 不需要改（hack 保留）
 
 ---
 
