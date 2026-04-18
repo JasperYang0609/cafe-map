@@ -38,7 +38,7 @@
         ]
       },
       "usesAppleSignIn": true,
-      "buildNumber": "41"
+      "buildNumber": "42"
     },
     "android": {
       "package": "com.ansai.beango",
@@ -58,7 +58,7 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "com.google.android.gms.permission.AD_ID"
       ],
-      "versionCode": 41
+      "versionCode": 42
     },
     "web": {
       "favicon": "./assets/favicon.png"
