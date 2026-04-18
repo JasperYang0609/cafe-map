@@ -67,13 +67,15 @@ function parsePlaceResult(place: any): Cafe {
 }
 
 /**
- * Single Nearby Search call (accepts multiple types in one request)
+ * Single Nearby Search call (one includedType at a time — multi-type
+ * merging triggered Google 400s in the field, so we keep calls separate
+ * even though it means 2x baseline requests)
  */
 async function nearbySearch(
   latitude: number,
   longitude: number,
   radius: number,
-  includedTypes: string[]
+  includedType: string
 ): Promise<Cafe[]> {
   try {
     const response = await fetch(PLACES_BASE_URL, {
@@ -84,7 +86,7 @@ async function nearbySearch(
         'X-Goog-FieldMask': FIELD_MASK,
       },
       body: JSON.stringify({
-        includedTypes,
+        includedTypes: [includedType],
         maxResultCount: MAX_RESULTS_PER_CALL,
         locationRestriction: {
           circle: {
@@ -95,11 +97,16 @@ async function nearbySearch(
       }),
     });
 
-    if (!response.ok) return [];
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      console.warn(`[NearbySearch] ${response.status} for type=${includedType} r=${radius}m: ${body.slice(0, 200)}`);
+      return [];
+    }
     const data = await response.json();
     if (!data.places) return [];
     return data.places.map(parsePlaceResult);
-  } catch {
+  } catch (err) {
+    console.warn('[NearbySearch] fetch error:', err);
     return [];
   }
 }
@@ -111,9 +118,9 @@ async function recursiveNearbySearch(
   latitude: number,
   longitude: number,
   radius: number,
-  includedTypes: string[]
+  includedType: string
 ): Promise<Cafe[]> {
-  const results = await nearbySearch(latitude, longitude, radius, includedTypes);
+  const results = await nearbySearch(latitude, longitude, radius, includedType);
 
   // Not saturated or at minimum radius — return as-is
   if (results.length < MAX_RESULTS_PER_CALL || radius <= MIN_RECURSIVE_RADIUS) {
@@ -121,17 +128,17 @@ async function recursiveNearbySearch(
   }
 
   // Saturated — split into 4 sub-circles and recurse
-  console.log(`[Discovery] Saturated (${results.length}) at radius ${radius}m, splitting...`);
+  console.log(`[Discovery] Saturated (${results.length}) at radius ${radius}m type=${includedType}, splitting...`);
   const subRadius = radius * 0.6;
   const offset = radius * 0.35;
   const latDeg = offset / 111320;
   const lngDeg = offset / (111320 * Math.cos(latitude * Math.PI / 180));
 
   const subSearches = [
-    recursiveNearbySearch(latitude + latDeg, longitude + lngDeg, subRadius, includedTypes),
-    recursiveNearbySearch(latitude + latDeg, longitude - lngDeg, subRadius, includedTypes),
-    recursiveNearbySearch(latitude - latDeg, longitude + lngDeg, subRadius, includedTypes),
-    recursiveNearbySearch(latitude - latDeg, longitude - lngDeg, subRadius, includedTypes),
+    recursiveNearbySearch(latitude + latDeg, longitude + lngDeg, subRadius, includedType),
+    recursiveNearbySearch(latitude + latDeg, longitude - lngDeg, subRadius, includedType),
+    recursiveNearbySearch(latitude - latDeg, longitude + lngDeg, subRadius, includedType),
+    recursiveNearbySearch(latitude - latDeg, longitude - lngDeg, subRadius, includedType),
   ];
 
   const subResults = await Promise.all(subSearches);
@@ -144,7 +151,8 @@ async function recursiveNearbySearch(
 /**
  * Build complete candidate pool using high-recall strategy
  *
- * 1. Nearby Search with merged types (cafe + coffee_shop) in one call
+ * 1. Nearby Search per type (cafe, coffee_shop) — separate calls to avoid
+ *    Google 400 errors observed when sending multiple types in a single request
  * 2. Recursive split when saturated (20 results)
  * 3. Deduplicate by place_id
  * 4. Apply cafe identity classification
@@ -156,13 +164,13 @@ export async function buildCandidatePool(
 ): Promise<Cafe[]> {
   console.log(`[Discovery] Building candidate pool at (${latitude.toFixed(4)}, ${longitude.toFixed(4)}) r=${radius}m`);
 
-  // Single Nearby Search with merged types + recursive splitting
-  const rawResults = await recursiveNearbySearch(
-    latitude,
-    longitude,
-    radius,
-    SEARCH_INCLUDED_TYPES,
+  // One recursive search per type, in parallel
+  const perTypeResults = await Promise.all(
+    SEARCH_INCLUDED_TYPES.map(type =>
+      recursiveNearbySearch(latitude, longitude, radius, type),
+    ),
   );
+  const rawResults = perTypeResults.flat();
 
   // Deduplicate by place_id
   const cafeMap = new Map<string, Cafe>();
