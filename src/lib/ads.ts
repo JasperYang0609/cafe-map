@@ -99,11 +99,37 @@ function checkDailyReset() {
 // Load persisted count on module init
 loadPickCount();
 
+/**
+ * Request App Tracking Transparency permission (iOS 14+).
+ * Required by Apple before AdMob can access IDFA. Noop on Android and
+ * on iOS if status is already determined. Never blocks ad init — even
+ * if denied, AdMob falls back to non-personalized ads.
+ */
+async function requestTrackingIfNeeded() {
+  if (Platform.OS !== 'ios') return;
+  try {
+    const tt = require('expo-tracking-transparency');
+    const current = await tt.getTrackingPermissionsAsync();
+    if (current.status === 'undetermined' && current.canAskAgain) {
+      const next = await tt.requestTrackingPermissionsAsync();
+      console.log(`[Ads] ATT status: ${next.status}`);
+    } else {
+      console.log(`[Ads] ATT already: ${current.status}`);
+    }
+  } catch (e) {
+    console.log('[Ads] ATT not available:', e);
+  }
+}
+
 export async function initAds() {
   if (initStarted || adsInitialized || isSubscribed) return;
   initStarted = true;
 
   try {
+    // Ask for tracking BEFORE AdMob initializes so IDFA state is
+    // settled when the first ad request fires.
+    await requestTrackingIfNeeded();
+
     const ads = require('react-native-google-mobile-ads');
     const mobileAds = ads.default;
     await mobileAds().initialize();

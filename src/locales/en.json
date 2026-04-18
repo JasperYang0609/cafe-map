@@ -172,6 +172,7 @@
     "monthly": "Monthly",
     "per_month": "/mo",
     "subscribe_btn": "Subscribe Now",
+    "auto_renew_notice": "{price}/month · Subscription auto-renews. Cancel anytime in Settings.",
     "restore": "Restore Purchases",
     "restore_success": "Purchases restored",
     "restore_fail": "No previous purchases found",

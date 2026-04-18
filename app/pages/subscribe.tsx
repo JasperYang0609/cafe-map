@@ -217,6 +217,12 @@ export default function SubscribeScreen() {
           </TouchableOpacity>
         )}
 
+        {/* Auto-renewal disclosure — shown adjacent to the buy button
+            so Apple reviewers can see price + term + renewal at a glance */}
+        <Text style={styles.autoRenewNotice}>
+          {t('subscribe.auto_renew_notice').replace('{price}', loading ? '...' : getPriceText())}
+        </Text>
+
         {/* Subscribe Button */}
         <TouchableOpacity
           style={[styles.subscribeBtn, (purchasing || loading || !monthlyPkg) && styles.subscribeBtnDisabled]}
@@ -283,6 +289,11 @@ const styles = StyleSheet.create({
   priceAmount: { fontSize: 36, fontWeight: '800', color: Colors.text },
   pricePeriod: { fontSize: FontSize.md, color: Colors.textSecondary, marginLeft: 4 },
 
+  autoRenewNotice: {
+    fontSize: FontSize.xs, color: Colors.textSecondary,
+    textAlign: 'center', paddingHorizontal: Spacing.xl,
+    marginBottom: Spacing.sm,
+  },
   subscribeBtn: {
     backgroundColor: Colors.primary, marginHorizontal: Spacing.lg,
     paddingVertical: Spacing.md + 2, borderRadius: BorderRadius.full,

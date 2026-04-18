@@ -172,6 +172,7 @@
     "monthly": "月訂閱",
     "per_month": "/月",
     "subscribe_btn": "立即訂閱",
+    "auto_renew_notice": "{price}/月 · 訂閱會自動續訂，可隨時在設定中取消",
     "restore": "恢復購買",
     "restore_success": "購買已恢復",
     "restore_fail": "找不到先前的購買記錄",

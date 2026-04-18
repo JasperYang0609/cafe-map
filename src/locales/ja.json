@@ -172,6 +172,7 @@
     "monthly": "月額",
     "per_month": "/月",
     "subscribe_btn": "今すぐ登録",
+    "auto_renew_notice": "{price}/月 · サブスクリプションは自動更新されます。設定からいつでもキャンセル可能です。",
     "restore": "購入を復元",
     "restore_success": "購入を復元しました",
     "restore_fail": "以前の購入が見つかりません",
