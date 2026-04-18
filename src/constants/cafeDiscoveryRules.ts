@@ -10,7 +10,8 @@
 
 // Bump this when identity rules, search sources, or merge logic changes
 // Forces cache invalidation so old data doesn't pollute results
-export const RULES_VERSION = 'cafe-discovery-v40';
+// h3-v1: migrated from lat/lng rounding to real H3 cells (resolution 7)
+export const RULES_VERSION = 'cafe-discovery-h3-v1';
 
 // --- Cafe Identity: Denylist ---
 // primaryType values that indicate a non-cafe business

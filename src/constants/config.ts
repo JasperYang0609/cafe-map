@@ -10,7 +10,9 @@ export const DEFAULT_REGION = {
 };
 
 // H3 cache
-export const H3_RESOLUTION = 8; // ~460m hexagons
+// Resolution 7 = ~1.22km edge / ~5.16 km² hex area — matches 3km search radius well
+export const H3_RESOLUTION = 7;
+export const H3_RING_SIZE = 1; // query current cell + 6 neighbors for cache hit
 export const CACHE_TTL_DAYS = 45; // cafe data refresh interval
 
 // Google Places
