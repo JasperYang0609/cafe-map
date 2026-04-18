@@ -2,17 +2,15 @@
  * BeanGo Cafe Discovery Module — V40
  *
  * High-recall candidate pool builder:
- * 1. Multiple Nearby Search calls (cafe + coffee_shop)
- * 2. Text Search fallback for edge cases
- * 3. Recursive circle splitting when results hit 20 (API limit)
- * 4. Deduplication by place_id
- * 5. Cafe identity classification
+ * 1. Nearby Search (cafe + coffee_shop merged in one call)
+ * 2. Recursive circle splitting when results hit 20 (API limit)
+ * 3. Deduplication by place_id
+ * 4. Cafe identity classification
  */
 
 import { GOOGLE_MAPS_API_KEY } from '../constants/config';
 import {
   SEARCH_INCLUDED_TYPES,
-  TEXT_SEARCH_QUERIES,
   MIN_RECURSIVE_RADIUS,
 } from '../constants/cafeDiscoveryRules';
 import { classifyCafeIdentity } from './cafeIdentity';
@@ -20,7 +18,6 @@ import { calculateDistance, isCurrentlyOpen } from './places';
 import { Cafe } from '../types/cafe';
 
 const PLACES_BASE_URL = 'https://places.googleapis.com/v1/places:searchNearby';
-const TEXT_SEARCH_URL = 'https://places.googleapis.com/v1/places:searchText';
 const MAX_RESULTS_PER_CALL = 20;
 
 // Field mask for all searches — includes V40 identity fields
@@ -70,13 +67,13 @@ function parsePlaceResult(place: any): Cafe {
 }
 
 /**
- * Single Nearby Search call
+ * Single Nearby Search call (accepts multiple types in one request)
  */
 async function nearbySearch(
   latitude: number,
   longitude: number,
   radius: number,
-  includedType: string
+  includedTypes: string[]
 ): Promise<Cafe[]> {
   try {
     const response = await fetch(PLACES_BASE_URL, {
@@ -87,7 +84,7 @@ async function nearbySearch(
         'X-Goog-FieldMask': FIELD_MASK,
       },
       body: JSON.stringify({
-        includedTypes: [includedType],
+        includedTypes,
         maxResultCount: MAX_RESULTS_PER_CALL,
         locationRestriction: {
           circle: {
@@ -114,9 +111,9 @@ async function recursiveNearbySearch(
   latitude: number,
   longitude: number,
   radius: number,
-  includedType: string
+  includedTypes: string[]
 ): Promise<Cafe[]> {
-  const results = await nearbySearch(latitude, longitude, radius, includedType);
+  const results = await nearbySearch(latitude, longitude, radius, includedTypes);
 
   // Not saturated or at minimum radius — return as-is
   if (results.length < MAX_RESULTS_PER_CALL || radius <= MIN_RECURSIVE_RADIUS) {
@@ -131,10 +128,10 @@ async function recursiveNearbySearch(
   const lngDeg = offset / (111320 * Math.cos(latitude * Math.PI / 180));
 
   const subSearches = [
-    recursiveNearbySearch(latitude + latDeg, longitude + lngDeg, subRadius, includedType),
-    recursiveNearbySearch(latitude + latDeg, longitude - lngDeg, subRadius, includedType),
-    recursiveNearbySearch(latitude - latDeg, longitude + lngDeg, subRadius, includedType),
-    recursiveNearbySearch(latitude - latDeg, longitude - lngDeg, subRadius, includedType),
+    recursiveNearbySearch(latitude + latDeg, longitude + lngDeg, subRadius, includedTypes),
+    recursiveNearbySearch(latitude + latDeg, longitude - lngDeg, subRadius, includedTypes),
+    recursiveNearbySearch(latitude - latDeg, longitude + lngDeg, subRadius, includedTypes),
+    recursiveNearbySearch(latitude - latDeg, longitude - lngDeg, subRadius, includedTypes),
   ];
 
   const subResults = await Promise.all(subSearches);
@@ -145,51 +142,12 @@ async function recursiveNearbySearch(
 }
 
 /**
- * Text Search for catching edge cases not found by type search
- */
-async function textSearch(
-  query: string,
-  latitude: number,
-  longitude: number,
-  radius: number
-): Promise<Cafe[]> {
-  try {
-    const response = await fetch(TEXT_SEARCH_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
-        'X-Goog-FieldMask': FIELD_MASK,
-      },
-      body: JSON.stringify({
-        textQuery: query,
-        maxResultCount: MAX_RESULTS_PER_CALL,
-        locationBias: {
-          circle: {
-            center: { latitude, longitude },
-            radius: Math.min(radius, 50000),
-          },
-        },
-      }),
-    });
-
-    if (!response.ok) return [];
-    const data = await response.json();
-    if (!data.places) return [];
-    return data.places.map(parsePlaceResult);
-  } catch {
-    return [];
-  }
-}
-
-/**
  * Build complete candidate pool using high-recall strategy
  *
- * 1. Nearby Search for each type (cafe, coffee_shop)
+ * 1. Nearby Search with merged types (cafe + coffee_shop) in one call
  * 2. Recursive split when saturated (20 results)
- * 3. Text Search fallback queries
- * 4. Deduplicate by place_id
- * 5. Apply cafe identity classification
+ * 3. Deduplicate by place_id
+ * 4. Apply cafe identity classification
  */
 export async function buildCandidatePool(
   latitude: number,
@@ -198,32 +156,26 @@ export async function buildCandidatePool(
 ): Promise<Cafe[]> {
   console.log(`[Discovery] Building candidate pool at (${latitude.toFixed(4)}, ${longitude.toFixed(4)}) r=${radius}m`);
 
-  // 1. Nearby Search for each type with recursive splitting
-  const nearbyPromises = SEARCH_INCLUDED_TYPES.map(type =>
-    recursiveNearbySearch(latitude, longitude, radius, type)
+  // Single Nearby Search with merged types + recursive splitting
+  const rawResults = await recursiveNearbySearch(
+    latitude,
+    longitude,
+    radius,
+    SEARCH_INCLUDED_TYPES,
   );
 
-  // 2. Text Search fallback
-  const textPromises = TEXT_SEARCH_QUERIES.map(query =>
-    textSearch(query, latitude, longitude, radius)
-  );
-
-  const allResults = await Promise.all([...nearbyPromises, ...textPromises]);
-
-  // 3. Deduplicate by place_id
+  // Deduplicate by place_id
   const cafeMap = new Map<string, Cafe>();
-  for (const results of allResults) {
-    for (const cafe of results) {
-      if (!cafeMap.has(cafe.place_id)) {
-        cafeMap.set(cafe.place_id, cafe);
-      }
+  for (const cafe of rawResults) {
+    if (!cafeMap.has(cafe.place_id)) {
+      cafeMap.set(cafe.place_id, cafe);
     }
   }
 
-  const rawCount = allResults.flat().length;
+  const rawCount = rawResults.length;
   const uniqueCount = cafeMap.size;
 
-  // 4. Apply cafe identity classification
+  // Apply cafe identity classification
   const eligible: Cafe[] = [];
   for (const cafe of cafeMap.values()) {
     if (classifyCafeIdentity(cafe)) {

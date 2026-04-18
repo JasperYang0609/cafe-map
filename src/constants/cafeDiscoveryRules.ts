@@ -50,19 +50,17 @@ export const COFFEE_NAME_KEYWORDS = [
 ];
 
 // --- Search Strategy ---
-// Types to search via Nearby Search API
+// Types to search via Nearby Search API (merged into single request)
 export const SEARCH_INCLUDED_TYPES = ['cafe', 'coffee_shop'];
 
-// Text search fallback queries for catching edge cases
-export const TEXT_SEARCH_QUERIES = ['coffee', '咖啡', 'cafe', 'roastery'];
-
 // Minimum sub-circle radius before stopping recursive split (meters)
-export const MIN_RECURSIVE_RADIUS = 250;
+// Raised from 250 → 500 to cap deep recursion (cost optimization)
+export const MIN_RECURSIVE_RADIUS = 500;
 
-// --- Radius Constants ---
-export const MAP_SEARCH_RADIUS = 5000; // Map page always searches 5km
-export const DEFAULT_EXPLORE_RADIUS = 5000; // Default for explore page
-export const MAX_SEARCH_RADIUS = 10000; // Maximum supported radius
+// --- Radius Constants (cost-optimized) ---
+export const MAP_SEARCH_RADIUS = 3000; // Map page searches 3km
+export const DEFAULT_EXPLORE_RADIUS = 2000; // Default for explore page
+export const MAX_SEARCH_RADIUS = 3000; // Maximum supported radius (hard cap)
 
 // --- Cache ---
 export const CACHE_TTL_DAYS = 45;

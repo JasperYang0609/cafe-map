@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { getCafesWithCache } from '../lib/h3cache';
 import { enrichWithDistance } from '../lib/cafeDiscovery';
+import { MAX_SEARCH_RADIUS, DEFAULT_EXPLORE_RADIUS } from '../constants/cafeDiscoveryRules';
 import { Cafe } from '../types/cafe';
 
 interface UseCafesReturn {
@@ -21,7 +22,8 @@ export function useCafes(): UseCafesReturn {
     setError(null);
 
     try {
-      const radiusMeters = radiusKm ? radiusKm * 1000 : 5000;
+      const requested = radiusKm ? radiusKm * 1000 : DEFAULT_EXPLORE_RADIUS;
+      const radiusMeters = Math.min(requested, MAX_SEARCH_RADIUS);
       const results = await getCafesWithCache(lat, lng, radiusMeters);
 
       // Add distance and recompute is_open

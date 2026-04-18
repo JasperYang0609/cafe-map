@@ -14,5 +14,5 @@ export const H3_RESOLUTION = 8; // ~460m hexagons
 export const CACHE_TTL_DAYS = 45; // cafe data refresh interval
 
 // Google Places
-export const PLACES_SEARCH_RADIUS = 5000; // meters (5km)
+export const PLACES_SEARCH_RADIUS = 3000; // meters (3km) — cost-optimized cap
 export const PLACES_TYPE = 'cafe';

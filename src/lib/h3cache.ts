@@ -1,4 +1,4 @@
-import { RULES_VERSION, CACHE_TTL_DAYS } from '../constants/cafeDiscoveryRules';
+import { RULES_VERSION, CACHE_TTL_DAYS, MAP_SEARCH_RADIUS } from '../constants/cafeDiscoveryRules';
 import { supabase } from './supabase';
 import { isCurrentlyOpen } from './places';
 import { buildCandidatePool, enrichWithDistance } from './cafeDiscovery';
@@ -21,7 +21,7 @@ function getGridKey(latitude: number, longitude: number): string {
 export async function getCafesWithCache(
   latitude: number,
   longitude: number,
-  radius: number = 5000
+  radius: number = MAP_SEARCH_RADIUS
 ): Promise<Cafe[]> {
   const gridKey = getGridKey(latitude, longitude);
 

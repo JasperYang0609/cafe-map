@@ -18,12 +18,12 @@ export interface FilterOptions {
 }
 
 const DEFAULT_FILTERS: FilterOptions = {
-  maxDistance: 5,
+  maxDistance: 2,
   minRating: 0,
   openNow: false,
 };
 
-const DISTANCE_OPTIONS = [1, 2, 3, 5, 10];
+const DISTANCE_OPTIONS = [0.5, 1, 2, 3];
 const RATING_OPTIONS = [0, 3.5, 4.0, 4.5];
 
 interface FilterSheetProps {
@@ -86,7 +86,7 @@ export default function FilterSheet({
                         filters.maxDistance === km && styles.chipTextActive,
                       ]}
                     >
-                      {km}km
+                      {km < 1 ? `${km * 1000}m` : `${km}km`}
                     </Text>
                   </TouchableOpacity>
                 ))}
