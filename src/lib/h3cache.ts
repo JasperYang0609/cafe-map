@@ -75,12 +75,27 @@ export async function getCafesWithCache(
     const now = new Date();
     const fresh = data.filter(row => new Date(row.expires_at) >= now);
 
-    if (fresh.length > 0) {
-      // Prefer current-cell hit for best spatial match, then any neighbor
-      const preferred = fresh.find(row => row.h3_index === currentKey) ?? fresh[0];
-      const cafes = preferred.cafes as Cafe[];
-      console.log(`[Cache] HIT on ${preferred.h3_index} (${cafes.length} cafes)`);
-      return cafes.map(cafe => ({
+    // Only use union cache when the user's own cell is already cached.
+    // Otherwise, trigger a fresh fetch centered on the user so we don't
+    // show a half-covered result built purely from neighbor caches.
+    const currentHit = fresh.find(row => row.h3_index === currentKey);
+
+    if (currentHit) {
+      // Merge cafes from all fresh cells (current + any neighbors), deduped.
+      // This gives maximum coverage — overlapping neighbor cells contribute
+      // cafes that the current cell's 3km search may have missed at its edge.
+      const merged = new Map<string, Cafe>();
+      for (const row of fresh) {
+        for (const cafe of row.cafes as Cafe[]) {
+          if (!merged.has(cafe.place_id)) {
+            merged.set(cafe.place_id, cafe);
+          }
+        }
+      }
+      console.log(
+        `[Cache] HIT merged from ${fresh.length} cell(s) → ${merged.size} unique cafes`
+      );
+      return Array.from(merged.values()).map(cafe => ({
         ...cafe,
         is_open: isCurrentlyOpen(cafe.opening_hours),
       }));
