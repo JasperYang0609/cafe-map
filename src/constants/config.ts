@@ -9,10 +9,11 @@ export const DEFAULT_REGION = {
   longitudeDelta: 0.01,
 };
 
-// H3 cache
-// Resolution 7 = ~1.22km edge / ~5.16 km² hex area — matches 3km search radius well
-export const H3_RESOLUTION = 7;
-export const H3_RING_SIZE = 1; // query current cell + 6 neighbors for cache hit
+// Geo cache
+// 1km cells with latitude-corrected longitude spacing (works globally)
+// Matches 3km search radius when combined with 3x3 neighbor lookup (~9 km² coverage)
+export const GRID_CELL_SIZE_METERS = 1000;
+export const GRID_NEIGHBOR_RING = 1; // 1 = 3x3 grid (9 cells), 2 = 5x5 grid
 export const CACHE_TTL_DAYS = 45; // cafe data refresh interval
 
 // Google Places

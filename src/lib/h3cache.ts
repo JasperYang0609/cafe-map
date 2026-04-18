@@ -1,27 +1,58 @@
-import { latLngToCell, gridDisk } from 'h3-js';
 import { RULES_VERSION, CACHE_TTL_DAYS, MAP_SEARCH_RADIUS } from '../constants/cafeDiscoveryRules';
-import { H3_RESOLUTION, H3_RING_SIZE } from '../constants/config';
+import { GRID_CELL_SIZE_METERS, GRID_NEIGHBOR_RING } from '../constants/config';
 import { supabase } from './supabase';
 import { isCurrentlyOpen } from './places';
 import { buildCandidatePool } from './cafeDiscovery';
 import { Cafe } from '../types/cafe';
 
 /**
- * H3-based grid cache.
+ * Geo-cell cache (pure JS, Hermes-safe).
  *
- * Uses Uber's H3 hexagonal geospatial indexing for globally-uniform cells.
- * Resolution 7 hex ≈ 1.22km edge / 5.16 km² area — pairs well with 3km search radius.
+ * Uses a latitude-corrected uniform grid so each cell is ~1km × 1km anywhere
+ * on Earth (longitude spacing scales with cos(lat) to fight polar distortion).
  *
- * On lookup we check the current cell PLUS its 6 ring-1 neighbors (gridDisk).
+ * On lookup we check the current cell PLUS its 8 ring-1 neighbors (3x3 grid).
  * Any non-expired hit serves the request; this dramatically reduces cache
- * misses when a user moves around a city.
+ * misses when users move around a city.
  *
- * Cache keys are namespaced by RULES_VERSION so identity/logic changes
- * invalidate all entries at once.
+ * Table is still called `h3_cache` and column `h3_index` for backwards
+ * compatibility — RULES_VERSION namespace keeps new entries isolated from
+ * any stale data.
  */
 
-function cacheKey(h3Index: string): string {
-  return `${RULES_VERSION}:${h3Index}`;
+const METERS_PER_LAT_DEGREE = 111320;
+
+interface Cell {
+  latIdx: number;
+  lngIdx: number;
+  /** reference latitude used to compute lng spacing (cell center latitude) */
+  refLat: number;
+}
+
+function latLngToCell(lat: number, lng: number): Cell {
+  const latStep = GRID_CELL_SIZE_METERS / METERS_PER_LAT_DEGREE;
+  const lngStep = GRID_CELL_SIZE_METERS / (METERS_PER_LAT_DEGREE * Math.cos(lat * Math.PI / 180));
+  const latIdx = Math.round(lat / latStep);
+  const lngIdx = Math.round(lng / lngStep);
+  return { latIdx, lngIdx, refLat: lat };
+}
+
+function cellKey(cell: Cell): string {
+  return `${RULES_VERSION}:${cell.latIdx},${cell.lngIdx}`;
+}
+
+function neighborCells(center: Cell, ring: number): Cell[] {
+  const cells: Cell[] = [];
+  for (let dLat = -ring; dLat <= ring; dLat++) {
+    for (let dLng = -ring; dLng <= ring; dLng++) {
+      cells.push({
+        latIdx: center.latIdx + dLat,
+        lngIdx: center.lngIdx + dLng,
+        refLat: center.refLat,
+      });
+    }
+  }
+  return cells;
 }
 
 export async function getCafesWithCache(
@@ -29,9 +60,10 @@ export async function getCafesWithCache(
   longitude: number,
   radius: number = MAP_SEARCH_RADIUS
 ): Promise<Cafe[]> {
-  const currentCell = latLngToCell(latitude, longitude, H3_RESOLUTION);
-  const cells = gridDisk(currentCell, H3_RING_SIZE); // current + 6 neighbors
-  const keys = cells.map(cacheKey);
+  const currentCell = latLngToCell(latitude, longitude);
+  const candidates = neighborCells(currentCell, GRID_NEIGHBOR_RING);
+  const keys = candidates.map(cellKey);
+  const currentKey = cellKey(currentCell);
 
   // Single round-trip: fetch any matching cache entries
   const { data, error } = await supabase
@@ -45,7 +77,6 @@ export async function getCafesWithCache(
 
     if (fresh.length > 0) {
       // Prefer current-cell hit for best spatial match, then any neighbor
-      const currentKey = cacheKey(currentCell);
       const preferred = fresh.find(row => row.h3_index === currentKey) ?? fresh[0];
       const cafes = preferred.cafes as Cafe[];
       console.log(`[Cache] HIT on ${preferred.h3_index} (${cafes.length} cafes)`);
@@ -57,11 +88,11 @@ export async function getCafesWithCache(
   }
 
   // Cache miss → fetch fresh, save under current cell
-  console.log(`[Cache] MISS for ${currentCell} (checked ${keys.length} cells), fetching...`);
+  console.log(`[Cache] MISS for ${currentKey} (checked ${keys.length} cells), fetching...`);
   const cafes = await buildCandidatePool(latitude, longitude, radius);
 
   const cafesForCache = cafes.map(({ is_open, ...rest }) => rest);
-  saveCafeCache(cacheKey(currentCell), cafesForCache).catch(console.error);
+  saveCafeCache(currentKey, cafesForCache).catch(console.error);
 
   return cafes;
 }
@@ -87,8 +118,8 @@ async function saveCafeCache(key: string, cafes: Cafe[]): Promise<void> {
 }
 
 /**
- * For debugging / reference — returns the H3 cell at the user's position.
+ * For debugging / reference — returns the cache key for the user's position.
  */
 export function getGridIndex(latitude: number, longitude: number): string {
-  return cacheKey(latLngToCell(latitude, longitude, H3_RESOLUTION));
+  return cellKey(latLngToCell(latitude, longitude));
 }
