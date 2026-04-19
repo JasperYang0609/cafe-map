@@ -45,9 +45,12 @@ export default function CafeDetailScreen() {
     website: (params.website as string) || null,
   };
 
-  // Try multiple photos first, fallback to single photo_reference
+  // Cost optimization: only load 1 photo on detail page.
+  // Each Photo URL render = 1 paid Photos API call. Carousel of 5 photos
+  // could trigger 5 calls per detail view as the user swipes. We surface
+  // only the first photo and route "see more" to the Google Maps CTA.
   const photoRefs = cafe.photo_references.length > 0
-    ? cafe.photo_references
+    ? cafe.photo_references.slice(0, 1)
     : params.photo_reference
     ? [params.photo_reference as string]
     : [];
@@ -123,7 +126,9 @@ export default function CafeDetailScreen() {
                 ))}
               </View>
             )}
-            <Text style={styles.photoCount}>{activePhotoIndex + 1}/{photos.length}</Text>
+            {photos.length > 1 && (
+              <Text style={styles.photoCount}>{activePhotoIndex + 1}/{photos.length}</Text>
+            )}
           </View>
         ) : (
           <View style={styles.photoPlaceholder}>
