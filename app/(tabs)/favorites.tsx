@@ -149,13 +149,11 @@ export default function FavoritesScreen() {
   const lngDelta = Math.max(0.015, lngSpread * 1.5);
 
   const handleNavigate = async (cafe: Cafe) => {
+    // Always route via the https URL so destination_place_id is preserved.
+    // Google Maps app catches this as a Universal Link (iOS) / Intent
+    // (Android) and opens directly — no need for comgooglemaps:// scheme.
     const url = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;
-    const canOpen = await Linking.canOpenURL('comgooglemaps://');
-    if (canOpen) {
-      Linking.openURL(`comgooglemaps://?daddr=${cafe.latitude},${cafe.longitude}&directionsmode=driving`);
-    } else {
-      Linking.openURL(url);
-    }
+    Linking.openURL(url);
   };
 
   return (

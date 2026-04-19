@@ -58,16 +58,11 @@ export default function CafeCard({
   };
 
   const handleNavigate = async () => {
+    // Always route via the https URL so destination_place_id is preserved.
+    // Google Maps app catches this as a Universal Link (iOS) / Intent
+    // (Android) and opens directly — no need for comgooglemaps:// scheme.
     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${cafe.latitude},${cafe.longitude}&destination_place_id=${cafe.place_id}`;
-    const canOpenGoogle = await Linking.canOpenURL('comgooglemaps://');
-
-    if (canOpenGoogle) {
-      // Open Google Maps app directly
-      Linking.openURL(`comgooglemaps://?daddr=${cafe.latitude},${cafe.longitude}&directionsmode=driving`);
-    } else {
-      // Fallback to Google Maps web (opens in browser, prompts to open app)
-      Linking.openURL(googleMapsUrl);
-    }
+    Linking.openURL(googleMapsUrl);
   };
 
   const renderStars = (rating: number) => {
