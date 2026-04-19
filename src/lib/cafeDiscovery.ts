@@ -12,6 +12,7 @@ import { GOOGLE_MAPS_API_KEY } from '../constants/config';
 import {
   SEARCH_INCLUDED_TYPES,
   MIN_RECURSIVE_RADIUS,
+  PRIMARY_TYPE_DENYLIST,
 } from '../constants/cafeDiscoveryRules';
 import { classifyCafeIdentity } from './cafeIdentity';
 import { calculateDistance, isCurrentlyOpen } from './places';
@@ -87,6 +88,10 @@ async function nearbySearch(
       },
       body: JSON.stringify({
         includedTypes: [includedType],
+        // Server-side exclusion — Google drops these primary types before
+        // returning results, saving bandwidth and catching things client
+        // filter would miss (e.g. primaryType=lawyer marked as types=[cafe]).
+        excludedPrimaryTypes: PRIMARY_TYPE_DENYLIST,
         maxResultCount: MAX_RESULTS_PER_CALL,
         locationRestriction: {
           circle: {
