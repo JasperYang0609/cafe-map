@@ -252,9 +252,19 @@ function parseOpeningPeriods(regularOpeningHours: any): OpeningPeriod[] | undefi
 
 /**
  * Calculate if a cafe is currently open based on cached opening_hours periods
- * Uses device local time (which matches Google's local business hours)
+ * Uses device local time (which matches Google's local business hours).
+ *
+ * If Google flags the place as permanently or temporarily closed, we return
+ * false regardless of the weekly schedule — a cafe that's been shut down for
+ * a year may still have historical opening_hours on record.
  */
-export function isCurrentlyOpen(openingHours?: OpeningPeriod[]): boolean | null {
+export function isCurrentlyOpen(
+  openingHours?: OpeningPeriod[],
+  businessStatus?: string,
+): boolean | null {
+  if (businessStatus === 'CLOSED_PERMANENTLY' || businessStatus === 'CLOSED_TEMPORARILY') {
+    return false;
+  }
   if (!openingHours || openingHours.length === 0) return null;
 
   const now = new Date();

@@ -207,7 +207,7 @@ export function enrichWithDistance(
   return cafes.map(cafe => ({
     ...cafe,
     distance: calculateDistance(userLat, userLng, cafe.latitude, cafe.longitude),
-    is_open: isCurrentlyOpen(cafe.opening_hours),
+    is_open: isCurrentlyOpen(cafe.opening_hours, cafe.businessStatus),
   }));
 }
 

@@ -3,6 +3,7 @@ import { GRID_CELL_SIZE_METERS, GRID_NEIGHBOR_RING } from '../constants/config';
 import { supabase } from './supabase';
 import { isCurrentlyOpen } from './places';
 import { buildCandidatePool } from './cafeDiscovery';
+import { classifyCafeIdentity } from './cafeIdentity';
 import { Cafe } from '../types/cafe';
 
 /**
@@ -92,12 +93,16 @@ export async function getCafesWithCache(
           }
         }
       }
+      // Re-apply identity filter on cache retrieval. Legacy cache entries
+      // (written before businessStatus filtering was enforced) may still
+      // contain permanently-closed cafes — strip them out defensively.
+      const filtered = Array.from(merged.values()).filter(classifyCafeIdentity);
       console.log(
-        `[Cache] HIT merged from ${fresh.length} cell(s) → ${merged.size} unique cafes`
+        `[Cache] HIT merged from ${fresh.length} cell(s) → ${merged.size} unique, ${filtered.length} eligible`
       );
-      return Array.from(merged.values()).map(cafe => ({
+      return filtered.map(cafe => ({
         ...cafe,
-        is_open: isCurrentlyOpen(cafe.opening_hours),
+        is_open: isCurrentlyOpen(cafe.opening_hours, cafe.businessStatus),
       }));
     }
   }
