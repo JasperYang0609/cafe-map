@@ -132,6 +132,22 @@ export default function CafeDetailScreen() {
           </View>
         )}
 
+        {/* Prominent CTA: view full info on Google Maps.
+            Encourages users to view photos / reviews / menu / hours
+            directly on Google Maps instead of triggering more Photos
+            API calls inside the app. */}
+        <TouchableOpacity
+          style={styles.gmapsCta}
+          activeOpacity={0.85}
+          onPress={() => {
+            Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cafe.name)}&query_place_id=${cafe.place_id}`);
+          }}
+        >
+          <Ionicons name="logo-google" size={18} color={Colors.primary} />
+          <Text style={styles.gmapsCtaText}>{t('detail.view_full_on_google')}</Text>
+          <Ionicons name="open-outline" size={16} color={Colors.primary} />
+        </TouchableOpacity>
+
         {/* Info section */}
         <View style={styles.infoSection}>
           <Text style={styles.name}>{cafe.name}</Text>
@@ -189,13 +205,7 @@ export default function CafeDetailScreen() {
             </TouchableOpacity>
           ) : null}
 
-          {/* Google Maps link */}
-          <TouchableOpacity style={styles.detailRow} onPress={() => {
-            Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${cafe.name}&query_place_id=${cafe.place_id}`);
-          }}>
-            <Ionicons name="open-outline" size={20} color={Colors.primary} />
-            <Text style={[styles.detailText, { color: Colors.primary }]}>{t('detail.view_on_google')}</Text>
-          </TouchableOpacity>
+          {/* Google Maps link removed — replaced by prominent CTA above photo */}
         </View>
       </ScrollView>
 
@@ -345,6 +355,25 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+  },
+  gmapsCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    marginBottom: -Spacing.xs,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.surface,
+  },
+  gmapsCtaText: {
+    fontSize: FontSize.md,
+    fontWeight: '600',
+    color: Colors.primary,
   },
   detailText: {
     flex: 1,
