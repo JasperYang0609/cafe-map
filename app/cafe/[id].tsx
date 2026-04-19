@@ -148,7 +148,7 @@ export default function CafeDetailScreen() {
             Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cafe.name)}&query_place_id=${cafe.place_id}`);
           }}
         >
-          <Ionicons name="logo-google" size={18} color={Colors.primary} />
+          <Ionicons name="map-outline" size={18} color={Colors.primary} />
           <Text style={styles.gmapsCtaText}>{t('detail.view_full_on_google')}</Text>
           <Ionicons name="open-outline" size={16} color={Colors.primary} />
         </TouchableOpacity>
