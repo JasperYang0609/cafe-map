@@ -222,6 +222,7 @@ export default function FavoritesScreen() {
             <SelfTrackingMarker
               key={`${cafe.place_id}${selectedCafe?.place_id === cafe.place_id ? '-s' : ''}`}
               coordinate={{ latitude: cafe.latitude, longitude: cafe.longitude }}
+              anchor={{ x: 0.5, y: 0.5 }}
               selected={selectedCafe?.place_id === cafe.place_id}
               onSelect={() => {
                 setSelectedCafe(cafe); triggerBounce();

@@ -145,6 +145,7 @@ export default function MapScreen() {
                 latitude: cafe.latitude,
                 longitude: cafe.longitude,
               }}
+              anchor={{ x: 0.5, y: 0.5 }}
               onPress={(e: any) => {
                 e.stopPropagation();
                 markerPressedRef.current = true;
