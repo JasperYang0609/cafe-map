@@ -160,6 +160,7 @@ export default function HistoryScreen() {
                 <CafeCard
                   cafe={item.cafe}
                   showFavoriteButton={true}
+                  showPhoto={false}
                   isFavorited={isFavorited(item.cafe.place_id)}
                   onFavorite={() => handleFavorite(item.cafe)}
                 />

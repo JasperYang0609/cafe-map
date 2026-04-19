@@ -20,6 +20,10 @@ interface CafeCardProps {
   onFavorite?: () => void;
   isFavorited?: boolean;
   showFavoriteButton?: boolean;
+  // When false, render a placeholder icon instead of fetching the Google
+  // photo. Each Photo URL render = 1 paid Photos API call, so list pages
+  // (e.g. history tab) opt out and only render the real photo on detail page.
+  showPhoto?: boolean;
   onSubscriptionRequired?: () => void;
 }
 
@@ -28,11 +32,12 @@ export default function CafeCard({
   onFavorite,
   isFavorited = false,
   showFavoriteButton = true,
+  showPhoto = true,
   onSubscriptionRequired,
 }: CafeCardProps) {
   const router = useRouter();
   const { setRating, getRating } = useFavorites();
-  const photoUrl = cafe.photo_reference ? getPhotoUrl(cafe.photo_reference) : null;
+  const photoUrl = showPhoto && cafe.photo_reference ? getPhotoUrl(cafe.photo_reference) : null;
   const heartRating = getRating(cafe.place_id);
 
   const handleCardPress = () => {

@@ -88,8 +88,11 @@ export const COFFEE_NAME_KEYWORDS = [
 export const SEARCH_INCLUDED_TYPES = ['cafe', 'coffee_shop'];
 
 // Minimum sub-circle radius before stopping recursive split (meters)
-// Raised from 250 → 500 to cap deep recursion (cost optimization)
-export const MIN_RECURSIVE_RADIUS = 500;
+// 250 → 500 (V42) → 800 (cost emergency): in dense urban areas the depth-3
+// branch (radius ≈648m) was still saturating, multiplying calls 4x. Cap at
+// 800m means we stop at depth 2 (radius ~1080m). Trade-off: in very dense
+// areas (>40 cafes per 1km²) we may miss some, but random-pick UX still works.
+export const MIN_RECURSIVE_RADIUS = 800;
 
 // --- Radius Constants (cost-optimized) ---
 export const MAP_SEARCH_RADIUS = 3000; // Map page searches 3km
