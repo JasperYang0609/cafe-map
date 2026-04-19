@@ -42,13 +42,35 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user) {
       loadFavorites(user.id);
+      loadRatings(user.id);
       return;
     }
 
     cafeIdCacheRef.current = {};
     pendingFavoriteOpsRef.current.clear();
     setFavorites([]);
+    setRatings({});
   }, [user?.id]);
+
+  const loadRatings = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('cafe_ratings')
+        .select('cafe_id, rating, cafes(place_id)')
+        .eq('user_id', userId);
+
+      if (error || !data) return;
+
+      const byPlaceId: Record<string, number> = {};
+      for (const row of data as any[]) {
+        const placeId = row.cafes?.place_id;
+        if (placeId) byPlaceId[placeId] = row.rating;
+      }
+      setRatings(byPlaceId);
+    } catch (err) {
+      console.log('[Favorites] Ratings load error:', err);
+    }
+  };
 
   const loadFavorites = async (userId: string) => {
     setLoading(true);
@@ -261,27 +283,40 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         setFavorites(prev => prev.map(f =>
           f.place_id === placeId ? { ...f, heartRating: rating } : f
         ));
-        if (user) {
-          try {
-            const { data: cafeData } = await supabase
-              .from('cafes')
-              .select('id')
-              .eq('place_id', placeId)
-              .single();
-            if (cafeData) {
-              await supabase
-                .from('search_history')
-                .update({ user_rating: rating })
-                .eq('user_id', user.id)
-                .eq('cafe_id', cafeData.id);
-            }
-          } catch (err) {
-            console.log('[Favorites] Rating sync error, rolling back:', err);
-            setRatings(prev => ({ ...prev, [placeId]: prevRating }));
-            setFavorites(prev => prev.map(f =>
-              f.place_id === placeId ? { ...f, heartRating: prevRating } : f
-            ));
-          }
+        if (!user) return;
+
+        // Find (or create) cafes row, then upsert into cafe_ratings.
+        // Using a dedicated table means rating persists even when the cafe
+        // was never in favorites or search_history (e.g. rated from the
+        // history tab via CafeCard).
+        try {
+          const cafeId = cafeIdCacheRef.current[placeId]
+            ?? (await supabase
+                .from('cafes')
+                .select('id')
+                .eq('place_id', placeId)
+                .single()
+              ).data?.id;
+
+          if (!cafeId) throw new Error('cafe row missing for ' + placeId);
+          cafeIdCacheRef.current[placeId] = cafeId;
+
+          const { error } = await supabase
+            .from('cafe_ratings')
+            .upsert({
+              user_id: user.id,
+              cafe_id: cafeId,
+              rating,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'user_id,cafe_id' });
+
+          if (error) throw error;
+        } catch (err) {
+          console.log('[Favorites] Rating sync error, rolling back:', err);
+          setRatings(prev => ({ ...prev, [placeId]: prevRating }));
+          setFavorites(prev => prev.map(f =>
+            f.place_id === placeId ? { ...f, heartRating: prevRating } : f
+          ));
         }
       },
       getRating: (placeId: string) => ratings[placeId] || 0,

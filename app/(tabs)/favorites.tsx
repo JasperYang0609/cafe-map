@@ -75,7 +75,7 @@ export default function FavoritesScreen() {
 
   const filteredFavorites = heartFilter === null
     ? favorites
-    : favorites.filter(f => (f.heartRating || 0) === heartFilter);
+    : favorites.filter(f => getRating(f.place_id) === heartFilter);
 
   const beanImg = require('../../src/assets/images/coffee-bean-nobg.png');
   const beanGrayImg = require('../../src/assets/images/coffee-bean-gray.png');
