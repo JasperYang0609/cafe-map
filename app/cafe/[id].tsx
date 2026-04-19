@@ -184,21 +184,10 @@ export default function CafeDetailScreen() {
             )}
           </View>
 
-          {/* Address */}
-          {cafe.address ? (
-            <View style={styles.detailRow}>
-              <Ionicons name="location-outline" size={20} color={Colors.textSecondary} />
-              <Text style={styles.detailText}>{cafe.address}</Text>
-            </View>
-          ) : null}
-
-          {/* Phone */}
-          {cafe.phone ? (
-            <TouchableOpacity style={styles.detailRow} onPress={() => Linking.openURL(`tel:${cafe.phone}`)}>
-              <Ionicons name="call-outline" size={20} color={Colors.primary} />
-              <Text style={[styles.detailText, { color: Colors.primary }]}>{cafe.phone}</Text>
-            </TouchableOpacity>
-          ) : null}
+          {/* Address / Phone removed — users get full info via the
+              Google Maps CTA above. Reduces UI clutter and prepares
+              for upcoming field-mask reduction (no need to display
+              fields we may stop fetching from Places API). */}
 
           {/* Website */}
           {cafe.website ? (
@@ -209,8 +198,6 @@ export default function CafeDetailScreen() {
               </Text>
             </TouchableOpacity>
           ) : null}
-
-          {/* Google Maps link removed — replaced by prominent CTA above photo */}
         </View>
       </ScrollView>
 
