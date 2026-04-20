@@ -104,10 +104,25 @@ loadPickCount();
  * Required by Apple before AdMob can access IDFA. Noop on Android and
  * on iOS if status is already determined. Never blocks ad init — even
  * if denied, AdMob falls back to non-personalized ads.
+ *
+ * IMPORTANT: expo-tracking-transparency requires a native module that
+ * is only present in V43+ binaries. On V42 (pre-ATT build), calling
+ * `require('expo-tracking-transparency')` triggers a native module
+ * lookup crash that JS try/catch can't recover from. We probe
+ * NativeModules first and skip entirely if the module isn't linked.
  */
 async function requestTrackingIfNeeded() {
   if (Platform.OS !== 'ios') return;
   try {
+    const { NativeModules } = require('react-native');
+    const nativeAvailable = !!(
+      NativeModules.ExpoTrackingTransparency ||
+      NativeModules.ExponentTrackingTransparency
+    );
+    if (!nativeAvailable) {
+      console.log('[Ads] ATT native module not linked (pre-V43 binary), skipping');
+      return;
+    }
     const tt = require('expo-tracking-transparency');
     const current = await tt.getTrackingPermissionsAsync();
     if (current.status === 'undetermined' && current.canAskAgain) {
